@@ -1,26 +1,35 @@
 from tkinter import *
 import nashpy as nash
+import axelrod as axl
 
 # Function definitions
 def computeEquilibria():
     return
 
-def numStratsClick():    
+def numStratsClick():
+    # clearing the table
+    L = payoffMatrixFrame.grid_slaves()
+    for l in L:
+        l.grid_remove()
+    
+    # refilling the table
     numStrats1 = int(numStratsEntry1.get())
     numStrats2 = int(numStratsEntry2.get())
     rows = []
     for i in range(numStrats1):
         cols = []
-        for j in range(3, numStrats2 + 3):
+        for j in range(numStrats2):
             e = Entry(payoffMatrixFrame, width=5)
             e.grid(row=i, column=j, sticky=NSEW)
-            e.insert(END, '%d,%d' % (i, j - 2))
+            e.insert(END, '%d,%d' % (i, j))
             cols.append(e)
         rows.append(cols)
+    
     root.geometry(f"{45 * numStrats2 + 400}x{25 * numStrats1 + 150}")
     
 def savePayoffs():
     return
+
 root = Tk()
 root.geometry("550x250")
 root.iconbitmap("knight.ico")
@@ -44,10 +53,10 @@ payoffMatrixFrame = LabelFrame(payoffsFrame, text="Payoff Matrix", padx=10, pady
 rows = []
 for i in range(int(numStratsEntry1.get())):
     cols = []
-    for j in range(3, int(numStratsEntry2.get()) + 3):
+    for j in range(int(numStratsEntry2.get())):
         e = Entry(payoffMatrixFrame, width=5)
         e.grid(row=i, column=j, sticky=NSEW)
-        e.insert(END, '%d,%d' % (i, j - 2))
+        e.insert(END, '%d,%d' % (i, j))
         cols.append(e)
     rows.append(cols)
     
