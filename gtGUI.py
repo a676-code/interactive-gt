@@ -31,6 +31,7 @@ def savePayoffs():
     return
 
 root = Tk()
+root.title("Interactive GT")
 root.geometry("550x250")
 root.iconbitmap("knight.ico")
 
