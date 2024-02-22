@@ -15,32 +15,34 @@ for i in range(numStrats1):
     L1.append(l)
 print(L1)
 
-inp = input("Would you like to enter payoffs for player 2? (y or n) ")
-if inp == "yes":
-    L2 = []
-    for i in range(numStrats1):
-        l = []
-        for i in range(numStrats2):
-            payoff = int(input("Enter a payoff for player 2: "))
-            l.append(payoff)
-        L2.append(l)
-    print(L2)
-    
-    G = nash.Game(L1, L2)
-    print(G)
+inputValidated = False
+while(not inputValidated):
+    inp = input("Would you like to enter payoffs for player 2? (y or n) ").lower()
+    if inp == "y" or inp == "yes":
+        L2 = []
+        for i in range(numStrats1):
+            l = []
+            for i in range(numStrats2):
+                payoff = int(input("Enter a payoff for player 2: "))
+                l.append(payoff)
+            L2.append(l)
+        print(L2)
+        
+        G = nash.Game(L1, L2)
+        print(G)
 
-    print("Equilibria: ")
-    eqs = G.support_enumeration()
-    print(list(eqs))
-elif inp == "n":
-    G = nash.Game(L1)
-    print(G)
+        print("Equilibria: ")
+        eqs = G.support_enumeration()
+        print(list(eqs))
+    elif inp == "n" or inp == "no":
+        G = nash.Game(L1)
+        print(G)
 
-    print("Equilibria: ")
-    eqs = G.support_enumeration()
-    print(list(eqs))
-else:
-    print("Invalid input")
+        print("Equilibria: ")
+        eqs = G.support_enumeration()
+        print(list(eqs))
+    else:
+        print("Invalid input")
     
 print("Expected Utilities: ")
 probU = int(inp("Enter the probability that player 1 chooses U"))
