@@ -1,63 +1,77 @@
 from tkinter import *
+import nashpy as nash
 
+# Function definitions
+def computeEquilibria():
+    return
+
+def numStratsClick():    
+    numStrats1 = int(numStratsEntry1.get())
+    numStrats2 = int(numStratsEntry2.get())
+    rows = []
+    for i in range(numStrats1):
+        cols = []
+        for j in range(3, numStrats2 + 3):
+            e = Entry(payoffMatrixFrame, width=5)
+            e.grid(row=i, column=j, sticky=NSEW)
+            e.insert(END, '%d,%d' % (i, j - 2))
+            cols.append(e)
+        rows.append(cols)
+    root.geometry(f"{45 * numStrats2 + 400}x{25 * numStrats1 + 150}")
+    
+def savePayoffs():
+    return
 root = Tk()
-root.geometry("300x100")
+root.geometry("550x250")
+root.iconbitmap("knight.ico")
 
-numStratsEntry1 = Entry(root, width=5)
-numStratsEntry2 = Entry(root, width=5)
+# numStrats Frame
+numStratsFrame = LabelFrame(root, text="Numbers of Strategies", padx=10, pady=10)
+
+numStratsLabel1 = Label(numStratsFrame, text="Num Strats 1")
+numStratsLabel2 = Label(numStratsFrame, text="Num Strats 2")
+numStratsEntry1 = Entry(numStratsFrame, width=5)
+numStratsEntry2 = Entry(numStratsFrame, width=5)
 numStratsEntry1.insert(0, "2")
 numStratsEntry2.insert(0, "2")
+numStratsButton = Button(numStratsFrame, text="Enter", command=numStratsClick)
 
-print("width: ")
-print(root.winfo_reqwidth())
+# Payoffs Frame
+payoffsFrame = LabelFrame(root, text="Payoffs", padx=10, pady=10)
+payoffMatrixFrame = LabelFrame(payoffsFrame, text="Payoff Matrix", padx=10, pady=10)
 
-print("height: ")
-print(root.winfo_reqheight())
-
-def numStrats1Click():    
-    numStrats1 = int(numStratsEntry1.get())
-    numStrats2 = int(numStratsEntry2.get())
-    rows = []
-    for i in range(numStrats1):
-        cols = []
-        for j in range(2,numStrats2 + 2):
-            e = Entry(width=10)
-            e.grid(row=i, column=j, sticky=NSEW)
-            e.insert(END, '%d.%d' % (i, j - 2))
-            cols.append(e)
-        rows.append(cols)
-    root.geometry(f"{root.winfo_width()}x{25 * numStrats1}")
-    
-def numStrats2Click():
-    numStrats1 = int(numStratsEntry1.get())
-    numStrats2 = int(numStratsEntry2.get())
-    rows = []
-    for i in range(numStrats1):
-        cols = []
-        for j in range(2, numStrats2 + 2):
-            e = Entry(width=10)
-            e.grid(row=i, column=j, sticky=NSEW)
-            e.insert(END, '%d.%d' % (i, j - 2))
-            cols.append(e)
-        rows.append(cols)
-    root.geometry(f"{75 * numStrats2}x{root.winfo_height()}")
-
-numStrats1Button = Button(root, text="Enter", command=numStrats1Click)
-numStrats2Button = Button(root, text="Enter", command=numStrats2Click)
-    
+# https://www.activestate.com/resources/quick-reads/how-to-display-data-in-a-table-using-tkinter/
 rows = []
 for i in range(int(numStratsEntry1.get())):
     cols = []
-    for j in range(2,int(numStratsEntry2.get()) + 2):
-        e = Entry(width=10)
+    for j in range(3, int(numStratsEntry2.get()) + 3):
+        e = Entry(payoffMatrixFrame, width=5)
         e.grid(row=i, column=j, sticky=NSEW)
-        e.insert(END, '%d.%d' % (i, j - 2))
+        e.insert(END, '%d,%d' % (i, j - 2))
         cols.append(e)
     rows.append(cols)
+    
+savePayoffsButton = Button(payoffsFrame, text="Save Payoffs", command=savePayoffs)
 
-numStratsEntry1.grid(row=0, column=0)
-numStratsEntry2.grid(row=1, column=0)
-numStrats1Button.grid(row=0, column=1)
-numStrats2Button.grid(row=1, column=1)
+# Equilibria Frame
+equilibriaFrame = LabelFrame(root, text="Equilibria", padx=10, pady=10)
+
+equilibriaButton = Button(equilibriaFrame, text="Compute Equilibria", command=computeEquilibria)
+
+# Putting everything on the screen
+numStratsFrame.grid(row=0, column=0, padx=10, pady=10)
+numStratsLabel1.grid(row=0, column=0)
+numStratsLabel2.grid(row=1, column=0)
+numStratsEntry1.grid(row=0, column=1)
+numStratsEntry2.grid(row=1, column=1)
+numStratsButton.grid(row=0, column=2, padx=5, pady=5)
+
+payoffsFrame.grid(row=0, column=1, padx=10, pady=10)
+
+payoffMatrixFrame.grid(row=0, column=0, padx=10, pady=10)
+savePayoffsButton.grid(row=1, column=0, padx=5, pady=5)
+
+equilibriaFrame.grid(row=0, column=2, padx=10, pady=10)
+equilibriaButton.pack(padx=10, pady=10)
 
 root.mainloop()
