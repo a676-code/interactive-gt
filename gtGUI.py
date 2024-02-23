@@ -30,7 +30,7 @@ def numStratsClick():
     
     root.geometry(f"{45 * numStrats2 + 400}x{25 * numStrats1 + 250}")
     
-def savePayoffs():
+def enterPayoffs():
     L = payoffMatrixFrame.grid_slaves()
     payoffs = [tuple(map(int, l.get().split(", "))) for l in L]
     payoffs.reverse()
@@ -49,7 +49,6 @@ def savePayoffs():
                 newPayoffs.append(row)
                 numInRow = 0
                 row = []
-    print(newPayoffs)
                 
     p1Matrix = []
     p2Matrix = []
@@ -57,14 +56,10 @@ def savePayoffs():
         row1 = []
         row2 = []
         for j in range(numStrats2):
-            print("i:", i)
-            print("j:", j)
             row1.append(newPayoffs[i][j][0])
             row2.append(newPayoffs[i][j][1])
         p1Matrix.append(row1)
         p2Matrix.append(row2)
-    print(p1Matrix)
-    print(p2Matrix)
     
     global G
     G = nash.Game(p1Matrix, p2Matrix)
@@ -103,7 +98,7 @@ for i in range(int(numStratsEntry1.get())):
         cols.append(e)
     rows.append(cols)
     
-savePayoffsButton = Button(payoffsFrame, text="Save Payoffs", command=savePayoffs)
+enterPayoffsButton = Button(payoffsFrame, text="Enter Payoffs", command=enterPayoffs)
 
 # Equilibria Frame
 equilibriaFrame = LabelFrame(root, text="Equilibria", padx=10, pady=10)
@@ -123,7 +118,7 @@ warning.grid(row=2, column=0, columnspan=2, padx=5, pady=5)
 
 payoffsFrame.grid(row=0, column=1, padx=10, pady=10)
 payoffMatrixFrame.grid(row=0, column=0, padx=10, pady=10)
-savePayoffsButton.grid(row=1, column=0, padx=5, pady=5)
+enterPayoffsButton.grid(row=1, column=0, padx=5, pady=5)
 
 equilibriaFrame.grid(row=1, column=0, columnspan=2, padx=10, pady=10)
 equilibriaButton.pack(padx=10, pady=10)
