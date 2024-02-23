@@ -7,6 +7,7 @@ def computeEquilibria():
     eqs = G.support_enumeration()
     output = Label(equilibriaFrame, text=list(eqs), bd=1, relief=SUNKEN, anchor=E)
     output.pack(padx=5, pady=5)
+    root.geometry("575x500")
     return
 
 def numStratsClick():
@@ -107,6 +108,10 @@ equilibriaButton = Button(equilibriaFrame, text="Compute Equilibria", command=co
 
 output = Label(equilibriaFrame, text="EQUILIBRIA HERE", bd=1, relief=SUNKEN, anchor=E)
 
+# Axelrod Frame
+axelrodFrame = LabelFrame(root, text="axelrod", padx=10, pady=10)
+btn = Button(axelrodFrame, text="Placeholder")
+
 # Putting everything on the screen
 numStratsFrame.grid(row=0, column=0, padx=10, pady=10)
 numStratsLabel1.grid(row=0, column=0)
@@ -120,7 +125,10 @@ payoffsFrame.grid(row=0, column=1, padx=10, pady=10)
 payoffMatrixFrame.grid(row=0, column=0, padx=10, pady=10)
 enterPayoffsButton.grid(row=1, column=0, padx=5, pady=5)
 
-equilibriaFrame.grid(row=1, column=0, columnspan=2, padx=10, pady=10)
+equilibriaFrame.grid(row=1, column=0, padx=10, pady=10)
 equilibriaButton.pack(padx=10, pady=10)
+
+axelrodFrame.grid(row=1, column=1, padx=10, pady=10)
+btn.pack(padx=10, pady=10)
 
 root.mainloop()
