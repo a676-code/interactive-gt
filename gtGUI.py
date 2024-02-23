@@ -7,7 +7,7 @@ def computeEquilibria():
     eqs = G.support_enumeration()
     output = Label(equilibriaFrame, text=list(eqs), bd=1, relief=SUNKEN, anchor=E)
     output.pack(padx=5, pady=5)
-    root.geometry("575x500")
+    root.geometry("700x500")
     return
 
 def numStratsClick():
@@ -29,7 +29,7 @@ def numStratsClick():
             cols.append(e)
         rows.append(cols)
     
-    root.geometry(f"{45 * numStrats2 + 400}x{25 * numStrats1 + 250}")
+    root.geometry(f"{45 * numStrats2 + 600}x{25 * numStrats1 + 300}")
     
 def enterPayoffs():
     L = payoffMatrixFrame.grid_slaves()
@@ -67,16 +67,30 @@ def enterPayoffs():
     print(G)
     return
 
+def startMatch():
+    p1 = axl.TitForTat()
+    p2 = axl.Alternator()
+    match = axl.Match((p1, p2), turns = 6)
+    print(match.play())
+    print(match.final_score_per_turn())
+    return
+
+def startTournament():
+    players = [s() for s in axl.demo_strategies]
+    tournament = axl.Tournament(players=players, turns=10, repetitions=5)
+    results = tournament.play() 
+    return
+
 root = Tk()
 root.title("Interactive GT")
-root.geometry("550x500")
+root.geometry("650x400")
 root.iconbitmap("knight.ico")
 
 # numStrats Frame
 numStratsFrame = LabelFrame(root, text="Numbers of Strategies", padx=10, pady=10)
 
-numStratsLabel1 = Label(numStratsFrame, text="Num Strats 1")
-numStratsLabel2 = Label(numStratsFrame, text="Num Strats 2")
+numStratsLabel1 = Label(numStratsFrame, text="Number of strategies for player 1: ")
+numStratsLabel2 = Label(numStratsFrame, text="Number of strategies for player 2: ")
 numStratsEntry1 = Entry(numStratsFrame, width=5)
 numStratsEntry2 = Entry(numStratsFrame, width=5)
 numStratsEntry1.insert(0, "2")
@@ -99,7 +113,7 @@ for i in range(int(numStratsEntry1.get())):
         cols.append(e)
     rows.append(cols)
     
-enterPayoffsButton = Button(payoffsFrame, text="Enter Payoffs", command=enterPayoffs)
+enterPayoffsButton = Button(payoffsFrame, text="Enter", command=enterPayoffs)
 
 # Equilibria Frame
 equilibriaFrame = LabelFrame(root, text="Equilibria", padx=10, pady=10)
@@ -110,7 +124,26 @@ output = Label(equilibriaFrame, text="EQUILIBRIA HERE", bd=1, relief=SUNKEN, anc
 
 # Axelrod Frame
 axelrodFrame = LabelFrame(root, text="axelrod", padx=10, pady=10)
-btn = Button(axelrodFrame, text="Placeholder")
+strategyLabel1 = Label(axelrodFrame, text="Enter a strategy for player 1: ")
+strategyEntry1 = Entry(axelrodFrame, width=5)
+strategyLabel2 = Label(axelrodFrame, text="Enter a strategy for player 2: ")
+strategyEntry2 = Entry(axelrodFrame, width=5)
+matchButton = Button(axelrodFrame, text="Start Match", command=startMatch)
+tournamentButton = Button(axelrodFrame, text="Start Tournament", command=startTournament)
+
+options = [s() for s in axl.demo_strategies]
+
+clicked1 = StringVar()
+clicked1.set(options[0])
+
+clicked2 = StringVar()
+clicked2.set(options[0])
+
+dropdown1 = OptionMenu(axelrodFrame, clicked1, *options)
+dropdown2 = OptionMenu(axelrodFrame, clicked2, *options)
+
+turnsLabel = Label(axelrodFrame, text="Enter the number of turns: ")
+turnsEntry = Label(axelrodFrame, width=5)
 
 # Putting everything on the screen
 numStratsFrame.grid(row=0, column=0, padx=10, pady=10)
@@ -118,7 +151,7 @@ numStratsLabel1.grid(row=0, column=0)
 numStratsLabel2.grid(row=1, column=0)
 numStratsEntry1.grid(row=0, column=1)
 numStratsEntry2.grid(row=1, column=1)
-numStratsButton.grid(row=0, column=2, padx=5, pady=5)
+numStratsButton.grid(row=2, column=2, padx=5, pady=5)
 warning.grid(row=2, column=0, columnspan=2, padx=5, pady=5)
 
 payoffsFrame.grid(row=0, column=1, padx=10, pady=10)
@@ -129,6 +162,13 @@ equilibriaFrame.grid(row=1, column=0, padx=10, pady=10)
 equilibriaButton.pack(padx=10, pady=10)
 
 axelrodFrame.grid(row=1, column=1, padx=10, pady=10)
-btn.pack(padx=10, pady=10)
+strategyLabel1.grid(row=0, column=0)
+dropdown1.grid(row=0, column=1)
+strategyLabel2.grid(row=1, column=0)
+dropdown2.grid(row=1, column=1)
+turnsLabel.grid(row=2, column=0)
+turnsEntry.grid(row=2, column=1)
+matchButton.grid(row=3,column=0)
+tournamentButton.grid(row=3,column=1)
 
 root.mainloop()
