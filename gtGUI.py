@@ -1,4 +1,5 @@
 from tkinter import *
+from tkinter import ttk
 import nashpy as nash
 import axelrod as axl
 
@@ -100,7 +101,7 @@ warning = Label(numStratsFrame, text="Warning: pressing Enter will clear all pay
 
 # Payoffs Frame
 payoffsFrame = LabelFrame(root, text="Payoffs", padx=10, pady=10)
-payoffMatrixFrame = LabelFrame(payoffsFrame, text="Payoff Matrix", padx=10, pady=10)
+payoffMatrixFrame = LabelFrame(payoffsFrame, text="Payoff Matrix" , padx=10, pady=10)
 
 # https://www.activestate.com/resources/quick-reads/how-to-display-data-in-a-table-using-tkinter/
 rows = []
@@ -116,14 +117,13 @@ for i in range(int(numStratsEntry1.get())):
 enterPayoffsButton = Button(payoffsFrame, text="Enter", command=enterPayoffs)
 
 # Equilibria Frame
-equilibriaFrame = LabelFrame(root, text="Equilibria", padx=10, pady=10)
+equilibriaFrame = LabelFrame(root, text="Equilibria" , padx=10, pady=10)
 
 equilibriaButton = Button(equilibriaFrame, text="Compute Equilibria", command=computeEquilibria)
-
-output = Label(equilibriaFrame, text="EQUILIBRIA HERE", bd=1, relief=SUNKEN, anchor=E)
+output = Label(equilibriaFrame, text="EQUILIBRIA HERE", relief=SUNKEN, anchor=E)
 
 # Axelrod Frame
-axelrodFrame = LabelFrame(root, text="axelrod", padx=10, pady=10)
+axelrodFrame = LabelFrame(root, text="axelrod" , padx=10, pady=10)
 strategyLabel1 = Label(axelrodFrame, text="Enter a strategy for player 1: ")
 strategyEntry1 = Entry(axelrodFrame, width=5)
 strategyLabel2 = Label(axelrodFrame, text="Enter a strategy for player 2: ")
@@ -131,7 +131,7 @@ strategyEntry2 = Entry(axelrodFrame, width=5)
 matchButton = Button(axelrodFrame, text="Start Match", command=startMatch)
 tournamentButton = Button(axelrodFrame, text="Start Tournament", command=startTournament)
 
-options = [s() for s in axl.demo_strategies]
+options = [s() for s in axl.strategies]
 
 clicked1 = StringVar()
 clicked1.set(options[0])
@@ -139,8 +139,8 @@ clicked1.set(options[0])
 clicked2 = StringVar()
 clicked2.set(options[0])
 
-dropdown1 = OptionMenu(axelrodFrame, clicked1, *options)
-dropdown2 = OptionMenu(axelrodFrame, clicked2, *options)
+dropdown1 = ttk.Combobox(axelrodFrame, textvariable=clicked1, values=options)
+dropdown2 = ttk.Combobox(axelrodFrame, textvariable=clicked2, values=options)
 
 turnsLabel = Label(axelrodFrame, text="Enter the number of turns: ")
 turnsEntry = Label(axelrodFrame, width=5)
