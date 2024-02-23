@@ -4,6 +4,9 @@ import axelrod as axl
 
 # Function definitions
 def computeEquilibria():
+    eqs = G.support_enumeration()
+    output = Label(equilibriaFrame, text=list(eqs), bd=1, relief=SUNKEN, anchor=E)
+    output.pack(padx=5, pady=5)
     return
 
 def numStratsClick():
@@ -11,7 +14,6 @@ def numStratsClick():
     L = payoffMatrixFrame.grid_slaves()
     for l in L:
         l.grid_remove()
-        print(l.get())
     
     # refilling the table
     numStrats1 = int(numStratsEntry1.get())
@@ -26,7 +28,7 @@ def numStratsClick():
             cols.append(e)
         rows.append(cols)
     
-    root.geometry(f"{45 * numStrats2 + 400}x{25 * numStrats1 + 150}")
+    root.geometry(f"{45 * numStrats2 + 400}x{25 * numStrats1 + 250}")
     
 def savePayoffs():
     L = payoffMatrixFrame.grid_slaves()
@@ -47,7 +49,24 @@ def savePayoffs():
             if numInRow == 2:
                 newPayoffs.append(row)
                 numInRow = 0
-                row = []        
+                row = []
+                
+    p1Matrix = []
+    p2Matrix = []
+    for i in range(numStrats1):
+        row1 = []
+        row2 = []
+        for j in range(numStrats2):
+            row1.append(newPayoffs[i][j][0])
+            row2.append(newPayoffs[i][j][1])
+        p1Matrix.append(row1)
+        p2Matrix.append(row2)
+    print(p1Matrix)
+    print(p2Matrix)
+    
+    global G
+    G = nash.Game(p1Matrix, p2Matrix)
+    print(G)
     return
 
 root = Tk()
@@ -106,6 +125,5 @@ savePayoffsButton.grid(row=1, column=0, padx=5, pady=5)
 
 equilibriaFrame.grid(row=1, column=0, columnspan=2, padx=10, pady=10)
 equilibriaButton.pack(padx=10, pady=10)
-output.pack(padx=5, pady=5)
 
 root.mainloop()
