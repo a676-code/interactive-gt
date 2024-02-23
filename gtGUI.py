@@ -34,7 +34,6 @@ def savePayoffs():
     L = payoffMatrixFrame.grid_slaves()
     payoffs = [tuple(map(int, l.get().split(", "))) for l in L]
     payoffs.reverse()
-    print(payoffs)
     numStrats1 = int(numStratsEntry1.get())
     numStrats2 = int(numStratsEntry2.get())
     
@@ -43,13 +42,14 @@ def savePayoffs():
     row = []
     numInRow = 0
     for p in payoffs:
-        if numInRow < 2:
+        if numInRow < numStrats2:
             row.append(p)
             numInRow += 1
-            if numInRow == 2:
+            if numInRow == numStrats2:
                 newPayoffs.append(row)
                 numInRow = 0
                 row = []
+    print(newPayoffs)
                 
     p1Matrix = []
     p2Matrix = []
@@ -57,6 +57,8 @@ def savePayoffs():
         row1 = []
         row2 = []
         for j in range(numStrats2):
+            print("i:", i)
+            print("j:", j)
             row1.append(newPayoffs[i][j][0])
             row2.append(newPayoffs[i][j][1])
         p1Matrix.append(row1)
