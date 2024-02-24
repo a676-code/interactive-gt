@@ -5,22 +5,55 @@ import nashpy as nash
 import axelrod as axl
 
 # Function definitions
-def computeEquilibria():
-    eqs1 = G.support_enumeration()
-    eqs2 = G.support_enumeration()
-    pureEquilibria = []
-    mixedEquilibria = []
-    for e in eqs1:
-        if e[0][0] == 0.0 or e[0][0] == 1.0:
-            pureEquilibria.append(e)
-        else:
-            mixedEquilibria.append(e)
-    print(pureEquilibria)
-    print(mixedEquilibria)
+def computeEquilibria(output):
+    if output == 0:
+        eqs = G.support_enumeration()
+        eqList= list(eqs)
+        newList = []
+        for eq in eqList:
+            newEq = []
+            for strat in eq:
+                # print("strat:", strat)
+                # print("type:", type(strat))
+                newEq.append(strat.tolist())
+            newList.append(newEq)
+        print("new list:", newList)
+        print()
+                
         
-    equilibriaOutput = Label(equilibriaFrame, text=list(eqs2), bd=1, relief=SUNKEN, anchor=E)    
-    equilibriaOutput.pack(padx=5, pady=5)
-    root.geometry("750x425")
+        # print("eq 0:", eqList[0])
+        # print("eq 0 0:", eqList[0][0])
+        # print("eq 0 string:", str(eqList[0]))
+        # print("Eqs 0:", str(eqList[0]))
+        eqString = ""
+        for eq in newList:
+            for i, strat in enumerate(eq):
+                eqString = eqString + str(strat)
+                if i < len(eq) - 1:
+                    eqString = eqString + ", "
+            eqString = eqString + "\n"
+        print("eqString:", eqString)
+        
+        
+        eqs1 = G.support_enumeration()
+        pureEquilibria = []
+        mixedEquilibria = []
+        for e in eqs1:
+            if e[0][0] == 0.0 or e[0][0] == 1.0:
+                pureEquilibria.append(e)
+            else:
+                mixedEquilibria.append(e)
+        print(pureEquilibria)
+        print(mixedEquilibria)
+        
+        eqs2 = G.support_enumeration()
+        equilibriaOutput = Label(equilibriaFrame, text=eqString, bd=1, relief=SUNKEN, anchor=E)    
+        equilibriaOutput.grid(row=2, column=0, columnspan=2, padx=5, pady=5)
+        root.geometry("750x425")
+    elif output == 1:
+        return
+    else:
+        print("Error: variable output has taken on an unexpected value")
     return
     
 def enterPayoffs():
@@ -106,6 +139,11 @@ def startMatch(p1, p2, t = 6):
         except IndexError:
             stratNotFoundError = messagebox.showerror("Error", "The strategy you entered for player 2 was not in axelrod's list of strategies. Perhaps you meant to capitalize the individual words?")
         counter2 += 1
+
+    if axelrodOutput1.winfo_reqwidth() > axelrodOutput2.winfo_reqwidth():
+        root.geometry(f"{axelrodOutput1.winfo_reqwidth() + 400}x425")
+    else:
+        root.geometry(f"700x{axelrodOutput2.winfo_reqwidth() + 200}")
     return
 
 def startTournament():
@@ -117,6 +155,7 @@ def startTournament():
     axelrodOutput2.grid(row=5, column=0, columnspan=2, padx=10, pady=10, sticky=EW)
     return
 
+# Defining the root window
 root = Tk()
 root.title("Interactive GT")
 root.geometry("700x425")
@@ -187,7 +226,16 @@ G = nash.Game(p1Matrix, p2Matrix)
 # Equilibria Frame
 equilibriaFrame = LabelFrame(root, text="Equilibria" , padx=10, pady=10)
 
-equilibriaButton = Button(equilibriaFrame, text="Compute Equilibria", command=computeEquilibria)
+output = IntVar()
+output.set("0")
+
+def clicked(value):
+    output.set(value)
+
+Radiobutton(equilibriaFrame, text="Standard nashpy Output", variable=output, value=0, command=lambda: clicked(output.get())).grid(row=0, column=0)
+Radiobutton(equilibriaFrame, text="Pretty Print", variable=output, value=1, command=lambda: clicked(output.get())).grid(row=1, column=0)
+
+equilibriaButton = Button(equilibriaFrame, text="Compute Equilibria", command=lambda: computeEquilibria(output.get()))
 equilibriaOutput = Label(equilibriaFrame, text="EQUILIBRIA HERE", relief=SUNKEN, anchor=E)
 
 # Axelrod Frame
@@ -239,7 +287,7 @@ payoffMatrixFrame.grid(row=0, column=0, padx=10, pady=10)
 enterPayoffsButton.grid(row=1, column=0, padx=5, pady=5)
 
 equilibriaFrame.grid(row=1, column=0, padx=10, pady=10)
-equilibriaButton.pack(padx=10, pady=10)
+equilibriaButton.grid(row=1, column=1, padx=10, pady=10)
 
 axelrodFrame.grid(row=1, column=1, padx=10, pady=10)
 strategyLabel1.grid(row=0, column=0)
