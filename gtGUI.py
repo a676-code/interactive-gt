@@ -66,10 +66,22 @@ def numStratsClick():
     
     root.geometry(f"{45 * numStrats2 + 600}x{25 * numStrats1 + 300}")
 
-def startMatch(clicked1, clicked2):
-    print("clicked1 3rd:", clicked1)
-    p1 = clicked1
-    p2 = clicked2
+def startMatch(p1, p2):    
+    p1 = ""
+    p2 = ""
+    clicked1NoSpaces = clicked1.get().replace(" ", "")
+    clicked2NoSpaces = clicked2.get().replace(" ", "")
+    counter = 0
+    while type(p1).__name__ == "str":
+        if type(options[counter]).__name__ == clicked1NoSpaces:
+            p1 = options[counter]
+        counter += 1
+    counter = 0
+    while type(p2).__name__ == "str":
+        if type(options[counter]).__name__ == clicked2NoSpaces:
+            p2 = options[counter]
+        counter += 1
+    
     match = axl.Match((p1, p2), turns = 6)
     axelrodOutput1 = Label(axelrodFrame, text=str(match.play()), relief=SUNKEN, anchor=E)
     axelrodOutput2 = Label(axelrodFrame, text=str(match.final_score_per_turn()), relief=SUNKEN, anchor=E)
@@ -163,18 +175,30 @@ strategyLabel2 = Label(axelrodFrame, text="Enter a strategy for player 2: ")
 options = [s() for s in axl.strategies]
 clicked1 = StringVar()
 clicked1.set(options[0])
-print("option 0:", options[0])
-print("option 0 type:", type(options[0]))
-print("clicked 1 1st:", clicked1.get())
-print("clicked 1 type:", type(clicked1.get()))
-
 clicked2 = StringVar()
 clicked2.set(options[0])
 dropdown1 = ttk.Combobox(axelrodFrame, textvariable=clicked1, values=options)
 dropdown2 = ttk.Combobox(axelrodFrame, textvariable=clicked2, values=options)
 turnsLabel = Label(axelrodFrame, text="Enter the number of turns: ")
 turnsEntry = Label(axelrodFrame, width=5)
-matchButton = Button(axelrodFrame, text="Start Match", command=lambda: startMatch(clicked1.get(), clicked2.get()))
+
+p1 = ""
+p2 = ""
+clicked1NoSpaces = clicked1.get().replace(" ", "")
+clicked2NoSpaces = clicked2.get().replace(" ", "")
+counter = 0
+while type(p1).__name__ == "str":
+    print("counter1:", counter)
+    if type(options[counter]).__name__ == clicked1NoSpaces:
+        p1 = options[counter]
+    counter += 1
+counter = 0
+while type(p2).__name__ == "str":
+    if type(options[counter]).__name__ == clicked2NoSpaces:
+        p2 = options[counter]
+    counter += 1
+
+matchButton = Button(axelrodFrame, text="Start Match", command=lambda: startMatch(p1, p2))
 tournamentButton = Button(axelrodFrame, text="Start Tournament", command=startTournament)
 axelrodOutput1 = Label(axelrodFrame, text="MATCHES HERE", relief=SUNKEN, bd=1, anchor=E)
 axelrodOutput2 = Label(axelrodFrame, text="MATCHES HERE", relief=SUNKEN, bd=1, anchor=E)
