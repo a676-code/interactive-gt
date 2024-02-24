@@ -5,8 +5,19 @@ import axelrod as axl
 
 # Function definitions
 def computeEquilibria():
-    eqs = G.support_enumeration()
-    equilibriaOutput = Label(equilibriaFrame, text=list(eqs), bd=1, relief=SUNKEN, anchor=E)
+    eqs1 = G.support_enumeration()
+    eqs2 = G.support_enumeration()
+    pureEquilibria = []
+    mixedEqulibria = []
+    for e in eqs1:
+        if e[0][0] == 0.0 or e[0][0] == 1.0:
+            pureEquilibria.append(e)
+        else:
+            mixedEqulibria.append(e)
+    print(pureEquilibria)
+    print(mixedEqulibria)
+        
+    equilibriaOutput = Label(equilibriaFrame, text=list(eqs2), bd=1, relief=SUNKEN, anchor=E)    
     equilibriaOutput.pack(padx=5, pady=5)
     root.geometry("750x425")
     return
@@ -42,6 +53,7 @@ def enterPayoffs():
         p1Matrix.append(row1)
         p2Matrix.append(row2)
     
+    global G
     G = nash.Game(p1Matrix, p2Matrix)
     return
 
@@ -93,6 +105,9 @@ def startTournament():
     players = [s() for s in axl.demo_strategies]
     tournament = axl.Tournament(players=players, turns=10, repetitions=5)
     results = tournament.play() 
+    
+    axelrodOutput1.grid(row=4, column=0, columnspan=2, padx=10, pady=10, sticky=EW)
+    axelrodOutput2.grid(row=5, column=0, columnspan=2, padx=10, pady=10, sticky=EW)
     return
 
 root = Tk()
@@ -188,7 +203,6 @@ clicked1NoSpaces = clicked1.get().replace(" ", "")
 clicked2NoSpaces = clicked2.get().replace(" ", "")
 counter = 0
 while type(p1).__name__ == "str":
-    print("counter1:", counter)
     if type(options[counter]).__name__ == clicked1NoSpaces:
         p1 = options[counter]
     counter += 1
@@ -228,7 +242,5 @@ turnsLabel.grid(row=2, column=0)
 turnsEntry.grid(row=2, column=1)
 matchButton.grid(row=3,column=0)
 tournamentButton.grid(row=3,column=1)
-axelrodOutput1.grid(row=4, column=0, columnspan=2, padx=10, pady=10, sticky=EW)
-axelrodOutput2.grid(row=5, column=0, columnspan=2, padx=10, pady=10, sticky=EW)
 
 root.mainloop()

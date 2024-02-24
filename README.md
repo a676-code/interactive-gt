@@ -1,7 +1,7 @@
 # interactive-gt
-An interactive game theory application for analyzing 2-player games using nashpy and axelrod in at tkinter GUI. 
+An interactive game theory application for analyzing 2-player games using nashpy and axelrod in a tkinter GUI. 
 
-![2 strats each](images/image1.png)
-![more strategies](images/image2.png)
-![computing equilibria](images/image3.png)
-![strictly dominated strategies](images/image4.png)
+Equilibria for a Battle of the Sexes, and an axelrod match between a Tit for Tat player and an Alternator: 
+![bos and match](images/image1.png)
+Equilibria for a three-by-three matrix with lots of strictly dominated strategies: 
+![strictly dominated strategies](images/image2.png)
