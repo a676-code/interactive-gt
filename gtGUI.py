@@ -6,31 +6,10 @@ import axelrod as axl
 # Function definitions
 def computeEquilibria():
     eqs = G.support_enumeration()
-    output = Label(equilibriaFrame, text=list(eqs), bd=1, relief=SUNKEN, anchor=E)
-    output.pack(padx=5, pady=5)
-    root.geometry("700x500")
+    equilibriaOutput = Label(equilibriaFrame, text=list(eqs), bd=1, relief=SUNKEN, anchor=E)
+    equilibriaOutput.pack(padx=5, pady=5)
+    root.geometry("750x400")
     return
-
-def numStratsClick():
-    # clearing the table
-    L = payoffMatrixFrame.grid_slaves()
-    for l in L:
-        l.grid_remove()
-    
-    # refilling the table
-    numStrats1 = int(numStratsEntry1.get())
-    numStrats2 = int(numStratsEntry2.get())
-    rows = []
-    for i in range(numStrats1):
-        cols = []
-        for j in range(numStrats2):
-            e = Entry(payoffMatrixFrame, width=5)
-            e.grid(row=i, column=j, sticky=NSEW)
-            e.insert(END, '%d, %d' % (0, 0))
-            cols.append(e)
-        rows.append(cols)
-    
-    root.geometry(f"{45 * numStrats2 + 600}x{25 * numStrats1 + 300}")
     
 def enterPayoffs():
     L = payoffMatrixFrame.grid_slaves()
@@ -68,12 +47,36 @@ def enterPayoffs():
     print(G)
     return
 
-def startMatch():
-    p1 = axl.TitForTat()
-    p2 = axl.Alternator()
+def numStratsClick():
+    # clearing the table
+    L = payoffMatrixFrame.grid_slaves()
+    for l in L:
+        l.grid_remove()
+    
+    # refilling the table
+    numStrats1 = int(numStratsEntry1.get())
+    numStrats2 = int(numStratsEntry2.get())
+    rows = []
+    for i in range(numStrats1):
+        cols = []
+        for j in range(numStrats2):
+            e = Entry(payoffMatrixFrame, width=5)
+            e.grid(row=i, column=j, sticky=NSEW)
+            e.insert(END, '%d, %d' % (0, 0))
+            cols.append(e)
+        rows.append(cols)
+    
+    root.geometry(f"{45 * numStrats2 + 600}x{25 * numStrats1 + 300}")
+
+def startMatch(clicked1, clicked2):
+    print("clicked1 3rd:", clicked1)
+    p1 = clicked1
+    p2 = clicked2
     match = axl.Match((p1, p2), turns = 6)
-    print(match.play())
-    print(match.final_score_per_turn())
+    axelrodOutput1 = Label(axelrodFrame, text=str(match.play()), relief=SUNKEN, anchor=E)
+    axelrodOutput2 = Label(axelrodFrame, text=str(match.final_score_per_turn()), relief=SUNKEN, anchor=E)
+    axelrodOutput1.grid(row=4, column=0, columnspan=2, padx=10, pady=10, sticky=EW)
+    axelrodOutput2.grid(row=5, column=0, columnspan=2, padx=10, pady=10, sticky=EW)
     return
 
 def startTournament():
@@ -84,7 +87,7 @@ def startTournament():
 
 root = Tk()
 root.title("Interactive GT")
-root.geometry("650x400")
+root.geometry("700x400")
 root.iconbitmap("knight.ico")
 
 # numStrats Frame
@@ -120,30 +123,29 @@ enterPayoffsButton = Button(payoffsFrame, text="Enter", command=enterPayoffs)
 equilibriaFrame = LabelFrame(root, text="Equilibria" , padx=10, pady=10)
 
 equilibriaButton = Button(equilibriaFrame, text="Compute Equilibria", command=computeEquilibria)
-output = Label(equilibriaFrame, text="EQUILIBRIA HERE", relief=SUNKEN, anchor=E)
+equilibriaOutput = Label(equilibriaFrame, text="EQUILIBRIA HERE", relief=SUNKEN, anchor=E)
 
 # Axelrod Frame
 axelrodFrame = LabelFrame(root, text="axelrod" , padx=10, pady=10)
 strategyLabel1 = Label(axelrodFrame, text="Enter a strategy for player 1: ")
-strategyEntry1 = Entry(axelrodFrame, width=5)
 strategyLabel2 = Label(axelrodFrame, text="Enter a strategy for player 2: ")
-strategyEntry2 = Entry(axelrodFrame, width=5)
-matchButton = Button(axelrodFrame, text="Start Match", command=startMatch)
-tournamentButton = Button(axelrodFrame, text="Start Tournament", command=startTournament)
-
 options = [s() for s in axl.strategies]
-
 clicked1 = StringVar()
 clicked1.set(options[0])
+print("option 0:", options[0])
+print("clicked 1 1st:", clicked1.get())
 
 clicked2 = StringVar()
 clicked2.set(options[0])
-
 dropdown1 = ttk.Combobox(axelrodFrame, textvariable=clicked1, values=options)
+print("clicked 1 2nd:", clicked1)
 dropdown2 = ttk.Combobox(axelrodFrame, textvariable=clicked2, values=options)
-
 turnsLabel = Label(axelrodFrame, text="Enter the number of turns: ")
 turnsEntry = Label(axelrodFrame, width=5)
+matchButton = Button(axelrodFrame, text="Start Match", command=lambda: startMatch(clicked1.get(), clicked2.get()))
+tournamentButton = Button(axelrodFrame, text="Start Tournament", command=startTournament)
+axelrodOutput1 = Label(axelrodFrame, text="MATCHES HERE", relief=SUNKEN, bd=1, anchor=E)
+axelrodOutput2 = Label(axelrodFrame, text="MATCHES HERE", relief=SUNKEN, bd=1, anchor=E)
 
 # Putting everything on the screen
 numStratsFrame.grid(row=0, column=0, padx=10, pady=10)
@@ -170,5 +172,7 @@ turnsLabel.grid(row=2, column=0)
 turnsEntry.grid(row=2, column=1)
 matchButton.grid(row=3,column=0)
 tournamentButton.grid(row=3,column=1)
+axelrodOutput1.grid(row=4, column=0, columnspan=2, padx=10, pady=10, sticky=EW)
+axelrodOutput2.grid(row=5, column=0, columnspan=2, padx=10, pady=10, sticky=EW)
 
 root.mainloop()
