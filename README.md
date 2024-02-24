@@ -5,3 +5,5 @@ Equilibria for a Battle of the Sexes, and an axelrod match between a Tit for Tat
 ![bos and match](images/image1.png)
 Equilibria for a three-by-three matrix with lots of strictly dominated strategies: 
 ![strictly dominated strategies](images/image2.png)
+Warning when computing the equilibria of a degenerate game:
+![degenerate game warning](images/image3.png)

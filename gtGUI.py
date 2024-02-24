@@ -8,6 +8,14 @@ import axelrod as axl
 def computeEquilibria(output):
     if output == 0:
         eqs1 = G.support_enumeration()
+        numEquilibria = len(list(eqs1))
+        if numEquilibria % 2 == 0:
+            degenerateGameWarning = messagebox.showwarning("Even Number of Equilibria: Degenerate Game", "An even number of equilibria was returned. This indicates that the game is degenerate. Consider using another algorithm to investigate.")
+            # resetting the generator
+            eqs1 = G.support_enumeration
+        else:
+            # resetting the generator
+            eqs1 = G.support_enumeration()
         eqList= list(eqs1)
         newList = []
         for eq in eqList:
