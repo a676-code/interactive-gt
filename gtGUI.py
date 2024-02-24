@@ -8,7 +8,7 @@ def computeEquilibria():
     eqs = G.support_enumeration()
     equilibriaOutput = Label(equilibriaFrame, text=list(eqs), bd=1, relief=SUNKEN, anchor=E)
     equilibriaOutput.pack(padx=5, pady=5)
-    root.geometry("750x400")
+    root.geometry("750x425")
     return
     
 def enterPayoffs():
@@ -42,9 +42,7 @@ def enterPayoffs():
         p1Matrix.append(row1)
         p2Matrix.append(row2)
     
-    global G
     G = nash.Game(p1Matrix, p2Matrix)
-    print(G)
     return
 
 def numStratsClick():
@@ -87,7 +85,7 @@ def startTournament():
 
 root = Tk()
 root.title("Interactive GT")
-root.geometry("700x400")
+root.geometry("700x425")
 root.iconbitmap("knight.ico")
 
 # numStrats Frame
@@ -119,6 +117,39 @@ for i in range(int(numStratsEntry1.get())):
     
 enterPayoffsButton = Button(payoffsFrame, text="Enter", command=enterPayoffs)
 
+L = payoffMatrixFrame.grid_slaves()
+payoffs = [tuple(map(int, l.get().split(", "))) for l in L]
+payoffs.reverse()
+numStrats1 = int(numStratsEntry1.get())
+numStrats2 = int(numStratsEntry2.get())
+
+# converting the list of payoffs to a list of lists
+newPayoffs = []
+row = []
+numInRow = 0
+for p in payoffs:
+    if numInRow < numStrats2:
+        row.append(p)
+        numInRow += 1
+        if numInRow == numStrats2:
+            newPayoffs.append(row)
+            numInRow = 0
+            row = []
+            
+p1Matrix = []
+p2Matrix = []
+for i in range(numStrats1):
+    row1 = []
+    row2 = []
+    for j in range(numStrats2):
+        row1.append(newPayoffs[i][j][0])
+        row2.append(newPayoffs[i][j][1])
+    p1Matrix.append(row1)
+    p2Matrix.append(row2)
+    
+global G
+G = nash.Game(p1Matrix, p2Matrix)
+
 # Equilibria Frame
 equilibriaFrame = LabelFrame(root, text="Equilibria" , padx=10, pady=10)
 
@@ -133,12 +164,13 @@ options = [s() for s in axl.strategies]
 clicked1 = StringVar()
 clicked1.set(options[0])
 print("option 0:", options[0])
+print("option 0 type:", type(options[0]))
 print("clicked 1 1st:", clicked1.get())
+print("clicked 1 type:", type(clicked1.get()))
 
 clicked2 = StringVar()
 clicked2.set(options[0])
 dropdown1 = ttk.Combobox(axelrodFrame, textvariable=clicked1, values=options)
-print("clicked 1 2nd:", clicked1)
 dropdown2 = ttk.Combobox(axelrodFrame, textvariable=clicked2, values=options)
 turnsLabel = Label(axelrodFrame, text="Enter the number of turns: ")
 turnsEntry = Label(axelrodFrame, width=5)
