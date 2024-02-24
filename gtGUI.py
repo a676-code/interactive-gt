@@ -1,5 +1,6 @@
 from tkinter import *
 from tkinter import ttk
+from tkinter import messagebox
 import nashpy as nash
 import axelrod as axl
 
@@ -83,22 +84,28 @@ def startMatch(p1, p2, t = 6):
     p2 = ""
     clicked1NoSpaces = clicked1.get().replace(" ", "")
     clicked2NoSpaces = clicked2.get().replace(" ", "")
-    counter = 0
-    while type(p1).__name__ == "str":
-        if type(options[counter]).__name__ == clicked1NoSpaces:
-            p1 = options[counter]
-        counter += 1
-    counter = 0
-    while type(p2).__name__ == "str":
-        if type(options[counter]).__name__ == clicked2NoSpaces:
-            p2 = options[counter]
-        counter += 1
-    
-    match = axl.Match((p1, p2), turns = t)
-    axelrodOutput1 = Label(axelrodFrame, text=str(match.play()), relief=SUNKEN, anchor=E)
-    axelrodOutput2 = Label(axelrodFrame, text=str(match.final_score_per_turn()), relief=SUNKEN, anchor=E)
-    axelrodOutput1.grid(row=4, column=0, columnspan=2, padx=10, pady=10, sticky=EW)
-    axelrodOutput2.grid(row=5, column=0, columnspan=2, padx=10, pady=10, sticky=EW)
+    counter1 = 0
+    while type(p1).__name__ == "str" and counter1 <= len(axl.strategies):
+        try:
+            if type(options[counter1]).__name__ == clicked1NoSpaces:
+                p1 = options[counter1]
+        except IndexError:
+            stratNotFoundError = messagebox.showerror("Error", "The strategy you entered for player 1 was not in axelrod's list of strategies. Perhaps you meant to capitalize the individual words?")
+        counter1 += 1
+    counter2 = 0
+    while type(p2).__name__ == "str" and counter2 <= len(axl.strategies):
+        try:
+            if type(options[counter2]).__name__ == clicked2NoSpaces:
+                p2 = options[counter2]
+                
+                match = axl.Match((p1, p2), turns = t)
+                axelrodOutput1 = Label(axelrodFrame, text=str(match.play()), relief=SUNKEN, anchor=E)
+                axelrodOutput2 = Label(axelrodFrame, text=str(match.final_score_per_turn()), relief=SUNKEN, anchor=E)
+                axelrodOutput1.grid(row=4, column=0, columnspan=2, padx=10, pady=10, sticky=EW)
+                axelrodOutput2.grid(row=5, column=0, columnspan=2, padx=10, pady=10, sticky=EW)
+        except IndexError:
+            stratNotFoundError = messagebox.showerror("Error", "The strategy you entered for player 2 was not in axelrod's list of strategies. Perhaps you meant to capitalize the individual words?")
+        counter2 += 1
     return
 
 def startTournament():
