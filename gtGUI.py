@@ -16,7 +16,7 @@ def computeEquilibria():
         else:
             mixedEquilibria.append(e)
     print(pureEquilibria)
-    print(mixedEqulibria)
+    print(mixedEquilibria)
         
     equilibriaOutput = Label(equilibriaFrame, text=list(eqs2), bd=1, relief=SUNKEN, anchor=E)    
     equilibriaOutput.pack(padx=5, pady=5)
