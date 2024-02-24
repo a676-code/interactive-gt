@@ -9,12 +9,12 @@ def computeEquilibria():
     eqs1 = G.support_enumeration()
     eqs2 = G.support_enumeration()
     pureEquilibria = []
-    mixedEqulibria = []
+    mixedEquilibria = []
     for e in eqs1:
         if e[0][0] == 0.0 or e[0][0] == 1.0:
             pureEquilibria.append(e)
         else:
-            mixedEqulibria.append(e)
+            mixedEquilibria.append(e)
     print(pureEquilibria)
     print(mixedEqulibria)
         
