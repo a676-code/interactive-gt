@@ -78,7 +78,7 @@ def numStratsClick():
     
     root.geometry(f"{45 * numStrats2 + 600}x{25 * numStrats1 + 300}")
 
-def startMatch(p1, p2):    
+def startMatch(p1, p2, t = 6):    
     p1 = ""
     p2 = ""
     clicked1NoSpaces = clicked1.get().replace(" ", "")
@@ -94,7 +94,7 @@ def startMatch(p1, p2):
             p2 = options[counter]
         counter += 1
     
-    match = axl.Match((p1, p2), turns = 6)
+    match = axl.Match((p1, p2), turns = t)
     axelrodOutput1 = Label(axelrodFrame, text=str(match.play()), relief=SUNKEN, anchor=E)
     axelrodOutput2 = Label(axelrodFrame, text=str(match.final_score_per_turn()), relief=SUNKEN, anchor=E)
     axelrodOutput1.grid(row=4, column=0, columnspan=2, padx=10, pady=10, sticky=EW)
@@ -195,7 +195,8 @@ clicked2.set(options[0])
 dropdown1 = ttk.Combobox(axelrodFrame, textvariable=clicked1, values=options)
 dropdown2 = ttk.Combobox(axelrodFrame, textvariable=clicked2, values=options)
 turnsLabel = Label(axelrodFrame, text="Enter the number of turns: ")
-turnsEntry = Label(axelrodFrame, width=5)
+turnsEntry = Entry(axelrodFrame, width=5)
+turnsEntry.insert(0, "6")
 
 p1 = ""
 p2 = ""
@@ -212,7 +213,7 @@ while type(p2).__name__ == "str":
         p2 = options[counter]
     counter += 1
 
-matchButton = Button(axelrodFrame, text="Start Match", command=lambda: startMatch(p1, p2))
+matchButton = Button(axelrodFrame, text="Start Match", command=lambda: startMatch(p1, p2, int(turnsEntry.get())))
 tournamentButton = Button(axelrodFrame, text="Start Tournament", command=startTournament)
 axelrodOutput1 = Label(axelrodFrame, text="MATCHES HERE", relief=SUNKEN, bd=1, anchor=E)
 axelrodOutput2 = Label(axelrodFrame, text="MATCHES HERE", relief=SUNKEN, bd=1, anchor=E)
