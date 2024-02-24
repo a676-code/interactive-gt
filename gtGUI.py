@@ -7,24 +7,15 @@ import axelrod as axl
 # Function definitions
 def computeEquilibria(output):
     if output == 0:
-        eqs = G.support_enumeration()
-        eqList= list(eqs)
+        eqs1 = G.support_enumeration()
+        eqList= list(eqs1)
         newList = []
         for eq in eqList:
             newEq = []
             for strat in eq:
-                # print("strat:", strat)
-                # print("type:", type(strat))
                 newEq.append(strat.tolist())
             newList.append(newEq)
-        print("new list:", newList)
-        print()
-                
-        
-        # print("eq 0:", eqList[0])
-        # print("eq 0 0:", eqList[0][0])
-        # print("eq 0 string:", str(eqList[0]))
-        # print("Eqs 0:", str(eqList[0]))
+
         eqString = ""
         for eq in newList:
             for i, strat in enumerate(eq):
@@ -32,13 +23,12 @@ def computeEquilibria(output):
                 if i < len(eq) - 1:
                     eqString = eqString + ", "
             eqString = eqString + "\n"
-        print("eqString:", eqString)
         
         
-        eqs1 = G.support_enumeration()
+        eqs2 = G.support_enumeration()
         pureEquilibria = []
         mixedEquilibria = []
-        for e in eqs1:
+        for e in eqs2:
             if e[0][0] == 0.0 or e[0][0] == 1.0:
                 pureEquilibria.append(e)
             else:
@@ -46,7 +36,6 @@ def computeEquilibria(output):
         print(pureEquilibria)
         print(mixedEquilibria)
         
-        eqs2 = G.support_enumeration()
         equilibriaOutput = Label(equilibriaFrame, text=eqString, bd=1, relief=SUNKEN, anchor=E)    
         equilibriaOutput.grid(row=2, column=0, columnspan=2, padx=5, pady=5)
         root.geometry("750x425")
