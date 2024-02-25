@@ -7,7 +7,9 @@ import warnings
 
 # Function definitions
 def computeEquilibria(output):
-    if output == 0:
+    numStrats1 = int(numStratsEntry1.get())
+    numStrats2 = int(numStratsEntry2.get())
+    if output == 0: # Standard nashpy Output
         eqs1 = G.support_enumeration()
         numEquilibria = len(list(eqs1))
         if numEquilibria % 2 == 0:
@@ -27,12 +29,13 @@ def computeEquilibria(output):
             newList.append(newEq)
 
         eqString = ""
-        for eq in newList:
-            for i, strat in enumerate(eq):
+        for i, eq in enumerate(newList):
+            for j, strat in enumerate(eq):
                 eqString = eqString + str(strat)
-                if i < len(eq) - 1:
+                if j < len(eq) - 1:
                     eqString = eqString + ", "
-            eqString = eqString + "\n"
+            if i < len(newList) - 1:
+                eqString = eqString + "\n"
         
         eqs2 = G.support_enumeration()
         pureEquilibria = []
@@ -48,8 +51,20 @@ def computeEquilibria(output):
         equilibriaOutput = Label(equilibriaFrame, text=eqString, bd=1, relief=SUNKEN, anchor=E)    
         equilibriaOutput.grid(row=2, column=0, columnspan=2, padx=5, pady=5)
         root.geometry("750x425")
-    elif output == 1:
-        return
+    elif output == 1: # Named Strategies Output
+        eqs = G.support_enumeration()
+        for eq in eqs:
+            print(list(eq))
+            
+        payoffMatrixSlaves = payoffMatrixFrame.grid_slaves()
+        strategyNames = payoffMatrixSlaves[numStrats1 * numStrats2:]
+        
+        p1StrategyNames = strategyNames[:numStrats1]
+        p1StrategyNames.reverse()
+        p2StrategyNames = strategyNames[numStrats1:]
+        p2StrategyNames.reverse()
+        
+        root.geometry("750x425")
     else:
         print("Error: variable output has taken on an unexpected value")
     return
@@ -90,7 +105,7 @@ def enterPayoffs():
     return
 
 def numStratsClick():
-    proceed = messagebox.askokcancel("Clear Payoffs?", "Warning: This will clear the payoff matrix. Do you want to proceed?")
+    proceed = messagebox.askokcancel("Clear Payoffs?", "This will clear the payoff matrix. Do you want to proceed?")
     
     if (proceed == True):   
         numStrats1 = int(numStratsEntry1.get())
@@ -272,10 +287,9 @@ def clicked(value):
     output.set(value)
 
 Radiobutton(equilibriaFrame, text="Standard nashpy Output", variable=output, value=0, command=lambda: clicked(output.get())).grid(row=0, column=0)
-Radiobutton(equilibriaFrame, text="Pretty Print", variable=output, value=1, command=lambda: clicked(output.get())).grid(row=1, column=0, sticky=W)
+Radiobutton(equilibriaFrame, text="Named Strategies Output", variable=output, value=1, command=lambda: clicked(output.get())).grid(row=1, column=0, sticky=W)
 
 equilibriaButton = Button(equilibriaFrame, text="Compute Equilibria", command=lambda: computeEquilibria(output.get()))
-equilibriaOutput = Label(equilibriaFrame, text="EQUILIBRIA HERE", relief=SUNKEN, anchor=E)
 
 # Axelrod Frame
 axelrodFrame = LabelFrame(root, text="axelrod" , padx=10, pady=10)
