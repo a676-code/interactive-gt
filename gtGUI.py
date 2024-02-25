@@ -6,6 +6,12 @@ import axelrod as axl
 import warnings
 
 # Function definitions
+def changeBackgroundColor():
+    return
+
+def clearPayoffMatrix():
+    return
+
 def computeEquilibria(output):
     numStrats1 = int(numStratsEntry1.get())
     numStrats2 = int(numStratsEntry2.get())
@@ -48,7 +54,12 @@ def computeEquilibria(output):
         print(pureEquilibria)
         print(mixedEquilibria)
         
-        equilibriaOutput = Label(equilibriaFrame, text=eqString, bd=1, relief=SUNKEN, anchor=E) 
+        # clearing the previous set of equilibria
+        eqSlaves = equilibriaFrame.grid_slaves()
+        if type(eqSlaves[0]).__name__ == "Label":
+            eqSlaves[0].grid_remove()
+        
+        equilibriaOutput = Label(equilibriaFrame, text=eqString, bd=1, relief=SUNKEN, anchor=E)
         equilibriaOutput.grid(row=2, column=0, columnspan=2, padx=5, pady=5)
         root.geometry("750x425")
     elif output == 1: # Named Strategies
@@ -204,6 +215,12 @@ def numStratsClick():
         
         root.geometry(f"{45 * numStrats2 + 600}x{25 * numStrats1 + 300}")
 
+def save():
+    return
+
+def saveAsLatex():
+    return
+
 def startMatch(p1, p2, t = 6):    
     p1 = ""
     p2 = ""
@@ -226,8 +243,8 @@ def startMatch(p1, p2, t = 6):
                 match = axl.Match((p1, p2), turns = t)
                 axelrodOutput1 = Label(axelrodFrame, text=str(match.play()), relief=SUNKEN, anchor=E)
                 axelrodOutput2 = Label(axelrodFrame, text=str(match.final_score_per_turn()), relief=SUNKEN, anchor=E)
-                axelrodOutput1.grid(row=4, column=0, columnspan=2, padx=10, pady=10, sticky=EW)
-                axelrodOutput2.grid(row=5, column=0, columnspan=2, padx=10, pady=10, sticky=EW)
+                axelrodOutput1.grid(row=5, column=0, columnspan=2, padx=10, pady=10, sticky=EW)
+                axelrodOutput2.grid(row=6, column=0, columnspan=2, padx=10, pady=10, sticky=EW)
         except IndexError:
             stratNotFoundError = messagebox.showerror("Error", "The strategy you entered for player 2 was not in axelrod's list of strategies. Perhaps you meant to capitalize the individual words?")
         counter2 += 1
@@ -238,20 +255,42 @@ def startMatch(p1, p2, t = 6):
         root.geometry(f"700x{axelrodOutput2.winfo_reqwidth() + 200}")
     return
 
-def startTournament():
-    players = [s() for s in axl.demo_strategies]
-    tournament = axl.Tournament(players=players, turns=10, repetitions=5)
-    results = tournament.play() 
+# def startTournament(t = 10, r = 5):
+#     players = [s() for s in axl.demo_strategies]
+#     tournament = axl.Tournament(players=players, turns=t, repetitions=r)
+#     results = tournament.play() 
+#     print("results:", results)
     
-    axelrodOutput1.grid(row=4, column=0, columnspan=2, padx=10, pady=10, sticky=EW)
-    axelrodOutput2.grid(row=5, column=0, columnspan=2, padx=10, pady=10, sticky=EW)
-    return
+#     axelrodOutput1 = Label(axelrodFrame, text=results, relief=SUNKEN, bd=1, anchor=E)
+#     axelrodOutput2 = Label(axelrodFrame, text=results, relief=SUNKEN, bd=1, anchor=E)
+    
+#     axelrodOutput1.grid(row=5, column=0, columnspan=2, padx=10, pady=10, sticky=EW)
+#     axelrodOutput2.grid(row=6, column=0, columnspan=2, padx=10, pady=10, sticky=EW)
+#     return
 
 # Defining the root window
 root = Tk()
 root.title("Interactive GT")
 root.geometry("700x425")
 root.iconbitmap("knight.ico")
+
+# Menu bar
+menubar = Menu(root)
+root.config(menu=menubar)
+# Create a menu item
+file_menu = Menu(menubar)
+menubar.add_cascade(label="File", menu=file_menu)
+file_menu.add_command(label="Open File", command=save)
+file_menu.add_command(label="Save As...", command=save)
+file_menu.add_command(label="Save as LaTeX", command=saveAsLatex)
+
+edit_menu = Menu(menubar)
+menubar.add_cascade(label="Edit", menu=edit_menu)
+edit_menu.add_command(label="Clear Payoff Matrix", command=clearPayoffMatrix)
+
+option_menu = Menu(menubar)
+menubar.add_cascade(label="Options", menu=option_menu)
+option_menu.add_command(label="Change Background Color", command=changeBackgroundColor)
 
 # numStrats Frame
 numStratsFrame = LabelFrame(root, text="Numbers of Strategies", padx=10, pady=10)
@@ -360,6 +399,9 @@ dropdown2 = ttk.Combobox(axelrodFrame, textvariable=clicked2, values=options)
 turnsLabel = Label(axelrodFrame, text="Enter the number of turns: ")
 turnsEntry = Entry(axelrodFrame, width=5)
 turnsEntry.insert(0, "6")
+repetitionsLabel = Label(axelrodFrame, text="Enter the number of repetitions: ")
+repetitionsEntry = Entry(axelrodFrame, width=5)
+repetitionsEntry.insert(0, "10")
 
 p1 = ""
 p2 = ""
@@ -377,9 +419,7 @@ while type(p2).__name__ == "str":
     counter += 1
 
 matchButton = Button(axelrodFrame, text="Start Match", command=lambda: startMatch(p1, p2, int(turnsEntry.get())))
-tournamentButton = Button(axelrodFrame, text="Start Tournament", command=startTournament)
-axelrodOutput1 = Label(axelrodFrame, text="MATCHES HERE", relief=SUNKEN, bd=1, anchor=E)
-axelrodOutput2 = Label(axelrodFrame, text="MATCHES HERE", relief=SUNKEN, bd=1, anchor=E)
+# tournamentButton = Button(axelrodFrame, text="Start Tournament", command=startTournament(int(turnsEntry.get())))
 
 # Putting everything on the screen
 numStratsFrame.grid(row=0, column=0, padx=10, pady=10)
@@ -397,13 +437,15 @@ equilibriaFrame.grid(row=1, column=0, padx=10, pady=10)
 equilibriaButton.grid(row=1, column=1, padx=10, pady=10)
 
 axelrodFrame.grid(row=1, column=1, padx=10, pady=10)
-strategyLabel1.grid(row=0, column=0)
-dropdown1.grid(row=0, column=1)
-strategyLabel2.grid(row=1, column=0)
-dropdown2.grid(row=1, column=1)
+strategyLabel1.grid(row=0, column=0, sticky=W)
+dropdown1.grid(row=0, column=1, sticky=W)
+strategyLabel2.grid(row=1, column=0, sticky=W)
+dropdown2.grid(row=1, column=1, sticky=W)
 turnsLabel.grid(row=2, column=0, sticky=W)
 turnsEntry.grid(row=2, column=1, sticky=W)
-matchButton.grid(row=3,column=0)
-tournamentButton.grid(row=3,column=1)
+# repetitionsLabel.grid(row=3, column=0, sticky=W)
+# repetitionsEntry.grid(row=3, column=1, sticky=W)
+matchButton.grid(row=4,column=1, sticky=W)
+# tournamentButton.grid(row=4,column=1)
 
 root.mainloop()
