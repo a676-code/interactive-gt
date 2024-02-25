@@ -23,10 +23,6 @@ def changeBackgroundColor():
     colorEnter.grid(row=0, column=2, padx=5)
     return
 
-def enterColor(color):
-    root.configure(bg=color)
-    return
-
 def clearPayoffMatrix():
     proceed = messagebox.askokcancel("Clear Payoffs?", "Are you sure you want to clear the payoff matrix? ")
     
@@ -186,12 +182,21 @@ def computeEquilibria(output):
                     eqString = eqString + ")"
             if i < len(namedEquilibria) - 1:
                 eqString = eqString + "\n"
+                
+        # clearing the previous set of equilibria
+        eqSlaves = equilibriaFrame.grid_slaves()
+        if type(eqSlaves[0]).__name__ == "Label":
+            eqSlaves[0].grid_remove()
             
         equilibriaOutput = Label(equilibriaFrame, text=eqString, bd=1, relief=SUNKEN, anchor=E)    
         equilibriaOutput.grid(row=2, column=0, columnspan=2, padx=5, pady=5)
         root.geometry("750x425")
     else:
         print("Error: variable output has taken on an unexpected value")
+    return
+
+def enterColor(color):
+    root.configure(bg=color)
     return
     
 def enterPayoffs():
