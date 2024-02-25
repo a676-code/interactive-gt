@@ -3,6 +3,7 @@ from tkinter import ttk
 from tkinter import messagebox
 import nashpy as nash
 import axelrod as axl
+import warnings
 
 # Function definitions
 def computeEquilibria(output):
@@ -10,9 +11,10 @@ def computeEquilibria(output):
         eqs1 = G.support_enumeration()
         numEquilibria = len(list(eqs1))
         if numEquilibria % 2 == 0:
-            degenerateGameWarning = messagebox.showwarning("Even Number of Equilibria: Degenerate Game", "An even number of equilibria was returned. This indicates that the game is degenerate. Consider using another algorithm to investigate.")
+            warnings.warn(f"An even number ({numEquilibria}) of equilibria was returned. This indicates that the game is degenerate. Consider using another algorithm to investigate.", RuntimeWarning)
+            degenerateGameWarning = messagebox.showwarning(f"Even Number ({numEquilibria}) of Equilibria: Degenerate Game", f"An even number ({numEquilibria}) of equilibria was returned. This indicates that the game is degenerate. Consider using another algorithm to investigate.")
             # resetting the generator
-            eqs1 = G.support_enumeration
+            eqs1 = G.support_enumeration()
         else:
             # resetting the generator
             eqs1 = G.support_enumeration()
