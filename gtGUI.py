@@ -8,6 +8,23 @@ import warnings
 
 # Function definitions
 def changeBackgroundColor():
+    top = Toplevel()
+    top.title("Enter a Color")
+    top.iconbitmap("knight.ico")
+    top.geometry("190x30")
+    
+    colorLabel = Label(top, text="Enter a color:")
+    colorEntry = Entry(top, width=10)
+    colorEnter = Button(top, text="Enter", command=lambda: enterColor(colorEntry.get()))
+    
+    # Putting everything on the top window
+    colorLabel.grid(row=0, column=0)
+    colorEntry.grid(row=0, column=1)
+    colorEnter.grid(row=0, column=2, padx=5)
+    return
+
+def enterColor(color):
+    root.configure(bg=color)
     return
 
 def clearPayoffMatrix():
@@ -475,7 +492,7 @@ while type(p2).__name__ == "str":
 matchButton = Button(axelrodFrame, text="Start Match", command=lambda: startMatch(p1, p2, int(turnsEntry.get())))
 # tournamentButton = Button(axelrodFrame, text="Start Tournament", command=startTournament(int(turnsEntry.get())))
 
-# Putting everything on the screen
+# Putting everything in the root window
 numStratsFrame.grid(row=0, column=0, padx=10, pady=10)
 numStratsLabel1.grid(row=0, column=0)
 numStratsLabel2.grid(row=1, column=0)
