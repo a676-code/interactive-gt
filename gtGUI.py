@@ -172,7 +172,9 @@ def numStratsClick():
             e = Entry(payoffMatrixFrame, width=10)
             if i == 0:
                 e.insert(0, "L")
-            elif i > 0 and i < numStrats2 - 1:
+            elif i > 0 and i < numStrats2 - 1 and numStrats2 == 3:
+                e.insert(0, "C")
+            elif i > 0 and i < numStrats2 - 1 and numStrats2 >= 3:
                 e.insert(0, "C" + str(i))
             else:
                 e.insert(0, "R")
@@ -182,7 +184,9 @@ def numStratsClick():
             e = Entry(payoffMatrixFrame, width=10)
             if j == 0:
                 e.insert(0, "U")
-            elif j > 0 and j < numStrats1 - 1:
+            elif j > 0 and j < numStrats1 - 1 and numStrats1 == 3:
+                e.insert(0, "M")
+            elif j > 0 and j < numStrats1 - 1 and numStrats1 > 3:
                 e.insert(0, "M" + str(j))
             else:
                 e.insert(0, "D")
