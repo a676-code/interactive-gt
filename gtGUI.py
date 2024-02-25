@@ -51,7 +51,7 @@ def computeEquilibria(output):
         equilibriaOutput = Label(equilibriaFrame, text=eqString, bd=1, relief=SUNKEN, anchor=E) 
         equilibriaOutput.grid(row=2, column=0, columnspan=2, padx=5, pady=5)
         root.geometry("750x425")
-    elif output == 1: # Named Strategies Output
+    elif output == 1: # Named Strategies
         eqs = G.support_enumeration()
         numEquilibria = len(list(eqs))
         if numEquilibria % 2 == 0:
@@ -342,7 +342,7 @@ def clicked(value):
     output.set(value)
 
 Radiobutton(equilibriaFrame, text="Standard nashpy Output", variable=output, value=0, command=lambda: clicked(output.get())).grid(row=0, column=0, sticky=W)
-Radiobutton(equilibriaFrame, text="Named Strategies Output", variable=output, value=1, command=lambda: clicked(output.get())).grid(row=1, column=0, sticky=W)
+Radiobutton(equilibriaFrame, text="Named Strategies", variable=output, value=1, command=lambda: clicked(output.get())).grid(row=1, column=0, sticky=W)
 
 equilibriaButton = Button(equilibriaFrame, text="Compute Equilibria", command=lambda: computeEquilibria(output.get()))
 
