@@ -73,20 +73,21 @@ def clearPayoffMatrix():
     return
 
 def computeEquilibria(output):
+    enterPayoffs()
     numStrats1 = int(numStratsEntry1.get())
     numStrats2 = int(numStratsEntry2.get())
     if output == 0: # Standard nashpy Output
-        eqs1 = G.support_enumeration()
-        numEquilibria = len(list(eqs1))
+        eqs = G.support_enumeration()
+        numEquilibria = len(list(eqs))
         if numEquilibria % 2 == 0:
             warnings.warn(f"An even number ({numEquilibria}) of equilibria was returned. This indicates that the game is degenerate. Consider using another algorithm to investigate.", RuntimeWarning)
             degenerateGameWarning = messagebox.showwarning(f"Even Number ({numEquilibria}) of Equilibria: Degenerate Game", f"An even number ({numEquilibria}) of equilibria was returned. This indicates that the game is degenerate. Consider using another algorithm to investigate.")
             # resetting the generator
-            eqs1 = G.support_enumeration()
+            eqs = G.support_enumeration()
         else:
             # resetting the generator
-            eqs1 = G.support_enumeration()
-        eqList= list(eqs1)
+            eqs = G.support_enumeration()
+        eqList= list(eqs)
         newList = []
         for eq in eqList:
             newEq = []
@@ -103,21 +104,19 @@ def computeEquilibria(output):
             if i < len(newList) - 1:
                 eqString = eqString + "\n"
         
-        eqs2 = G.support_enumeration()
+        eqs = G.support_enumeration()
         pureEquilibria = []
         mixedEquilibria = []
-        for e in eqs2:
+        for e in eqs:
             if e[0][0] == 0.0 or e[0][0] == 1.0:
                 pureEquilibria.append(e)
             else:
                 mixedEquilibria.append(e)
-        print(pureEquilibria)
-        print(mixedEquilibria)
 
         # Coloring the equilibria yellow
         payoffMatrixSlaves = payoffMatrixFrame.grid_slaves()
         outcomes = payoffMatrixSlaves[:numStrats1 * numStrats2]
-            
+        
         # converting the list of outcomes to a list of lists
         newOutcomes = []
         row = []
@@ -150,15 +149,13 @@ def computeEquilibria(output):
             eqIndices.append([index1, index2])
         
         # matching the indices to those of the payoff matrix and changing the color
-        for pair in eqIndices:
-            for i in range(numStrats1):
-                print("i:", i)
-                for j in range(numStrats2):
-                    print("j:", j)
-                    if i == pair[0] and j == pair[1]:
-                        newOutcomes[i][j].configure(bg="yellow")
-                            
-            
+        for i in range(numStrats1):
+            for j in range(numStrats2):
+                if [i, j] in eqIndices:
+                    newOutcomes[i][j].configure(bg="yellow")
+                else:
+                    newOutcomes[i][j].configure(bg="white")
+        
         # clearing the previous set of equilibria
         eqSlaves = equilibriaFrame.grid_slaves()
         if type(eqSlaves[0]).__name__ == "Label":
@@ -167,6 +164,7 @@ def computeEquilibria(output):
         equilibriaOutput = Label(equilibriaFrame, text=eqString, bd=1, relief=SUNKEN, anchor=E)
         equilibriaOutput.grid(row=2, column=0, columnspan=2, padx=5, pady=5)
         root.geometry("750x425")
+        
     elif output == 1: # Named Strategies
         eqs = G.support_enumeration()
         numEquilibria = len(list(eqs))
@@ -178,7 +176,33 @@ def computeEquilibria(output):
         else:
             # resetting the generator
             eqs = G.support_enumeration()
-            
+        
+        pureEquilibria = []
+        mixedEquilibria = []
+        for e in eqs:
+            if e[0][0] == 0.0 or e[0][0] == 1.0:
+                pureEquilibria.append(e)
+            else:
+                mixedEquilibria.append(e)
+
+        # Coloring the equilibria yellow
+        payoffMatrixSlaves = payoffMatrixFrame.grid_slaves()
+        outcomes = payoffMatrixSlaves[:numStrats1 * numStrats2]
+        
+        # converting the list of outcomes to a list of lists
+        newOutcomes = []
+        row = []
+        numInRow = 0
+        for o in outcomes:
+            if numInRow < numStrats2:
+                row.append(o)
+                numInRow += 1
+                if numInRow == numStrats2:
+                    newOutcomes.append(row)
+                    numInRow = 0
+                    row = []
+        
+        # Getting list of the strategy names
         payoffMatrixSlaves = payoffMatrixFrame.grid_slaves()
         strategyNames = payoffMatrixSlaves[numStrats1 * numStrats2:]
         
@@ -187,12 +211,12 @@ def computeEquilibria(output):
         p2StrategyNames = strategyNames[numStrats1:]
         p2StrategyNames.reverse()
         
+        eqs = G.support_enumeration()
         namedEquilibria = []
         for eq in eqs:
             mixed = False
             if eq[0][0] != 1.0 and eq[0][0] != 0.0:
                 mixed = True
-            
             if not mixed:
                 oneFound = False
                 i = 0
@@ -227,6 +251,48 @@ def computeEquilibria(output):
                     eqString = eqString + ")"
             if i < len(namedEquilibria) - 1:
                 eqString = eqString + "\n"
+           
+        # coloring the pure equilibria     
+        payoffMatrixSlaves = payoffMatrixFrame.grid_slaves()
+        outcomes = payoffMatrixSlaves[:numStrats1 * numStrats2]
+        
+        # converting the list of outcomes to a list of lists
+        newOutcomes = []
+        row = []
+        numInRow = 0
+        for o in outcomes:
+            if numInRow < numStrats2:
+                row.append(o)
+                numInRow += 1
+                if numInRow == numStrats2:
+                    newOutcomes.append(row)
+                    numInRow = 0
+                    row = []
+        
+        # converting nashpy equilibria output to indices
+        eqIndices = []
+        for pe in pureEquilibria:
+            # getting index of the 1's
+            index1 = -1
+            k = 0
+            while index1 < 0:
+                if pe[0][k] == 1:
+                    index1 = k
+                k += 1
+            index2 = -1
+            k = 0
+            while index2 < 0:
+                if pe[1][k] == 1:
+                    index2 = k
+                k += 1
+            eqIndices.append([index1, index2])
+        
+        # matching the indices to those of the payoff matrix and changing the color
+        for pair in eqIndices:
+            for i in range(numStrats1):
+                for j in range(numStrats2):
+                    if i == pair[0] and j == pair[1]:
+                        newOutcomes[i][j].configure(bg="yellow")
                 
         # clearing the previous set of equilibria
         eqSlaves = equilibriaFrame.grid_slaves()
