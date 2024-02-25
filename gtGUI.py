@@ -48,7 +48,7 @@ def computeEquilibria(output):
         print(pureEquilibria)
         print(mixedEquilibria)
         
-        equilibriaOutput = Label(equilibriaFrame, text=eqString, bd=1, relief=SUNKEN, anchor=E)    
+        equilibriaOutput = Label(equilibriaFrame, text=eqString, bd=1, relief=SUNKEN, anchor=E) 
         equilibriaOutput.grid(row=2, column=0, columnspan=2, padx=5, pady=5)
         root.geometry("750x425")
     elif output == 1: # Named Strategies Output
@@ -73,21 +73,30 @@ def computeEquilibria(output):
         
         namedEquilibria = []
         for eq in eqs:
-            oneFound = False
-            i = 0
-            while not oneFound:
-                if eq[0][i] == 1.0:
-                    oneFound = True
-                    p1Strat = i
-                i += 1
-            oneFound = False
-            i = 0
-            while not oneFound:
-                if eq[1][i] == 1.0:
-                    oneFound = True
-                    p2Strat = i
-                i += 1
-            namedEquilibria.append((p1StrategyNames[p1Strat].get(), p2StrategyNames[p2Strat].get()))
+            mixed = False
+            if eq[0][0] != 1.0 and eq[0][0] != 0.0:
+                mixed = True
+            
+            if not mixed:
+                oneFound = False
+                i = 0
+                while not oneFound:
+                    if eq[0][i] == 1.0:
+                        oneFound = True
+                        p1Strat = i
+                    i += 1
+                if not oneFound:
+                    mixed = True
+                oneFound = False
+                i = 0
+                while not oneFound:
+                    if eq[1][i] == 1.0:
+                        oneFound = True
+                        p2Strat = i
+                    i += 1
+                namedEquilibria.append((p1StrategyNames[p1Strat].get(), p2StrategyNames[p2Strat].get()))
+            else:
+                namedEquilibria.append(list(eq))
             
         eqString = ""
         for i, eq in enumerate(namedEquilibria):
@@ -113,11 +122,8 @@ def computeEquilibria(output):
 def enterPayoffs():
     numStrats1 = int(numStratsEntry1.get())
     numStrats2 = int(numStratsEntry2.get())
-    L = payoffMatrixFrame.grid_slaves()
-    outcomes = L[:numStrats1 * numStrats2]
-    for outcome in outcomes:
-        print(outcome.get())
-    
+    payoffMatrixSlaves = payoffMatrixFrame.grid_slaves()
+    outcomes = payoffMatrixSlaves[:numStrats1 * numStrats2]
     payoffs = [tuple(map(int, o.get().split(", "))) for o in outcomes]
     payoffs.reverse()
     
@@ -331,7 +337,7 @@ output.set("0")
 def clicked(value):
     output.set(value)
 
-Radiobutton(equilibriaFrame, text="Standard nashpy Output", variable=output, value=0, command=lambda: clicked(output.get())).grid(row=0, column=0)
+Radiobutton(equilibriaFrame, text="Standard nashpy Output", variable=output, value=0, command=lambda: clicked(output.get())).grid(row=0, column=0, sticky=W)
 Radiobutton(equilibriaFrame, text="Named Strategies Output", variable=output, value=1, command=lambda: clicked(output.get())).grid(row=1, column=0, sticky=W)
 
 equilibriaButton = Button(equilibriaFrame, text="Compute Equilibria", command=lambda: computeEquilibria(output.get()))
