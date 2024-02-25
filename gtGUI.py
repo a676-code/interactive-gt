@@ -10,6 +10,52 @@ def changeBackgroundColor():
     return
 
 def clearPayoffMatrix():
+    proceed = messagebox.askokcancel("Clear Payoffs?", "Are you sure you want to clear the payoff matrix? ")
+    
+    if (proceed == True):   
+        numStrats1 = int(numStratsEntry1.get())
+        numStrats2 = int(numStratsEntry2.get())
+        # clearing the table
+        payoffMatrixSlaves = payoffMatrixFrame.grid_slaves()
+        for slave in payoffMatrixSlaves:
+            slave.grid_remove()
+        
+        # refilling the table
+        for i in range(numStrats2):
+            e = Entry(payoffMatrixFrame, width=10)
+            if i == 0:
+                e.insert(0, "L")
+            elif i > 0 and i < numStrats2 - 1 and numStrats2 == 3:
+                e.insert(0, "C")
+            elif i > 0 and i < numStrats2 - 1 and numStrats2 >= 3:
+                e.insert(0, "C" + str(i))
+            else:
+                e.insert(0, "R")
+            e.grid(row=0, column=i + 1, pady=5)
+            
+        for j in range(numStrats1):
+            e = Entry(payoffMatrixFrame, width=10)
+            if j == 0:
+                e.insert(0, "U")
+            elif j > 0 and j < numStrats1 - 1 and numStrats1 == 3:
+                e.insert(0, "M")
+            elif j > 0 and j < numStrats1 - 1 and numStrats1 > 3:
+                e.insert(0, "M" + str(j))
+            else:
+                e.insert(0, "D")
+            e.grid(row=j + 1, column=0, padx=5)
+
+        rows = []
+        for i in range(numStrats1):
+            cols = []
+            for j in range(numStrats2):
+                e = Entry(payoffMatrixFrame, width=5)
+                e.grid(row=i + 1, column=j + 1, sticky=NSEW)
+                e.insert(END, '%d, %d' % (0, 0))
+                cols.append(e)
+            rows.append(cols)
+        
+        root.geometry(f"{45 * numStrats2 + 600}x{25 * numStrats1 + 300}")
     return
 
 def computeEquilibria(output):
@@ -174,9 +220,9 @@ def numStratsClick():
         numStrats2 = int(numStratsEntry2.get())
         
         # clearing the table
-        L = payoffMatrixFrame.grid_slaves()
-        for l in L:
-            l.grid_remove()
+        payoffMatrixSlaves = payoffMatrixFrame.grid_slaves()
+        for slave in payoffMatrixSlaves:
+            slave.grid_remove()
         
         # refilling the table
         for i in range(numStrats2):
@@ -214,6 +260,7 @@ def numStratsClick():
             rows.append(cols)
         
         root.geometry(f"{45 * numStrats2 + 600}x{25 * numStrats1 + 300}")
+    return
 
 def save():
     return
