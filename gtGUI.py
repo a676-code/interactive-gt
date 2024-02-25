@@ -34,7 +34,6 @@ def computeEquilibria(output):
                     eqString = eqString + ", "
             eqString = eqString + "\n"
         
-        
         eqs2 = G.support_enumeration()
         pureEquilibria = []
         mixedEquilibria = []
@@ -91,25 +90,49 @@ def enterPayoffs():
     return
 
 def numStratsClick():
-    # clearing the table
-    L = payoffMatrixFrame.grid_slaves()
-    for l in L:
-        l.grid_remove()
+    proceed = messagebox.askokcancel("Clear Payoffs?", "Warning: This will clear the payoff matrix. Do you want to proceed?")
     
-    # refilling the table
-    numStrats1 = int(numStratsEntry1.get())
-    numStrats2 = int(numStratsEntry2.get())
-    rows = []
-    for i in range(numStrats1):
-        cols = []
-        for j in range(numStrats2):
-            e = Entry(payoffMatrixFrame, width=5)
-            e.grid(row=i, column=j, sticky=NSEW)
-            e.insert(END, '%d, %d' % (0, 0))
-            cols.append(e)
-        rows.append(cols)
-    
-    root.geometry(f"{45 * numStrats2 + 600}x{25 * numStrats1 + 300}")
+    if (proceed == True):   
+        numStrats1 = int(numStratsEntry1.get())
+        numStrats2 = int(numStratsEntry2.get())
+        
+        # clearing the table
+        L = payoffMatrixFrame.grid_slaves()
+        for l in L:
+            l.grid_remove()
+        
+        # refilling the table
+        for i in range(numStrats2):
+            e = Entry(payoffMatrixFrame, width=10)
+            if i == 0:
+                e.insert(0, "L")
+            elif i > 0 and i < numStrats2 - 1:
+                e.insert(0, "C" + str(i))
+            else:
+                e.insert(0, "R")
+            e.grid(row=0, column=i + 1, pady=5)
+            
+        for j in range(numStrats1):
+            e = Entry(payoffMatrixFrame, width=10)
+            if j == 0:
+                e.insert(0, "U")
+            elif j > 0 and j < numStrats1 - 1:
+                e.insert(0, "M" + str(j))
+            else:
+                e.insert(0, "D")
+            e.grid(row=j + 1, column=0, padx=5)
+
+        rows = []
+        for i in range(numStrats1):
+            cols = []
+            for j in range(numStrats2):
+                e = Entry(payoffMatrixFrame, width=5)
+                e.grid(row=i + 1, column=j + 1, sticky=NSEW)
+                e.insert(END, '%d, %d' % (0, 0))
+                cols.append(e)
+            rows.append(cols)
+        
+        root.geometry(f"{45 * numStrats2 + 600}x{25 * numStrats1 + 300}")
 
 def startMatch(p1, p2, t = 6):    
     p1 = ""
@@ -170,11 +193,24 @@ numStratsEntry2 = Entry(numStratsFrame, width=5)
 numStratsEntry1.insert(0, "2")
 numStratsEntry2.insert(0, "2")
 numStratsButton = Button(numStratsFrame, text="Enter", command=numStratsClick)
-warning = Label(numStratsFrame, text="Warning: pressing Enter will clear all payoffs")
 
 # Payoffs Frame
 payoffsFrame = LabelFrame(root, text="Payoffs", padx=10, pady=10)
-payoffMatrixFrame = LabelFrame(payoffsFrame, text="Payoff Matrix" , padx=10, pady=10)
+payoffMatrixFrame = LabelFrame(payoffsFrame, padx=10, pady=10)
+
+# Adding strategy names
+p2strat1Name = Entry(payoffMatrixFrame, width=10)
+p2strat2Name = Entry(payoffMatrixFrame, width=10)
+p1strat1Name = Entry(payoffMatrixFrame, width=10)
+p1strat2Name = Entry(payoffMatrixFrame, width=10)
+p2strat1Name.insert(0, "L")
+p2strat2Name.insert(0, "R")
+p1strat1Name.insert(0, "U")
+p1strat2Name.insert(0, "D")
+p2strat1Name.grid(row=0, column=1, pady=5)
+p2strat2Name.grid(row=0, column=2, pady=5)
+p1strat1Name.grid(row=1, column=0, padx=5)
+p1strat2Name.grid(row=2, column=0, padx=5)
 
 # https://www.activestate.com/resources/quick-reads/how-to-display-data-in-a-table-using-tkinter/
 rows = []
@@ -182,7 +218,7 @@ for i in range(int(numStratsEntry1.get())):
     cols = []
     for j in range(int(numStratsEntry2.get())):
         e = Entry(payoffMatrixFrame, width=5)
-        e.grid(row=i, column=j, sticky=NSEW)
+        e.grid(row=i + 1, column=j + 1, sticky=NSEW)
         e.insert(END, '%d, %d' % (0, 0))
         cols.append(e)
     rows.append(cols)
@@ -190,6 +226,10 @@ for i in range(int(numStratsEntry1.get())):
 enterPayoffsButton = Button(payoffsFrame, text="Enter", command=enterPayoffs)
 
 L = payoffMatrixFrame.grid_slaves()
+L.pop()
+L.pop()
+L.pop()
+L.pop()
 payoffs = [tuple(map(int, l.get().split(", "))) for l in L]
 payoffs.reverse()
 numStrats1 = int(numStratsEntry1.get())
@@ -232,7 +272,7 @@ def clicked(value):
     output.set(value)
 
 Radiobutton(equilibriaFrame, text="Standard nashpy Output", variable=output, value=0, command=lambda: clicked(output.get())).grid(row=0, column=0)
-Radiobutton(equilibriaFrame, text="Pretty Print", variable=output, value=1, command=lambda: clicked(output.get())).grid(row=1, column=0)
+Radiobutton(equilibriaFrame, text="Pretty Print", variable=output, value=1, command=lambda: clicked(output.get())).grid(row=1, column=0, sticky=W)
 
 equilibriaButton = Button(equilibriaFrame, text="Compute Equilibria", command=lambda: computeEquilibria(output.get()))
 equilibriaOutput = Label(equilibriaFrame, text="EQUILIBRIA HERE", relief=SUNKEN, anchor=E)
@@ -278,8 +318,7 @@ numStratsLabel1.grid(row=0, column=0)
 numStratsLabel2.grid(row=1, column=0)
 numStratsEntry1.grid(row=0, column=1)
 numStratsEntry2.grid(row=1, column=1)
-numStratsButton.grid(row=2, column=2, padx=5, pady=5)
-warning.grid(row=2, column=0, columnspan=2, padx=5, pady=5)
+numStratsButton.grid(row=1, column=2, padx=5, pady=5)
 
 payoffsFrame.grid(row=0, column=1, padx=10, pady=10)
 payoffMatrixFrame.grid(row=0, column=0, padx=10, pady=10)
@@ -293,8 +332,8 @@ strategyLabel1.grid(row=0, column=0)
 dropdown1.grid(row=0, column=1)
 strategyLabel2.grid(row=1, column=0)
 dropdown2.grid(row=1, column=1)
-turnsLabel.grid(row=2, column=0)
-turnsEntry.grid(row=2, column=1)
+turnsLabel.grid(row=2, column=0, sticky=W)
+turnsEntry.grid(row=2, column=1, sticky=W)
 matchButton.grid(row=3,column=0)
 tournamentButton.grid(row=3,column=1)
 
