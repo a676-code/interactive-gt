@@ -53,8 +53,15 @@ def computeEquilibria(output):
         root.geometry("750x425")
     elif output == 1: # Named Strategies Output
         eqs = G.support_enumeration()
-        for eq in eqs:
-            print(list(eq))
+        numEquilibria = len(list(eqs))
+        if numEquilibria % 2 == 0:
+            warnings.warn(f"An even number ({numEquilibria}) of equilibria was returned. This indicates that the game is degenerate. Consider using another algorithm to investigate.", RuntimeWarning)
+            degenerateGameWarning = messagebox.showwarning(f"Even Number ({numEquilibria}) of Equilibria: Degenerate Game", f"An even number ({numEquilibria}) of equilibria was returned. This indicates that the game is degenerate. Consider using another algorithm to investigate.")
+            # resetting the generator
+            eqs = G.support_enumeration()
+        else:
+            # resetting the generator
+            eqs = G.support_enumeration()
             
         payoffMatrixSlaves = payoffMatrixFrame.grid_slaves()
         strategyNames = payoffMatrixSlaves[numStrats1 * numStrats2:]
@@ -64,17 +71,55 @@ def computeEquilibria(output):
         p2StrategyNames = strategyNames[numStrats1:]
         p2StrategyNames.reverse()
         
+        namedEquilibria = []
+        for eq in eqs:
+            oneFound = False
+            i = 0
+            while not oneFound:
+                if eq[0][i] == 1.0:
+                    oneFound = True
+                    p1Strat = i
+                i += 1
+            oneFound = False
+            i = 0
+            while not oneFound:
+                if eq[1][i] == 1.0:
+                    oneFound = True
+                    p2Strat = i
+                i += 1
+            namedEquilibria.append((p1StrategyNames[p1Strat].get(), p2StrategyNames[p2Strat].get()))
+            
+        eqString = ""
+        for i, eq in enumerate(namedEquilibria):
+            for j, strat in enumerate(eq):
+                if j == 0:
+                    eqString = eqString + "(" + str(strat)
+                else:
+                    eqString = eqString + str(strat)
+                if j < len(eq) - 1:
+                    eqString = eqString + ", "
+                else:
+                    eqString = eqString + ")"
+            if i < len(namedEquilibria) - 1:
+                eqString = eqString + "\n"
+            
+        equilibriaOutput = Label(equilibriaFrame, text=eqString, bd=1, relief=SUNKEN, anchor=E)    
+        equilibriaOutput.grid(row=2, column=0, columnspan=2, padx=5, pady=5)
         root.geometry("750x425")
     else:
         print("Error: variable output has taken on an unexpected value")
     return
     
 def enterPayoffs():
-    L = payoffMatrixFrame.grid_slaves()
-    payoffs = [tuple(map(int, l.get().split(", "))) for l in L]
-    payoffs.reverse()
     numStrats1 = int(numStratsEntry1.get())
     numStrats2 = int(numStratsEntry2.get())
+    L = payoffMatrixFrame.grid_slaves()
+    outcomes = L[:numStrats1 * numStrats2]
+    for outcome in outcomes:
+        print(outcome.get())
+    
+    payoffs = [tuple(map(int, o.get().split(", "))) for o in outcomes]
+    payoffs.reverse()
     
     # converting the list of payoffs to a list of lists
     newPayoffs = []
