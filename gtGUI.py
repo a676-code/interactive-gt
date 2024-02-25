@@ -113,7 +113,52 @@ def computeEquilibria(output):
                 mixedEquilibria.append(e)
         print(pureEquilibria)
         print(mixedEquilibria)
+
+        # Coloring the equilibria yellow
+        payoffMatrixSlaves = payoffMatrixFrame.grid_slaves()
+        outcomes = payoffMatrixSlaves[:numStrats1 * numStrats2]
+            
+        # converting the list of outcomes to a list of lists
+        newOutcomes = []
+        row = []
+        numInRow = 0
+        for o in outcomes:
+            if numInRow < numStrats2:
+                row.append(o)
+                numInRow += 1
+                if numInRow == numStrats2:
+                    newOutcomes.append(row)
+                    numInRow = 0
+                    row = []
         
+        # converting nashpy equilibria output to indices
+        eqIndices = []
+        for pe in pureEquilibria:
+            # getting index of the 1's
+            index1 = -1
+            k = 0
+            while index1 < 0:
+                if pe[0][k] == 1:
+                    index1 = k
+                k += 1
+            index2 = -1
+            k = 0
+            while index2 < 0:
+                if pe[1][k] == 1:
+                    index2 = k
+                k += 1
+            eqIndices.append([index1, index2])
+        
+        # matching the indices to those of the payoff matrix and changing the color
+        for pair in eqIndices:
+            for i in range(numStrats1):
+                print("i:", i)
+                for j in range(numStrats2):
+                    print("j:", j)
+                    if i == pair[0] and j == pair[1]:
+                        newOutcomes[i][j].configure(bg="yellow")
+                            
+            
         # clearing the previous set of equilibria
         eqSlaves = equilibriaFrame.grid_slaves()
         if type(eqSlaves[0]).__name__ == "Label":
