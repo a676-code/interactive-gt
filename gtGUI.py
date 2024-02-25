@@ -1,6 +1,7 @@
 from tkinter import *
 from tkinter import ttk
 from tkinter import messagebox
+from tkinter import filedialog
 import nashpy as nash
 import axelrod as axl
 import warnings
@@ -262,7 +263,13 @@ def numStratsClick():
         root.geometry(f"{45 * numStrats2 + 600}x{25 * numStrats1 + 300}")
     return
 
-def save():
+def openFile():
+    root.filename = filedialog.askopenfilename(initialdir="C:/Users/aloun/Desktop/interactive-gt", title="Select a File", filetypes=(("Text files", "*.txt"),))
+    label = Label(root, text=root.filename)
+    label.grid(row=2, column=0)
+    return
+
+def saveAs():
     return
 
 def saveAsLatex():
@@ -327,8 +334,8 @@ root.config(menu=menubar)
 # Create a menu item
 file_menu = Menu(menubar)
 menubar.add_cascade(label="File", menu=file_menu)
-file_menu.add_command(label="Open File", command=save)
-file_menu.add_command(label="Save As...", command=save)
+file_menu.add_command(label="Open File", command=openFile)
+file_menu.add_command(label="Save As...", command=saveAs)
 file_menu.add_command(label="Save as LaTeX", command=saveAsLatex)
 
 edit_menu = Menu(menubar)
