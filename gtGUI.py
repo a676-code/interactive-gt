@@ -30,13 +30,13 @@ def clearPayoffMatrix():
         numStrats1 = int(numStratsEntry1.get())
         numStrats2 = int(numStratsEntry2.get())
         # clearing the table
-        payoffMatrixSlaves = payoffMatrixFrame.grid_slaves()
+        payoffMatrixSlaves = payoffsFrame.grid_slaves()
         for slave in payoffMatrixSlaves:
             slave.grid_remove()
         
         # refilling the table
         for i in range(numStrats2):
-            e = Entry(payoffMatrixFrame, width=10)
+            e = Entry(payoffsFrame, width=10)
             if i == 0:
                 e.insert(0, "L")
             elif i > 0 and i < numStrats2 - 1 and numStrats2 == 3:
@@ -48,7 +48,7 @@ def clearPayoffMatrix():
             e.grid(row=0, column=i + 1, pady=5)
             
         for j in range(numStrats1):
-            e = Entry(payoffMatrixFrame, width=10)
+            e = Entry(payoffsFrame, width=10)
             if j == 0:
                 e.insert(0, "U")
             elif j > 0 and j < numStrats1 - 1 and numStrats1 == 3:
@@ -63,7 +63,7 @@ def clearPayoffMatrix():
         for i in range(numStrats1):
             cols = []
             for j in range(numStrats2):
-                e = Entry(payoffMatrixFrame, width=5)
+                e = Entry(payoffsFrame, width=5)
                 e.grid(row=i + 1, column=j + 1, sticky=NSEW)
                 e.insert(END, '%d, %d' % (0, 0))
                 cols.append(e)
@@ -114,19 +114,19 @@ def computeEquilibria(output):
                 mixedEquilibria.append(e)
 
         # Coloring the equilibria yellow
-        payoffMatrixSlaves = payoffMatrixFrame.grid_slaves()
+        payoffMatrixSlaves = payoffsFrame.grid_slaves()
         outcomes = payoffMatrixSlaves[:numStrats1 * numStrats2]
         
-        # converting the list of outcomes to a list of lists
+        # Converting the list of outcomes to a list of lists
         newOutcomes = []
         row = []
         numInRow = 0
-        for o in outcomes:
+        for outcome in outcomes:
             if numInRow < numStrats2:
-                row.append(o)
+                row.insert(0, outcome)
                 numInRow += 1
                 if numInRow == numStrats2:
-                    newOutcomes.append(row)
+                    newOutcomes.insert(0, row)
                     numInRow = 0
                     row = []
         
@@ -186,7 +186,7 @@ def computeEquilibria(output):
                 mixedEquilibria.append(e)
 
         # Coloring the equilibria yellow
-        payoffMatrixSlaves = payoffMatrixFrame.grid_slaves()
+        payoffMatrixSlaves = payoffsFrame.grid_slaves()
         outcomes = payoffMatrixSlaves[:numStrats1 * numStrats2]
         
         # converting the list of outcomes to a list of lists
@@ -203,7 +203,7 @@ def computeEquilibria(output):
                     row = []
         
         # Getting list of the strategy names
-        payoffMatrixSlaves = payoffMatrixFrame.grid_slaves()
+        payoffMatrixSlaves = payoffsFrame.grid_slaves()
         strategyNames = payoffMatrixSlaves[numStrats1 * numStrats2:]
         
         p1StrategyNames = strategyNames[:numStrats1]
@@ -237,7 +237,8 @@ def computeEquilibria(output):
                 namedEquilibria.append((p1StrategyNames[p1Strat].get(), p2StrategyNames[p2Strat].get()))
             else:
                 namedEquilibria.append(list(eq))
-            
+        
+        # Creating the string to go in the label
         eqString = ""
         for i, eq in enumerate(namedEquilibria):
             for j, strat in enumerate(eq):
@@ -252,24 +253,24 @@ def computeEquilibria(output):
             if i < len(namedEquilibria) - 1:
                 eqString = eqString + "\n"
            
-        # coloring the pure equilibria     
-        payoffMatrixSlaves = payoffMatrixFrame.grid_slaves()
+        # Coloring the pure equilibria     
+        payoffMatrixSlaves = payoffsFrame.grid_slaves()
         outcomes = payoffMatrixSlaves[:numStrats1 * numStrats2]
         
-        # converting the list of outcomes to a list of lists
+        # Converting the list of outcomes to a list of lists
         newOutcomes = []
         row = []
         numInRow = 0
-        for o in outcomes:
+        for outcome in outcomes:
             if numInRow < numStrats2:
-                row.append(o)
+                row.insert(0, outcome)
                 numInRow += 1
                 if numInRow == numStrats2:
-                    newOutcomes.append(row)
+                    newOutcomes.insert(0, row)
                     numInRow = 0
                     row = []
         
-        # converting nashpy equilibria output to indices
+        # Converting nashpy equilibria output to indices
         eqIndices = []
         for pe in pureEquilibria:
             # getting index of the 1's
@@ -288,11 +289,12 @@ def computeEquilibria(output):
             eqIndices.append([index1, index2])
         
         # matching the indices to those of the payoff matrix and changing the color
-        for pair in eqIndices:
-            for i in range(numStrats1):
-                for j in range(numStrats2):
-                    if i == pair[0] and j == pair[1]:
-                        newOutcomes[i][j].configure(bg="yellow")
+        for i in range(numStrats1):
+            for j in range(numStrats2):
+                if [i, j] in eqIndices:
+                    newOutcomes[i][j].configure(bg="yellow")
+                else:
+                    newOutcomes[i][j].configure(bg="white")
                 
         # clearing the previous set of equilibria
         eqSlaves = equilibriaFrame.grid_slaves()
@@ -313,7 +315,7 @@ def enterColor(color):
 def enterPayoffs():
     numStrats1 = int(numStratsEntry1.get())
     numStrats2 = int(numStratsEntry2.get())
-    payoffMatrixSlaves = payoffMatrixFrame.grid_slaves()
+    payoffMatrixSlaves = payoffsFrame.grid_slaves()
     outcomes = payoffMatrixSlaves[:numStrats1 * numStrats2]
     payoffs = [tuple(map(int, o.get().split(", "))) for o in outcomes]
     payoffs.reverse()
@@ -354,13 +356,13 @@ def numStratsClick():
         numStrats2 = int(numStratsEntry2.get())
         
         # clearing the table
-        payoffMatrixSlaves = payoffMatrixFrame.grid_slaves()
+        payoffMatrixSlaves = payoffsFrame.grid_slaves()
         for slave in payoffMatrixSlaves:
             slave.grid_remove()
         
         # refilling the table
         for i in range(numStrats2):
-            e = Entry(payoffMatrixFrame, width=10)
+            e = Entry(payoffsFrame, width=10)
             if i == 0:
                 e.insert(0, "L")
             elif i > 0 and i < numStrats2 - 1 and numStrats2 == 3:
@@ -372,7 +374,7 @@ def numStratsClick():
             e.grid(row=0, column=i + 1, pady=5)
             
         for j in range(numStrats1):
-            e = Entry(payoffMatrixFrame, width=10)
+            e = Entry(payoffsFrame, width=10)
             if j == 0:
                 e.insert(0, "U")
             elif j > 0 and j < numStrats1 - 1 and numStrats1 == 3:
@@ -387,7 +389,7 @@ def numStratsClick():
         for i in range(numStrats1):
             cols = []
             for j in range(numStrats2):
-                e = Entry(payoffMatrixFrame, width=5)
+                e = Entry(payoffsFrame, width=5)
                 e.grid(row=i + 1, column=j + 1, sticky=NSEW)
                 e.insert(END, '%d, %d' % (0, 0))
                 cols.append(e)
@@ -492,13 +494,12 @@ numStratsButton = Button(numStratsFrame, text="Enter", command=numStratsClick)
 
 # Payoffs Frame
 payoffsFrame = LabelFrame(root, text="Payoffs", padx=10, pady=10)
-payoffMatrixFrame = LabelFrame(payoffsFrame, padx=10, pady=10)
 
 # Adding strategy names
-p2strat1Name = Entry(payoffMatrixFrame, width=10)
-p2strat2Name = Entry(payoffMatrixFrame, width=10)
-p1strat1Name = Entry(payoffMatrixFrame, width=10)
-p1strat2Name = Entry(payoffMatrixFrame, width=10)
+p2strat1Name = Entry(payoffsFrame, width=10)
+p2strat2Name = Entry(payoffsFrame, width=10)
+p1strat1Name = Entry(payoffsFrame, width=10)
+p1strat2Name = Entry(payoffsFrame, width=10)
 p2strat1Name.insert(0, "L")
 p2strat2Name.insert(0, "R")
 p1strat1Name.insert(0, "U")
@@ -513,20 +514,18 @@ rows = []
 for i in range(int(numStratsEntry1.get())):
     cols = []
     for j in range(int(numStratsEntry2.get())):
-        e = Entry(payoffMatrixFrame, width=5)
+        e = Entry(payoffsFrame, width=5)
         e.grid(row=i + 1, column=j + 1, sticky=NSEW)
         e.insert(END, '%d, %d' % (0, 0))
         cols.append(e)
     rows.append(cols)
-    
-enterPayoffsButton = Button(payoffsFrame, text="Enter", command=enterPayoffs)
 
-L = payoffMatrixFrame.grid_slaves()
-L.pop()
-L.pop()
-L.pop()
-L.pop()
-payoffs = [tuple(map(int, l.get().split(", "))) for l in L]
+payoffMatrixSlaves= payoffsFrame.grid_slaves()
+payoffMatrixSlaves.pop()
+payoffMatrixSlaves.pop()
+payoffMatrixSlaves.pop()
+payoffMatrixSlaves.pop()
+payoffs = [tuple(map(int, slave.get().split(", "))) for slave in payoffMatrixSlaves]
 payoffs.reverse()
 numStrats1 = int(numStratsEntry1.get())
 numStrats2 = int(numStratsEntry2.get())
@@ -586,9 +585,9 @@ dropdown2 = ttk.Combobox(axelrodFrame, textvariable=clicked2, values=options)
 turnsLabel = Label(axelrodFrame, text="Enter the number of turns: ")
 turnsEntry = Entry(axelrodFrame, width=5)
 turnsEntry.insert(0, "6")
-repetitionsLabel = Label(axelrodFrame, text="Enter the number of repetitions: ")
-repetitionsEntry = Entry(axelrodFrame, width=5)
-repetitionsEntry.insert(0, "10")
+# repetitionsLabel = Label(axelrodFrame, text="Enter the number of repetitions: ")
+# repetitionsEntry = Entry(axelrodFrame, width=5)
+# repetitionsEntry.insert(0, "10")
 
 p1 = ""
 p2 = ""
@@ -617,8 +616,6 @@ numStratsEntry2.grid(row=1, column=1)
 numStratsButton.grid(row=1, column=2, padx=5, pady=5)
 
 payoffsFrame.grid(row=0, column=1, padx=10, pady=10)
-payoffMatrixFrame.grid(row=0, column=0, padx=10, pady=10)
-enterPayoffsButton.grid(row=1, column=0, padx=5, pady=5)
 
 equilibriaFrame.grid(row=1, column=0, padx=10, pady=10)
 equilibriaButton.grid(row=1, column=1, padx=10, pady=10)
