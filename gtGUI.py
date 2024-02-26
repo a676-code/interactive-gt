@@ -312,13 +312,12 @@ def enterColor(color):
     root.configure(bg=color)
     return
     
-def enterFileName(fileName, groupedPayoffs):
+def writeToFile(fileName, groupedPayoffs):
     numStrats1 = int(numStratsEntry1.get())
     numStrats2 = int(numStratsEntry2.get())
     
     with open(fileName, 'w') as file:
         file.write(str(numStrats1) + " " + str(numStrats2) + "\n")
-        
         for i, group in enumerate(groupedPayoffs):
             for j, payoff in enumerate(group):
                 if j < numStrats2 - 1:
@@ -327,6 +326,31 @@ def enterFileName(fileName, groupedPayoffs):
                     file.write(str(payoff[0]) + " " + str(payoff[1]))
             if i < len(groupedPayoffs) - 1:
                 file.write("\n")
+    return
+
+def writeToFileLatex(fileName, groupedPayoffs):
+    numStrats1 = int(numStratsEntry1.get())
+    numStrats2 = int(numStratsEntry2.get())
+    
+    with open(fileName, 'w') as file:
+        file.write("\documentclass[12pt]{article}\n\n")
+        file.write("\\begin{document}\n")
+        file.write("\[\n")
+        
+        file.write("\t\\begin{array}{|c|c|}\n")
+        file.write("\t\t\hline\n")
+        
+        for i, group in enumerate(groupedPayoffs):
+            file.write("\t\t")
+            for j, payoff in enumerate(group):
+                if j < numStrats2 - 1:
+                    file.write(str(payoff[0]) + ", " + str(payoff[1]) + " & ")
+                else:
+                    file.write(str(payoff[0]) + ", " + str(payoff[1]) + " \\\\ \hline")
+            file.write("\n")
+        file.write("\t\end{array}\n")
+        file.write("\]\n")
+        file.write("\end{document}")
     return
 
 def enterPayoffs():
@@ -461,18 +485,15 @@ def saveAs():
     payoffs = [[payoff[0], payoff[3]] for payoff in payoffs]
     groupedPayoffs = [payoffs[i:i + numStrats2] for i in range(0, len(payoffs), numStrats2)]
     
-    for group in groupedPayoffs:
-        print("group:", group)
-    
     # Prompting the user for a file name
     top = Toplevel()
     top.title("Enter a File Name")
     top.iconbitmap("knight.ico")
-    top.geometry("210x30")
+    top.geometry("250x30")
 
     fileNameLabel = Label(top, text="Enter a File Name: ")
-    fileNameEntry = Entry(top, width=10)
-    fileNameButton = Button(top, text="Enter", command=lambda: [enterFileName(fileNameEntry.get(), groupedPayoffs), top.destroy()])
+    fileNameEntry = Entry(top, width=15)
+    fileNameButton = Button(top, text="Enter", command=lambda: [writeToFile(fileNameEntry.get(), groupedPayoffs), top.destroy()])
     
     # Putting everything in the top window
     fileNameLabel.grid(row=0, column=0)
@@ -486,19 +507,25 @@ def saveAsLatex():
     
     payoffMatrixSlaves = payoffsFrame.grid_slaves()
     outcomes = payoffMatrixSlaves[:numStrats1 * numStrats2]
-    payoffs = [outcome.get() for outcome in outcomes] # = [[4, 4], [3, 3], [2, 2], [1, 1]]
+    payoffs = [outcome.get() for outcome in outcomes]
     payoffs.reverse()
     payoffs = [[payoff[0], payoff[3]] for payoff in payoffs]
-        
-    file = open('test.txt', 'w')
-    for i, payoff in enumerate(payoffs):
-        if i < numStrats1 * numStrats2 - 1:
-            file.write(str(payoff[0]) + " " + str(payoff[1]) + " ")
-        else:
-            file.write(str(payoff[0]) + " " + str(payoff[1]))
-        if i % numStrats2 - 1 == 0 and i < numStrats1 * numStrats2 - 1:
-            file.write("\n")
-    file.close()
+    groupedPayoffs = [payoffs[i:i + numStrats2] for i in range(0, len(payoffs), numStrats2)]
+    
+    # Prompting the user for a file name
+    top = Toplevel()
+    top.title("Enter a File Name")
+    top.iconbitmap("knight.ico")
+    top.geometry("250x30")
+
+    fileNameLabel = Label(top, text="Enter a File Name: ")
+    fileNameEntry = Entry(top, width=15)
+    fileNameButton = Button(top, text="Enter", command=lambda: [writeToFileLatex(fileNameEntry.get(), groupedPayoffs), top.destroy()])
+    
+    # Putting everything in the top window
+    fileNameLabel.grid(row=0, column=0)
+    fileNameEntry.grid(row=0, column=1)
+    fileNameButton.grid(row=0, column=2)
     return
 
 def startMatch(p1, p2, t = 6):    

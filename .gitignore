@@ -2,6 +2,7 @@ interactiveGT.py
 test.txt
 test2.txt
 something.txt
+file.*
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
