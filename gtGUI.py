@@ -312,7 +312,10 @@ def enterColor(color):
     root.configure(bg=color)
     return
     
-def enterFileName(fileName):
+def enterFileName(fileName, payoffs):
+    numStrats1 = int(numStratsEntry1.get())
+    numStrats2 = int(numStratsEntry2.get())
+    
     with open(fileName, 'w') as file:
         file.write(str(numStrats1) + " " + str(numStrats2) + "\n")
         
@@ -413,17 +416,37 @@ def numStratsClick():
 
 def openFile():
     root.filename = filedialog.askopenfilename(initialdir=".", title="Select a File", filetypes=(("Text files", "*.txt"),))
-    label = Label(root, text=root.filename)
-    label.grid(row=2, column=0)
     
     with open(root.filename, 'r') as file:
-        numStrats = file.readline()
+        numStrats = file.readline().split(" ")
         numStratsEntry1.delete(0, 'end')
         numStratsEntry2.delete(0, 'end')
         numStratsEntry1.insert(0, numStrats[0])
-        numStratsEntry2.insert(0, numStrats[2])
+        numStratsEntry2.insert(0, numStrats[1])
+        numStratsClick()
+        
+        line_index = 0
         for line in file:
-            print("line: ", line)
+            payoffLine = line.split(" ")
+            if payoffLine[-1] == "\n":
+                payoffLine.pop()
+            if "\n" in payoffLine[-1]:
+                payoffLine[-1] = payoffLine[-1][:len(payoffLine[-1]) - 1]
+            
+            groupedPayoffs = [payoffLine[i:i + 2] for i in range(0, len(payoffLine), 2)]
+            stringPayoffs = [str(p[0]) + ", " + str(p[1]) for p in groupedPayoffs]
+            
+            payoffMatrixSlaves = payoffsFrame.grid_slaves()
+            payoffs = payoffMatrixSlaves[:numStrats1 * numStrats2]
+            payoffs.reverse()
+            row = payoffs[line_index:line_index + numStrats2]
+            
+            for p in row:
+                p.delete(0, 'end')
+            for j, payoff in enumerate(row):
+                if j < numStrats2:
+                    payoff.insert(0, stringPayoffs[j])
+            line_index += 2
     return
 
 def saveAs():
@@ -432,7 +455,7 @@ def saveAs():
     
     payoffMatrixSlaves = payoffsFrame.grid_slaves()
     outcomes = payoffMatrixSlaves[:numStrats1 * numStrats2]
-    payoffs = [outcome.get() for outcome in outcomes] # = [[4, 4], [3, 3], [2, 2], [1, 1]]
+    payoffs = [outcome.get() for outcome in outcomes]
     payoffs.reverse()
     payoffs = [[payoff[0], payoff[3]] for payoff in payoffs]
     
@@ -444,7 +467,7 @@ def saveAs():
 
     fileNameLabel = Label(top, text="Enter a File Name: ")
     fileNameEntry = Entry(top, width=10)
-    fileNameButton = Button(top, text="Enter", command=lambda: [enterFileName(fileNameEntry.get()), top.destroy()])
+    fileNameButton = Button(top, text="Enter", command=lambda: [enterFileName(fileNameEntry.get(), payoffs), top.destroy()])
     
     # Putting everything in the top window
     fileNameLabel.grid(row=0, column=0)
