@@ -312,19 +312,20 @@ def enterColor(color):
     root.configure(bg=color)
     return
     
-def enterFileName(fileName, payoffs):
+def enterFileName(fileName, groupedPayoffs):
     numStrats1 = int(numStratsEntry1.get())
     numStrats2 = int(numStratsEntry2.get())
     
     with open(fileName, 'w') as file:
         file.write(str(numStrats1) + " " + str(numStrats2) + "\n")
         
-        for i, payoff in enumerate(payoffs):
-            if i < numStrats1 * numStrats2 - 1:
-                file.write(str(payoff[0]) + " " + str(payoff[1]) + " ")
-            else:
-                file.write(str(payoff[0]) + " " + str(payoff[1]))
-            if i % numStrats2 - 1 == 0 and i < numStrats1 * numStrats2 - 1:
+        for i, group in enumerate(groupedPayoffs):
+            for j, payoff in enumerate(group):
+                if j < numStrats2 - 1:
+                    file.write(str(payoff[0]) + " " + str(payoff[1]) + " ")
+                else:
+                    file.write(str(payoff[0]) + " " + str(payoff[1]))
+            if i < len(groupedPayoffs) - 1:
                 file.write("\n")
     return
 
@@ -458,6 +459,10 @@ def saveAs():
     payoffs = [outcome.get() for outcome in outcomes]
     payoffs.reverse()
     payoffs = [[payoff[0], payoff[3]] for payoff in payoffs]
+    groupedPayoffs = [payoffs[i:i + numStrats2] for i in range(0, len(payoffs), numStrats2)]
+    
+    for group in groupedPayoffs:
+        print("group:", group)
     
     # Prompting the user for a file name
     top = Toplevel()
@@ -467,7 +472,7 @@ def saveAs():
 
     fileNameLabel = Label(top, text="Enter a File Name: ")
     fileNameEntry = Entry(top, width=10)
-    fileNameButton = Button(top, text="Enter", command=lambda: [enterFileName(fileNameEntry.get(), payoffs), top.destroy()])
+    fileNameButton = Button(top, text="Enter", command=lambda: [enterFileName(fileNameEntry.get(), groupedPayoffs), top.destroy()])
     
     # Putting everything in the top window
     fileNameLabel.grid(row=0, column=0)
