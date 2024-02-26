@@ -312,6 +312,21 @@ def enterColor(color):
     root.configure(bg=color)
     return
     
+def enterFileName(fileName):
+    file = open(fileName, 'w')
+    
+    file.write(str(numStrats1) + " " + str(numStrats2) + "\n")
+    
+    for i, payoff in enumerate(payoffs):
+        if i < numStrats1 * numStrats2 - 1:
+            file.write(str(payoff[0]) + " " + str(payoff[1]) + " ")
+        else:
+            file.write(str(payoff[0]) + " " + str(payoff[1]))
+        if i % numStrats2 - 1 == 0 and i < numStrats1 * numStrats2 - 1:
+            file.write("\n")
+    file.close()
+    return
+
 def enterPayoffs():
     numStrats1 = int(numStratsEntry1.get())
     numStrats2 = int(numStratsEntry2.get())
@@ -399,15 +414,56 @@ def numStratsClick():
     return
 
 def openFile():
-    root.filename = filedialog.askopenfilename(initialdir="C:/Users/aloun/Desktop/interactive-gt", title="Select a File", filetypes=(("Text files", "*.txt"),))
+    root.filename = filedialog.askopenfilename(initialdir=".", title="Select a File", filetypes=(("Text files", "*.txt"),))
     label = Label(root, text=root.filename)
     label.grid(row=2, column=0)
     return
 
 def saveAs():
+    numStrats1 = int(numStratsEntry1.get())
+    numStrats2 = int(numStratsEntry2.get())
+    
+    payoffMatrixSlaves = payoffsFrame.grid_slaves()
+    outcomes = payoffMatrixSlaves[:numStrats1 * numStrats2]
+    payoffs = [outcome.get() for outcome in outcomes] # = [[4, 4], [3, 3], [2, 2], [1, 1]]
+    payoffs.reverse()
+    payoffs = [[payoff[0], payoff[3]] for payoff in payoffs]
+    
+    # Prompting the user for a file name
+    top = Toplevel()
+    top.title("Enter a File Name")
+    top.iconbitmap("knight.ico")
+    top.geometry("210x30")
+
+    fileNameLabel = Label(top, text="Enter a File Name: ")
+    fileNameEntry = Entry(top, width=10)
+    fileNameButton = Button(top, text="Enter", command=lambda: [enterFileName(fileNameEntry.get()), top.destroy()])
+    
+    # Putting everything in the top window
+    fileNameLabel.grid(row=0, column=0)
+    fileNameEntry.grid(row=0, column=1)
+    fileNameButton.grid(row=0, column=2)
     return
 
 def saveAsLatex():
+    numStrats1 = int(numStratsEntry1.get())
+    numStrats2 = int(numStratsEntry2.get())
+    
+    payoffMatrixSlaves = payoffsFrame.grid_slaves()
+    outcomes = payoffMatrixSlaves[:numStrats1 * numStrats2]
+    payoffs = [outcome.get() for outcome in outcomes] # = [[4, 4], [3, 3], [2, 2], [1, 1]]
+    payoffs.reverse()
+    payoffs = [[payoff[0], payoff[3]] for payoff in payoffs]
+        
+    file = open('test.txt', 'w')
+    for i, payoff in enumerate(payoffs):
+        if i < numStrats1 * numStrats2 - 1:
+            file.write(str(payoff[0]) + " " + str(payoff[1]) + " ")
+        else:
+            file.write(str(payoff[0]) + " " + str(payoff[1]))
+        if i % numStrats2 - 1 == 0 and i < numStrats1 * numStrats2 - 1:
+            file.write("\n")
+    file.close()
     return
 
 def startMatch(p1, p2, t = 6):    
