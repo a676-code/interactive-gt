@@ -313,18 +313,16 @@ def enterColor(color):
     return
     
 def enterFileName(fileName):
-    file = open(fileName, 'w')
-    
-    file.write(str(numStrats1) + " " + str(numStrats2) + "\n")
-    
-    for i, payoff in enumerate(payoffs):
-        if i < numStrats1 * numStrats2 - 1:
-            file.write(str(payoff[0]) + " " + str(payoff[1]) + " ")
-        else:
-            file.write(str(payoff[0]) + " " + str(payoff[1]))
-        if i % numStrats2 - 1 == 0 and i < numStrats1 * numStrats2 - 1:
-            file.write("\n")
-    file.close()
+    with open(fileName, 'w') as file:
+        file.write(str(numStrats1) + " " + str(numStrats2) + "\n")
+        
+        for i, payoff in enumerate(payoffs):
+            if i < numStrats1 * numStrats2 - 1:
+                file.write(str(payoff[0]) + " " + str(payoff[1]) + " ")
+            else:
+                file.write(str(payoff[0]) + " " + str(payoff[1]))
+            if i % numStrats2 - 1 == 0 and i < numStrats1 * numStrats2 - 1:
+                file.write("\n")
     return
 
 def enterPayoffs():
@@ -417,6 +415,15 @@ def openFile():
     root.filename = filedialog.askopenfilename(initialdir=".", title="Select a File", filetypes=(("Text files", "*.txt"),))
     label = Label(root, text=root.filename)
     label.grid(row=2, column=0)
+    
+    with open(root.filename, 'r') as file:
+        numStrats = file.readline()
+        numStratsEntry1.delete(0, 'end')
+        numStratsEntry2.delete(0, 'end')
+        numStratsEntry1.insert(0, numStrats[0])
+        numStratsEntry2.insert(0, numStrats[2])
+        for line in file:
+            print("line: ", line)
     return
 
 def saveAs():
