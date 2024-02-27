@@ -402,6 +402,7 @@ def openFile():
     root.filename = filedialog.askopenfilename(initialdir=".", title="Select a File", filetypes=(("Text files", "*.txt"),))
     
     with open(root.filename, 'r') as file:
+        # Entering the numbers of strategies
         numStrats = file.readline().split(" ")
         numStratsEntry1.delete(0, 'end')
         numStratsEntry2.delete(0, 'end')
@@ -411,7 +412,23 @@ def openFile():
         numStrats1 = int(numStratsEntry1.get())
         numStrats2 = int(numStratsEntry2.get())
         
+        # Entering the strategy names
+        p1StrategyNames = file.readline().rstrip().split(" ")
+        p2StrategyNames = file.readline().rstrip().split(" ")
         payoffMatrixSlaves = payoffsFrame.grid_slaves()
+        strategyNames = payoffMatrixSlaves[numStrats1 * numStrats2:]
+        p1StrategyNameEntries = strategyNames[:numStrats1]
+        p1StrategyNameEntries.reverse()
+        p2StrategyNameEntries= strategyNames[numStrats2:]
+        p2StrategyNameEntries.reverse()
+        
+        for i, entry in enumerate(p1StrategyNameEntries):
+            entry.delete(0, 'end')
+            entry.insert(0, p1StrategyNames[i])
+        for i, entry in enumerate(p2StrategyNameEntries):
+            entry.delete(0, 'end')
+            entry.insert(0, p2StrategyNames[i])
+        
         payoffs = payoffMatrixSlaves[:numStrats1 * numStrats2]
         payoffs.reverse()
         groupedOutcomes = [payoffs[i:i + numStrats2] for i in range(0, len(payoffs), numStrats2)]
