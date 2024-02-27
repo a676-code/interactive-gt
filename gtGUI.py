@@ -543,8 +543,25 @@ def writeToFile(fileName, groupedPayoffs):
     numStrats1 = int(numStratsEntry1.get())
     numStrats2 = int(numStratsEntry2.get())
     
+    # Getting list of the strategy names
+    payoffMatrixSlaves = payoffsFrame.grid_slaves()
+    strategyNames = payoffMatrixSlaves[numStrats1 * numStrats2:]
+    
+    p1StrategyNames = strategyNames[:numStrats1]
+    p1StrategyNames = [name.get() for name in p1StrategyNames]
+    p1StrategyNames.reverse()
+    p1StrategyNamesString = " ".join(p1StrategyNames)
+    p1StrategyNamesString = p1StrategyNamesString + "\n"
+    p2StrategyNames = strategyNames[numStrats2:]
+    p2StrategyNames = [name.get() for name in p2StrategyNames]
+    p2StrategyNames.reverse()
+    p2StrategyNamesString = " ".join(p2StrategyNames)
+    p2StrategyNamesString = p2StrategyNamesString + "\n"
+    
     with open(fileName, 'w') as file:
         file.write(str(numStrats1) + " " + str(numStrats2) + "\n")
+        file.write(p1StrategyNamesString)
+        file.write(p2StrategyNamesString)
         for i, group in enumerate(groupedPayoffs):
             for j, payoff in enumerate(group):
                 if j < numStrats2 - 1:
@@ -566,7 +583,7 @@ def writeToFileLatex(fileName, groupedPayoffs):
     p1StrategyNames = strategyNames[:numStrats1]
     p1StrategyNames.reverse()
     p1StrategyNames = [name.get() for name in p1StrategyNames]
-    p2StrategyNames = strategyNames[numStrats1:]
+    p2StrategyNames = strategyNames[numStrats2:]
     p2StrategyNames.reverse()
     p2StrategyNames = [name.get() for name in p2StrategyNames]
     
