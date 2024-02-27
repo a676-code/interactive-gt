@@ -3,3 +3,6 @@ An interactive game theory application for analyzing 2-player games using nashpy
 
 Highlighted equilibria for a Battle of the Sexes, and an axelrod match between a Tit for Tat player and an Alternator: 
 ![bos and match](image.png)
+
+# Installation
+Currently, this application may only be installed by downloading `interactive-gt.py` and running it. 
