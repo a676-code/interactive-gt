@@ -309,7 +309,10 @@ def computeEquilibria(output):
     return
 
 def enterColor(color):
-    root.configure(bg=color)
+    try:
+        root.configure(bg=color)
+    except TclError:
+        colorNotFound = messagebox.showerror(f"Error", f"Unknown color name \"{color}\". Try entering in a different color.")
     return
 
 def enterPayoffs():
