@@ -4,6 +4,7 @@ from tkinter import messagebox
 from tkinter import filedialog
 import nashpy as nash
 import axelrod as axl
+import numpy as np
 import warnings
 
 # Function definitions
@@ -599,9 +600,6 @@ def writeToFileLatex(fileName, groupedPayoffs):
     numStrats1 = int(numStratsEntry1.get())
     numStrats2 = int(numStratsEntry2.get())
     
-    print("nS1:", numStrats1)
-    print("nS2:", numStrats2)
-    
     # Getting list of the strategy names
     payoffMatrixSlaves = payoffsFrame.grid_slaves()
     strategyNames = payoffMatrixSlaves[numStrats1 * numStrats2:]
@@ -635,14 +633,75 @@ def writeToFileLatex(fileName, groupedPayoffs):
         nameString = " & ".join(p2StrategyNames)
         nameString = "& " + nameString + " "
         file.write("\t\t" + nameString + "\\\\ \hline\hline\n")
+        
+        # getting payoffs
+        payoffMatrixSlaves = payoffsFrame.grid_slaves()
+        for i in range(numStrats1 + numStrats2):
+            payoffMatrixSlaves.pop()
+        payoffs = [tuple(map(int, slave.get().split(", "))) for slave in payoffMatrixSlaves]
+        payoffs.reverse()
+        numStrats1 = int(numStratsEntry1.get())
+        numStrats2 = int(numStratsEntry2.get())
+
+        # converting the list of payoffs to a list of lists
+        newPayoffs = []
+        row = []
+        numInRow = 0
+        for p in payoffs:
+            if numInRow < numStrats2:
+                row.append(p)
+                numInRow += 1
+                if numInRow == numStrats2:
+                    newPayoffs.append(row)
+                    numInRow = 0
+                    row = []
+                    
+        p1Matrix = []
+        p2Matrix = []
+        for i in range(numStrats1):
+            row1 = []
+            row2 = []
+            for j in range(numStrats2):
+                row1.append(newPayoffs[i][j][0])
+                row2.append(newPayoffs[i][j][1])
+            p1Matrix.append(row1)
+            p2Matrix.append(row2)
+            
+        # updating G
+        G = nash.Game(p1Matrix, p2Matrix)
+        
+        zeros1 = [0 for i in range(numStrats1)]
+        zeros2 = [0 for i in range(numStrats2)]
         for i, group in enumerate(groupedPayoffs):
+            zeros1[i] = 1
+            array1 = np.array(zeros1)
             file.write("\t\t" + p1StrategyNames[i] + " & ")
             for j, payoff in enumerate(group):
+                zeros2[j] = 1
+                array2 = np.array(zeros2)
+                result = G.is_best_response(array1, array2)
                 if j < numStrats2 - 1:
-                    file.write(str(payoff[0]) + ", " + str(payoff[1]) + " & ")
+                    if result[0] == True and result[1] == False:# p1 best response
+                        file.write("(" + str(payoff[0]) + "), " + str(payoff[1]) + " & ")
+                    elif result[0] == False and result[1] == True:# p2 best response
+                        file.write(str(payoff[0]) + ", (" + str(payoff[1]) + ") & ")
+                    elif result[0] == True and result[1] == True:# both best reponses
+                        file.write("(" + str(payoff[0]) + "), (" + str(payoff[1]) + ") & ")
+                    else: # not
+                        file.write(str(payoff[0]) + ", " + str(payoff[1]) + " & ")
                 else:
-                    file.write(str(payoff[0]) + ", " + str(payoff[1]) + " \\\\ \hline")
+                    if result[0] == True and result[1] == False:# p1 best response
+                        file.write("(" + str(payoff[0]) + "), " + str(payoff[1]) + " \\\\ \hline")
+                    elif result[0] == False and result[1] == True:# p2 best response
+                        file.write(str(payoff[0]) + ", (" + str(payoff[1]) + ") \\\\ \hline")
+                    elif result[0] == True and result[1] == True:# both best reponses
+                        file.write("(" + str(payoff[0]) + "), (" + str(payoff[1]) + ") \\\\ \hline")
+                    else: # not
+                        file.write(str(payoff[0]) + ", " + str(payoff[1]) + " \\\\ \hline")
+                zeros2 = [0 for i in range(numStrats2)]
             file.write("\n")
+            zeros1 = [0 for i in range(numStrats1)]
+        
         file.write("\t\end{array}\n")
         file.write("\]\n")
         file.write("\end{document}")
