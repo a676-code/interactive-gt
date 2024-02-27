@@ -408,9 +408,21 @@ def openFile():
         numStratsEntry1.insert(0, numStrats[0])
         numStratsEntry2.insert(0, numStrats[1])
         numStratsClick()
+        numStrats1 = int(numStratsEntry1.get())
+        numStrats2 = int(numStratsEntry2.get())
         
-        line_index = 0
-        for line in file:
+        payoffMatrixSlaves = payoffsFrame.grid_slaves()
+        payoffs = payoffMatrixSlaves[:numStrats1 * numStrats2]
+        payoffs.reverse()
+        groupedOutcomes = [payoffs[i:i + numStrats2] for i in range(0, len(payoffs), numStrats2)]
+        
+        # clearing the payoff matrix
+        for row in groupedOutcomes:
+            for payoff in row:
+                payoff.delete(0, 'end')
+        
+        # filling the payoff matrix with the values from the file
+        for line_index, line in enumerate(file):            
             payoffLine = line.split(" ")
             if payoffLine[-1] == "\n":
                 payoffLine.pop()
@@ -419,18 +431,11 @@ def openFile():
             
             groupedPayoffs = [payoffLine[i:i + 2] for i in range(0, len(payoffLine), 2)]
             stringPayoffs = [str(p[0]) + ", " + str(p[1]) for p in groupedPayoffs]
-            
-            payoffMatrixSlaves = payoffsFrame.grid_slaves()
-            payoffs = payoffMatrixSlaves[:numStrats1 * numStrats2]
-            payoffs.reverse()
-            row = payoffs[line_index:line_index + numStrats2]
-            
-            for p in row:
-                p.delete(0, 'end')
-            for j, payoff in enumerate(row):
-                if j < numStrats2:
-                    payoff.insert(0, stringPayoffs[j])
-            line_index += 2
+                
+            # entering the new values into the payoff matrix
+            row = groupedOutcomes[line_index]
+            for i, payoff in enumerate(row):
+                payoff.insert(0, stringPayoffs[i])
     return
 
 def saveAs():
@@ -660,7 +665,7 @@ for i in range(int(numStratsEntry1.get())):
         cols.append(e)
     rows.append(cols)
 
-payoffMatrixSlaves= payoffsFrame.grid_slaves()
+payoffMatrixSlaves = payoffsFrame.grid_slaves()
 payoffMatrixSlaves.pop()
 payoffMatrixSlaves.pop()
 payoffMatrixSlaves.pop()
