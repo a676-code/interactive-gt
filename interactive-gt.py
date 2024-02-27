@@ -575,7 +575,7 @@ def saveAsLatex():
     
     # Prompting the user for a file name
     top = Toplevel()
-    top.title("Save As LaTeX")
+    top.title("Save as LaTeX")
     top.iconbitmap("knight.ico")
     top.geometry("250x30")
 
@@ -681,11 +681,23 @@ def writeToFileLatex(fileName, groupedPayoffs):
     p1StrategyNames.reverse()
     p1StrategyNames = [name.get() for name in p1StrategyNames]
     p1StrategyNames = [name[0] + "_" + name[1:] if containsDigit(name) else name for name in p1StrategyNames]
-    p2StrategyNames = strategyNames[numStrats1:]
+    # adding braces around subscripts with more than one character
+    p1StrategyNamesPieces = [name.split("_") for name in p1StrategyNames]
+    p1StrategyNamesPieces = ["{" +  string + "}" if containsDigit(string) and len(string) > 1 else string for piece in p1StrategyNamesPieces for string in piece]
+    p1StrategyNames = [p1StrategyNamesPieces[i] + "_" + p1StrategyNamesPieces[i + 1] for i in range(1, len(p1StrategyNamesPieces) - 1, 2)]
+    p1StrategyNames.insert(0, "L")
+    p1StrategyNames.append("R")
     
+    p2StrategyNames = strategyNames[numStrats1:]
     p2StrategyNames.reverse()
     p2StrategyNames = [name.get() for name in p2StrategyNames]
     p2StrategyNames = [name[0] + "_" + name[1:] if containsDigit(name) else name for name in p2StrategyNames]
+    # adding braces around subscripts with more than one character
+    p2StrategyNamesPieces = [name.split("_") for name in p2StrategyNames]
+    p2StrategyNamesPieces = ["{" +  string + "}" if containsDigit(string) and len(string) > 1 else string for piece in p2StrategyNamesPieces for string in piece]
+    p2StrategyNames = [p2StrategyNamesPieces[i] + "_" + p2StrategyNamesPieces[i + 1] for i in range(1, len(p2StrategyNamesPieces) - 1, 2)]
+    p2StrategyNames.insert(0, "U")
+    p2StrategyNames.append("D")
     
     with open(fileName, 'w') as file:
         file.write("\documentclass[12pt]{article}\n\n")
@@ -748,6 +760,8 @@ def writeToFileLatex(fileName, groupedPayoffs):
         for i, group in enumerate(groupedPayoffs):
             zeros1[i] = 1
             array1 = np.array(zeros1)
+            print("writing p1 i:", i)
+            print("writing p1 name:", p1StrategyNames[i])
             file.write("\t\t" + p1StrategyNames[i] + " & ")
             for j, payoff in enumerate(group):
                 zeros2[j] = 1
