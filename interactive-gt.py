@@ -26,10 +26,10 @@ def changeBackgroundColor():
 
 def clearPayoffMatrix():
     proceed = messagebox.askokcancel("Clear Payoffs?", "Are you sure you want to clear the payoff matrix? ")
-    
-    if (proceed == True):   
+    if (proceed == True):
         numStrats1 = int(numStratsEntry1.get())
         numStrats2 = int(numStratsEntry2.get())
+        
         # clearing the table
         payoffMatrixSlaves = payoffsFrame.grid_slaves()
         for slave in payoffMatrixSlaves:
@@ -69,6 +69,12 @@ def clearPayoffMatrix():
                 e.insert(END, '%d, %d' % (0, 0))
                 cols.append(e)
             rows.append(cols)
+            
+        # Clearing the equilibria
+        equilibriaSlaves = equilibriaFrame.grid_slaves()
+        eqLabel = equilibriaSlaves[0]
+        if type(eqLabel).__name__ == "Label":
+            eqLabel.grid_remove()
         
         root.geometry(f"{45 * numStrats2 + 600}x{25 * numStrats1 + 300}")
     return
@@ -404,6 +410,12 @@ def numStratsClick():
                 e.insert(END, '%d, %d' % (0, 0))
                 cols.append(e)
             rows.append(cols)
+            
+        # Clearing the equilibria
+        equilibriaSlaves = equilibriaFrame.grid_slaves()
+        eqLabel = equilibriaSlaves[0]
+        if type(eqLabel).__name__ == "Label":
+            eqLabel.grid_remove()
         
         root.geometry(f"{45 * numStrats2 + 600}x{25 * numStrats1 + 300}")
     return proceed
@@ -454,6 +466,12 @@ def numStratsClickNoWarning():
             e.insert(END, '%d, %d' % (0, 0))
             cols.append(e)
         rows.append(cols)
+        
+    # Clearing the equilibria
+    equilibriaSlaves = equilibriaFrame.grid_slaves()
+    eqLabel = equilibriaSlaves[0]
+    if type(eqLabel).__name__ == "Label":
+        eqLabel.grid_remove()
     
     root.geometry(f"{45 * numStrats2 + 600}x{25 * numStrats1 + 300}")
     return
@@ -463,7 +481,7 @@ def openFile():
     
     with open(root.filename, 'r') as file:
         # Entering the numbers of strategies
-        numStrats = file.readline().split(" ")
+        numStrats = file.readline().rstrip().split(" ")
         proceed = numStratsClick() # resizing the payoff matrix
         if proceed == True:
             numStratsEntry1.delete(0, 'end')
