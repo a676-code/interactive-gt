@@ -348,6 +348,9 @@ def enterPayoffs():
     G = nash.Game(p1Matrix, p2Matrix)
     return
 
+def containsDigit(string):
+    return any(char.isdigit() for char in string)
+
 def numStratsClick():
     proceed = messagebox.askokcancel("Clear Payoffs?", "This will clear the payoff matrix. Do you want to proceed?")
     
@@ -593,6 +596,9 @@ def writeToFileLatex(fileName, groupedPayoffs):
     numStrats1 = int(numStratsEntry1.get())
     numStrats2 = int(numStratsEntry2.get())
     
+    print("nS1:", numStrats1)
+    print("nS2:", numStrats2)
+    
     # Getting list of the strategy names
     payoffMatrixSlaves = payoffsFrame.grid_slaves()
     strategyNames = payoffMatrixSlaves[numStrats1 * numStrats2:]
@@ -600,9 +606,12 @@ def writeToFileLatex(fileName, groupedPayoffs):
     p1StrategyNames = strategyNames[:numStrats1]
     p1StrategyNames.reverse()
     p1StrategyNames = [name.get() for name in p1StrategyNames]
-    p2StrategyNames = strategyNames[numStrats2:]
+    p1StrategyNames = [name[0] + "_" + name[1:] if containsDigit(name) else name for name in p1StrategyNames]
+    p2StrategyNames = strategyNames[numStrats1:]
+    
     p2StrategyNames.reverse()
     p2StrategyNames = [name.get() for name in p2StrategyNames]
+    p2StrategyNames = [name[0] + "_" + name[1:] if containsDigit(name) else name for name in p2StrategyNames]
     
     with open(fileName, 'w') as file:
         file.write("\documentclass[12pt]{article}\n\n")
