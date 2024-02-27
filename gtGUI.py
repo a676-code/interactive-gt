@@ -311,47 +311,6 @@ def computeEquilibria(output):
 def enterColor(color):
     root.configure(bg=color)
     return
-    
-def writeToFile(fileName, groupedPayoffs):
-    numStrats1 = int(numStratsEntry1.get())
-    numStrats2 = int(numStratsEntry2.get())
-    
-    with open(fileName, 'w') as file:
-        file.write(str(numStrats1) + " " + str(numStrats2) + "\n")
-        for i, group in enumerate(groupedPayoffs):
-            for j, payoff in enumerate(group):
-                if j < numStrats2 - 1:
-                    file.write(str(payoff[0]) + " " + str(payoff[1]) + " ")
-                else:
-                    file.write(str(payoff[0]) + " " + str(payoff[1]))
-            if i < len(groupedPayoffs) - 1:
-                file.write("\n")
-    return
-
-def writeToFileLatex(fileName, groupedPayoffs):
-    numStrats1 = int(numStratsEntry1.get())
-    numStrats2 = int(numStratsEntry2.get())
-    
-    with open(fileName, 'w') as file:
-        file.write("\documentclass[12pt]{article}\n\n")
-        file.write("\\begin{document}\n")
-        file.write("\[\n")
-        
-        file.write("\t\\begin{array}{|c|c|}\n")
-        file.write("\t\t\hline\n")
-        
-        for i, group in enumerate(groupedPayoffs):
-            file.write("\t\t")
-            for j, payoff in enumerate(group):
-                if j < numStrats2 - 1:
-                    file.write(str(payoff[0]) + ", " + str(payoff[1]) + " & ")
-                else:
-                    file.write(str(payoff[0]) + ", " + str(payoff[1]) + " \\\\ \hline")
-            file.write("\n")
-        file.write("\t\end{array}\n")
-        file.write("\]\n")
-        file.write("\end{document}")
-    return
 
 def enterPayoffs():
     numStrats1 = int(numStratsEntry1.get())
@@ -574,6 +533,70 @@ def startMatch(p1, p2, t = 6):
 #     axelrodOutput1.grid(row=5, column=0, columnspan=2, padx=10, pady=10, sticky=EW)
 #     axelrodOutput2.grid(row=6, column=0, columnspan=2, padx=10, pady=10, sticky=EW)
 #     return
+
+def writeToFile(fileName, groupedPayoffs):
+    numStrats1 = int(numStratsEntry1.get())
+    numStrats2 = int(numStratsEntry2.get())
+    
+    with open(fileName, 'w') as file:
+        file.write(str(numStrats1) + " " + str(numStrats2) + "\n")
+        for i, group in enumerate(groupedPayoffs):
+            for j, payoff in enumerate(group):
+                if j < numStrats2 - 1:
+                    file.write(str(payoff[0]) + " " + str(payoff[1]) + " ")
+                else:
+                    file.write(str(payoff[0]) + " " + str(payoff[1]))
+            if i < len(groupedPayoffs) - 1:
+                file.write("\n")
+    return
+
+def writeToFileLatex(fileName, groupedPayoffs):
+    numStrats1 = int(numStratsEntry1.get())
+    numStrats2 = int(numStratsEntry2.get())
+    
+    # Getting list of the strategy names
+    payoffMatrixSlaves = payoffsFrame.grid_slaves()
+    strategyNames = payoffMatrixSlaves[numStrats1 * numStrats2:]
+    
+    p1StrategyNames = strategyNames[:numStrats1]
+    p1StrategyNames.reverse()
+    p1StrategyNames = [name.get() for name in p1StrategyNames]
+    p2StrategyNames = strategyNames[numStrats1:]
+    p2StrategyNames.reverse()
+    p2StrategyNames = [name.get() for name in p2StrategyNames]
+    
+    with open(fileName, 'w') as file:
+        file.write("\documentclass[12pt]{article}\n\n")
+        file.write("\\begin{document}\n")
+        file.write("\[\n")
+        
+        file.write("\t\\begin{array}{|c||")
+        
+    with open(fileName, 'r') as file:
+        lines = file.readlines()
+    
+    for i in range(numStrats2):
+        lines[-1] = lines[-1] + "c|"
+    lines[-1] = lines[-1] + "}\n"
+        
+    with open(fileName, "w") as file:
+        file.writelines(lines)        
+        file.write("\t\t\hline\n")
+        nameString = " ".join(p2StrategyNames)
+        nameString = "& " + nameString[:2] + "& " + nameString[2:] + " "
+        file.write("\t\t" + nameString + "\\\\ \hline\hline\n")
+        for i, group in enumerate(groupedPayoffs):
+            file.write("\t\t" + p1StrategyNames[i] + " & ")
+            for j, payoff in enumerate(group):
+                if j < numStrats2 - 1:
+                    file.write(str(payoff[0]) + ", " + str(payoff[1]) + " & ")
+                else:
+                    file.write(str(payoff[0]) + ", " + str(payoff[1]) + " \\\\ \hline")
+            file.write("\n")
+        file.write("\t\end{array}\n")
+        file.write("\]\n")
+        file.write("\end{document}")
+    return
 
 # Defining the root window
 root = Tk()
