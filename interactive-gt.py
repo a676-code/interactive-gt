@@ -530,7 +530,7 @@ def saveAs():
     
     # Prompting the user for a file name
     top = Toplevel()
-    top.title("Enter a File Name")
+    top.title("Save As")
     top.iconbitmap("knight.ico")
     top.geometry("250x30")
 
@@ -557,7 +557,7 @@ def saveAsLatex():
     
     # Prompting the user for a file name
     top = Toplevel()
-    top.title("Enter a File Name")
+    top.title("Save As LaTeX")
     top.iconbitmap("knight.ico")
     top.geometry("250x30")
 
