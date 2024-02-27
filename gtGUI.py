@@ -569,7 +569,6 @@ def writeToFileLatex(fileName, groupedPayoffs):
         file.write("\documentclass[12pt]{article}\n\n")
         file.write("\\begin{document}\n")
         file.write("\[\n")
-        
         file.write("\t\\begin{array}{|c||")
         
     with open(fileName, 'r') as file:
@@ -582,8 +581,8 @@ def writeToFileLatex(fileName, groupedPayoffs):
     with open(fileName, "w") as file:
         file.writelines(lines)        
         file.write("\t\t\hline\n")
-        nameString = " ".join(p2StrategyNames)
-        nameString = "& " + nameString[:2] + "& " + nameString[2:] + " "
+        nameString = " & ".join(p2StrategyNames)
+        nameString = "& " + nameString + " "
         file.write("\t\t" + nameString + "\\\\ \hline\hline\n")
         for i, group in enumerate(groupedPayoffs):
             file.write("\t\t" + p1StrategyNames[i] + " & ")
