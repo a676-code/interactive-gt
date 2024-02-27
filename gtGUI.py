@@ -309,6 +309,9 @@ def computeEquilibria(output):
         print("Error: variable output has taken on an unexpected value")
     return
 
+def containsDigit(string):
+    return any(char.isdigit() for char in string)
+
 def enterColor(color):
     try:
         root.configure(bg=color)
@@ -352,10 +355,10 @@ def enterPayoffs():
     G = nash.Game(p1Matrix, p2Matrix)
     return
 
-def containsDigit(string):
-    return any(char.isdigit() for char in string)
-
 def numStratsClick():
+    """
+    Resizes the payoff matrix according to the numbers of strategies entered in by the user
+    """
     proceed = messagebox.askokcancel("Clear Payoffs?", "This will clear the payoff matrix. Do you want to proceed?")
     
     if (proceed == True):   
@@ -403,7 +406,7 @@ def numStratsClick():
             rows.append(cols)
         
         root.geometry(f"{45 * numStrats2 + 600}x{25 * numStrats1 + 300}")
-    return
+    return proceed
 
 def openFile():
     root.filename = filedialog.askopenfilename(initialdir=".", title="Select a File", filetypes=(("Text files", "*.txt"),))
@@ -411,55 +414,64 @@ def openFile():
     with open(root.filename, 'r') as file:
         # Entering the numbers of strategies
         numStrats = file.readline().split(" ")
+        originalNumStrat1 = numStratsEntry1.get()
+        originalNumStrat2 = numStratsEntry2.get()
         numStratsEntry1.delete(0, 'end')
         numStratsEntry2.delete(0, 'end')
         numStratsEntry1.insert(0, numStrats[0])
         numStratsEntry2.insert(0, numStrats[1])
-        numStratsClick()
-        numStrats1 = int(numStratsEntry1.get())
-        numStrats2 = int(numStratsEntry2.get())
-        
-        # Entering the strategy names
-        p1StrategyNames = file.readline().rstrip().split(" ")
-        p2StrategyNames = file.readline().rstrip().split(" ")
-        payoffMatrixSlaves = payoffsFrame.grid_slaves()
-        strategyNames = payoffMatrixSlaves[numStrats1 * numStrats2:]
-        p1StrategyNameEntries = strategyNames[:numStrats1]
-        p1StrategyNameEntries.reverse()
-        p2StrategyNameEntries= strategyNames[numStrats2:]
-        p2StrategyNameEntries.reverse()
-        
-        for i, entry in enumerate(p1StrategyNameEntries):
-            entry.delete(0, 'end')
-            entry.insert(0, p1StrategyNames[i])
-        for i, entry in enumerate(p2StrategyNameEntries):
-            entry.delete(0, 'end')
-            entry.insert(0, p2StrategyNames[i])
-        
-        payoffs = payoffMatrixSlaves[:numStrats1 * numStrats2]
-        payoffs.reverse()
-        groupedOutcomes = [payoffs[i:i + numStrats2] for i in range(0, len(payoffs), numStrats2)]
-        
-        # clearing the payoff matrix
-        for row in groupedOutcomes:
-            for payoff in row:
-                payoff.delete(0, 'end')
-        
-        # filling the payoff matrix with the values from the file
-        for line_index, line in enumerate(file):            
-            payoffLine = line.split(" ")
-            if payoffLine[-1] == "\n":
-                payoffLine.pop()
-            if "\n" in payoffLine[-1]:
-                payoffLine[-1] = payoffLine[-1][:len(payoffLine[-1]) - 1]
+        proceed = numStratsClick() # resizing the payoff matrix
+        if proceed == True:
+            numStrats1 = int(numStratsEntry1.get())
+            numStrats2 = int(numStratsEntry2.get())
             
-            groupedPayoffs = [payoffLine[i:i + 2] for i in range(0, len(payoffLine), 2)]
-            stringPayoffs = [str(p[0]) + ", " + str(p[1]) for p in groupedPayoffs]
+            # Entering the strategy names
+            p1StrategyNames = file.readline().rstrip().split(" ")
+            p2StrategyNames = file.readline().rstrip().split(" ")
+            payoffMatrixSlaves = payoffsFrame.grid_slaves()
+            strategyNames = payoffMatrixSlaves[numStrats1 * numStrats2:]
+            p1StrategyNameEntries = strategyNames[:numStrats1]
+            p1StrategyNameEntries.reverse()
+            p2StrategyNameEntries= strategyNames[numStrats2:]
+            p2StrategyNameEntries.reverse()
+            
+            for i, entry in enumerate(p1StrategyNameEntries):
+                entry.delete(0, 'end')
+                entry.insert(0, p1StrategyNames[i])
+            for i, entry in enumerate(p2StrategyNameEntries):
+                entry.delete(0, 'end')
+                entry.insert(0, p2StrategyNames[i])
+            
+            payoffs = payoffMatrixSlaves[:numStrats1 * numStrats2]
+            payoffs.reverse()
+            groupedOutcomes = [payoffs[i:i + numStrats2] for i in range(0, len(payoffs), numStrats2)]
+            
+            # clearing the payoff matrix
+            for row in groupedOutcomes:
+                for payoff in row:
+                    payoff.delete(0, 'end')
+            
+            # filling the payoff matrix with the values from the file
+            for line_index, line in enumerate(file):            
+                payoffLine = line.split(" ")
+                if payoffLine[-1] == "\n":
+                    payoffLine.pop()
+                if "\n" in payoffLine[-1]:
+                    payoffLine[-1] = payoffLine[-1][:len(payoffLine[-1]) - 1]
                 
-            # entering the new values into the payoff matrix
-            row = groupedOutcomes[line_index]
-            for i, payoff in enumerate(row):
-                payoff.insert(0, stringPayoffs[i])
+                groupedPayoffs = [payoffLine[i:i + 2] for i in range(0, len(payoffLine), 2)]
+                stringPayoffs = [str(p[0]) + ", " + str(p[1]) for p in groupedPayoffs]
+                    
+                # entering the new values into the payoff matrix
+                row = groupedOutcomes[line_index]
+                for i, payoff in enumerate(row):
+                    payoff.insert(0, stringPayoffs[i])
+        else:
+            # resetting the numbers of strategies to their original values
+            numStratsEntry1.delete(0, 'end')
+            numStratsEntry2.delete(0, 'end')
+            numStratsEntry1.insert(0, originalNumStrat1)
+            numStratsEntry2.insert(0, originalNumStrat2)
     return
 
 def saveAs():
