@@ -450,60 +450,75 @@ def numStratsClickNoWarning():
     """
     numStrats1 = int(numStratsEntry1.get())
     numStrats2 = int(numStratsEntry2.get())
+    negativeStratsError = -1
+    zeroStratsError = -1
+    oneByOneError = -1
+    if numStrats1 == 0 or numStrats2 == 0:
+        zeroStratsError = messagebox.showerror("Error", "A player may not have zero strategies.")
     
-    if numStrats1 == 0 and numStrats2 == 0:
-        oneByOneError = messagebox.showerror("Error", "A player may not have zero strategies.")
-    
-    if numStrats1 == 1 and numStrats2 == 1:
-        oneByOneError = messagebox.showerror("Error", "The number of strategies of the players may not both be 1.")
-    
-    # clearing the table
-    payoffMatrixSlaves = payoffsFrame.grid_slaves()
-    for slave in payoffMatrixSlaves:
-        slave.grid_remove()
-    
-    # refilling the table
-    for i in range(numStrats2):
-        e = Entry(payoffsFrame, width=10)
-        if i == 0:
-            e.insert(0, "L")
-        elif i > 0 and i < numStrats2 - 1 and numStrats2 == 3:
-            e.insert(0, "C")
-        elif i > 0 and i < numStrats2 - 1 and numStrats2 >= 3:
-            e.insert(0, "C" + str(i))
-        else:
-            e.insert(0, "R")
-        e.grid(row=0, column=i + 1, pady=5)
+    if zeroStratsError == -1:
+        if numStrats1 == 1 or numStrats2 == 1:
+            oneByOneError = messagebox.showerror("Error", "A player may not have only one strategy.")
+            return
         
-    for j in range(numStrats1):
-        e = Entry(payoffsFrame, width=10)
-        if j == 0:
-            e.insert(0, "U")
-        elif j > 0 and j < numStrats1 - 1 and numStrats1 == 3:
-            e.insert(0, "M")
-        elif j > 0 and j < numStrats1 - 1 and numStrats1 > 3:
-            e.insert(0, "M" + str(j))
-        else:
-            e.insert(0, "D")
-        e.grid(row=j + 1, column=0, padx=5)
+        if oneByOneError == -1:
+            if numStrats1 < 0 or numStrats2 < 0:
+                negativeStratsError = messagebox.showerror("Error", "A player may not have a negative number of strategies.")
+                return
+            if negativeStratsError == -1:
+                proceed = messagebox.askokcancel("Clear Payoffs?", "This will clear the payoff matrix. Do you want to proceed?")       
+                # clearing the table
+                payoffMatrixSlaves = payoffsFrame.grid_slaves()
+                for slave in payoffMatrixSlaves:
+                    slave.grid_remove()
+                
+                # refilling the table
+                for i in range(numStrats2):
+                    e = Entry(payoffsFrame, width=10)
+                    if i == 0:
+                        e.insert(0, "L")
+                    elif i > 0 and i < numStrats2 - 1 and numStrats2 == 3:
+                        e.insert(0, "C")
+                    elif i > 0 and i < numStrats2 - 1 and numStrats2 >= 3:
+                        e.insert(0, "C" + str(i))
+                    else:
+                        e.insert(0, "R")
+                    e.grid(row=0, column=i + 1, pady=5)
+                    
+                for j in range(numStrats1):
+                    e = Entry(payoffsFrame, width=10)
+                    if j == 0:
+                        e.insert(0, "U")
+                    elif j > 0 and j < numStrats1 - 1 and numStrats1 == 3:
+                        e.insert(0, "M")
+                    elif j > 0 and j < numStrats1 - 1 and numStrats1 > 3:
+                        e.insert(0, "M" + str(j))
+                    else:
+                        e.insert(0, "D")
+                    e.grid(row=j + 1, column=0, padx=5)
 
-    rows = []
-    for i in range(numStrats1):
-        cols = []
-        for j in range(numStrats2):
-            e = Entry(payoffsFrame, width=5)
-            e.grid(row=i + 1, column=j + 1, sticky=NSEW)
-            e.insert(END, '%d, %d' % (0, 0))
-            cols.append(e)
-        rows.append(cols)
-        
-    # Clearing the equilibria
-    equilibriaSlaves = equilibriaFrame.grid_slaves()
-    eqLabel = equilibriaSlaves[0]
-    if type(eqLabel).__name__ == "Label":
-        eqLabel.grid_remove()
-    
-    root.geometry(f"{45 * numStrats2 + 600}x{25 * numStrats1 + 300}")
+                rows = []
+                for i in range(numStrats1):
+                    cols = []
+                    for j in range(numStrats2):
+                        e = Entry(payoffsFrame, width=5)
+                        e.grid(row=i + 1, column=j + 1, sticky=NSEW)
+                        e.insert(END, '%d, %d' % (0, 0))
+                        cols.append(e)
+                    rows.append(cols)
+                    
+                # Clearing the equilibria
+                equilibriaSlaves = equilibriaFrame.grid_slaves()
+                eqLabel = equilibriaSlaves[0]
+                if type(eqLabel).__name__ == "Label":
+                    eqLabel.grid_remove()
+                
+                root.geometry(f"{45 * numStrats2 + 600}x{25 * numStrats1 + 300}")
+                return
+            else:
+                return
+        else:
+            return
     return
 
 def openFile():
@@ -667,6 +682,9 @@ def startMatch(p1, p2, t = 6):
 #     return
 
 def writeToFile(fileName, groupedPayoffs):
+    """
+        Writes the data of the current game into the fileName file
+    """
     numStrats1 = int(numStratsEntry1.get())
     numStrats2 = int(numStratsEntry2.get())
     
