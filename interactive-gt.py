@@ -91,11 +91,9 @@ def computeEquilibria(output):
     """
     proceed = enterPayoffs()
     if proceed == True:
-        print("PROCEEDING")
         numStrats1 = int(numStratsEntry1.get())
         numStrats2 = int(numStratsEntry2.get())
         if output == 0: # Standard nashpy Output
-            print("STANDARD NASHPY OUTPUT")
             eqs = G.support_enumeration()
             numEquilibria = len(list(eqs))
             if numEquilibria % 2 == 0:
@@ -357,7 +355,6 @@ def enterPayoffs():
     for outcome in outcomes:
         if "," not in outcome.get():
             invalidPayoffError = messagebox.showerror("Error", f"Invalid payoff \"{outcome.get()}\". Payoffs must be two numbers separated by commas.")
-            print("HERE")
             return False
     
     payoffs = [tuple(map(float, outcome.get().split(","))) for outcome in outcomes]
@@ -389,7 +386,6 @@ def enterPayoffs():
     
     global G
     G = nash.Game(p1Matrix, p2Matrix)
-    print("RETURN")
     return True
 
 def numStratsClick():
