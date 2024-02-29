@@ -533,60 +533,61 @@ def numStratsClickNoWarning():
 def openFile():
     root.filename = filedialog.askopenfilename(initialdir=".", title="Select a File", filetypes=(("Text files", "*.txt"),))
     
-    with open(root.filename, 'r') as file:
-        # Entering the numbers of strategies
-        numStrats = file.readline().rstrip().split(" ")
-        proceed = numStratsClick() # resizing the payoff matrix
-        if proceed == True:
-            numStratsEntry1.delete(0, 'end')
-            numStratsEntry2.delete(0, 'end')
-            numStratsEntry1.insert(0, numStrats[0])
-            numStratsEntry2.insert(0, numStrats[1])
-            numStratsClickNoWarning()
-            numStrats1 = int(numStratsEntry1.get())
-            numStrats2 = int(numStratsEntry2.get())
-            
-            # Entering the strategy names
-            p1StrategyNames = file.readline().rstrip().split(" ")
-            p2StrategyNames = file.readline().rstrip().split(" ")
-            payoffMatrixSlaves = payoffsFrame.grid_slaves()
-            strategyNames = payoffMatrixSlaves[numStrats1 * numStrats2:]
-            p1StrategyNameEntries = strategyNames[:numStrats1]
-            p1StrategyNameEntries.reverse()
-            p2StrategyNameEntries= strategyNames[numStrats2:]
-            p2StrategyNameEntries.reverse()
-            
-            for i, entry in enumerate(p1StrategyNameEntries):
-                entry.delete(0, 'end')
-                entry.insert(0, p1StrategyNames[i])
-            for i, entry in enumerate(p2StrategyNameEntries):
-                entry.delete(0, 'end')
-                entry.insert(0, p2StrategyNames[i])
-            
-            payoffs = payoffMatrixSlaves[:numStrats1 * numStrats2]
-            payoffs.reverse()
-            groupedOutcomes = [payoffs[i:i + numStrats2] for i in range(0, len(payoffs), numStrats2)]
-            
-            # clearing the payoff matrix
-            for row in groupedOutcomes:
-                for payoff in row:
-                    payoff.delete(0, 'end')
-            
-            # filling the payoff matrix with the values from the file
-            for line_index, line in enumerate(file):            
-                payoffLine = line.split(" ")
-                if payoffLine[-1] == "\n":
-                    payoffLine.pop()
-                if "\n" in payoffLine[-1]:
-                    payoffLine[-1] = payoffLine[-1][:len(payoffLine[-1]) - 1]
+    if root.filename != '':
+        with open(root.filename, 'r') as file:
+            # Entering the numbers of strategies
+            numStrats = file.readline().rstrip().split(" ")
+            proceed = numStratsClick() # resizing the payoff matrix
+            if proceed == True:
+                numStratsEntry1.delete(0, 'end')
+                numStratsEntry2.delete(0, 'end')
+                numStratsEntry1.insert(0, numStrats[0])
+                numStratsEntry2.insert(0, numStrats[1])
+                numStratsClickNoWarning()
+                numStrats1 = int(numStratsEntry1.get())
+                numStrats2 = int(numStratsEntry2.get())
                 
-                groupedPayoffs = [payoffLine[i:i + 2] for i in range(0, len(payoffLine), 2)]
-                stringPayoffs = [str(p[0]) + ", " + str(p[1]) for p in groupedPayoffs]
+                # Entering the strategy names
+                p1StrategyNames = file.readline().rstrip().split(" ")
+                p2StrategyNames = file.readline().rstrip().split(" ")
+                payoffMatrixSlaves = payoffsFrame.grid_slaves()
+                strategyNames = payoffMatrixSlaves[numStrats1 * numStrats2:]
+                p1StrategyNameEntries = strategyNames[:numStrats1]
+                p1StrategyNameEntries.reverse()
+                p2StrategyNameEntries= strategyNames[numStrats2:]
+                p2StrategyNameEntries.reverse()
+                
+                for i, entry in enumerate(p1StrategyNameEntries):
+                    entry.delete(0, 'end')
+                    entry.insert(0, p1StrategyNames[i])
+                for i, entry in enumerate(p2StrategyNameEntries):
+                    entry.delete(0, 'end')
+                    entry.insert(0, p2StrategyNames[i])
+                
+                payoffs = payoffMatrixSlaves[:numStrats1 * numStrats2]
+                payoffs.reverse()
+                groupedOutcomes = [payoffs[i:i + numStrats2] for i in range(0, len(payoffs), numStrats2)]
+                
+                # clearing the payoff matrix
+                for row in groupedOutcomes:
+                    for payoff in row:
+                        payoff.delete(0, 'end')
+                
+                # filling the payoff matrix with the values from the file
+                for line_index, line in enumerate(file):            
+                    payoffLine = line.split(" ")
+                    if payoffLine[-1] == "\n":
+                        payoffLine.pop()
+                    if "\n" in payoffLine[-1]:
+                        payoffLine[-1] = payoffLine[-1][:len(payoffLine[-1]) - 1]
                     
-                # entering the new values into the payoff matrix
-                row = groupedOutcomes[line_index]
-                for i, payoff in enumerate(row):
-                    payoff.insert(0, stringPayoffs[i])
+                    groupedPayoffs = [payoffLine[i:i + 2] for i in range(0, len(payoffLine), 2)]
+                    stringPayoffs = [str(p[0]) + ", " + str(p[1]) for p in groupedPayoffs]
+                        
+                    # entering the new values into the payoff matrix
+                    row = groupedOutcomes[line_index]
+                    for i, payoff in enumerate(row):
+                        payoff.insert(0, stringPayoffs[i])
     return
 
 def saveAs():
@@ -694,6 +695,20 @@ def writeToFile(fileName, groupedPayoffs):
     """
         Writes the data of the current game into the fileName file
     """
+    if ".txt" not in fileName and "." in fileName:
+        wrongExtensionError = messagebox.showerror("Error", f"The file name \"{fileName}\" contains the wrong file extension. The extension should be \".txt\".")
+        return
+    elif ".txt" not in fileName and "." not in fileName:
+        fileName = fileName + ".txt"
+        
+    numPeriods = 0
+    for char in fileName:
+        if char == '.':
+            numPeriods += 1
+    if numPeriods != 1:
+        multiplePeriodsError = messagebox.showerror("Error", f"The file name \"{fileName}\" contains multiple periods.")
+        return
+    
     numStrats1 = int(numStratsEntry1.get())
     numStrats2 = int(numStratsEntry2.get())
     
