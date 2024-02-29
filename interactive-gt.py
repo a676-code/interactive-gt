@@ -91,9 +91,11 @@ def computeEquilibria(output):
     """
     proceed = enterPayoffs()
     if proceed == True:
+        print("PROCEEDING")
         numStrats1 = int(numStratsEntry1.get())
         numStrats2 = int(numStratsEntry2.get())
         if output == 0: # Standard nashpy Output
+            print("STANDARD NASHPY OUTPUT")
             eqs = G.support_enumeration()
             numEquilibria = len(list(eqs))
             if numEquilibria % 2 == 0:
@@ -387,7 +389,8 @@ def enterPayoffs():
     
     global G
     G = nash.Game(p1Matrix, p2Matrix)
-    return
+    print("RETURN")
+    return True
 
 def numStratsClick():
     """
@@ -1050,7 +1053,7 @@ def writeToFileLatex(fileName, groupedPayoffs):
 root = Tk()
 root.title("Interactive GT")
 root.geometry("700x425")
-root.iconbitmap("knight.ico")
+root.iconbitmap("C:/Users/aloun/Desktop/interactive-gt/knight.ico")
 
 # Menu bar
 menubar = Menu(root)
