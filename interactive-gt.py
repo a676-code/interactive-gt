@@ -28,6 +28,9 @@ def changeBackgroundColor():
     return
 
 def clearPayoffMatrix():
+    """
+        Fills the payoff matrix with zeros
+    """
     proceed = messagebox.askokcancel("Clear Payoffs?", "Are you sure you want to clear the payoff matrix? ")
     if (proceed == True):
         numStrats1 = int(numStratsEntry1.get())
@@ -83,6 +86,9 @@ def clearPayoffMatrix():
     return
 
 def computeEquilibria(output):
+    """
+    Computes the equilibria using nashpy of the current game and formats the output according to whether the output variable is 0 or 1, 
+    """
     proceed = enterPayoffs()
     if proceed == True:
         numStrats1 = int(numStratsEntry1.get())
@@ -322,9 +328,15 @@ def computeEquilibria(output):
         return
 
 def containsDigit(string):
+    """
+        Checks if string contains a digit
+    """
     return any(char.isdigit() for char in string)
 
 def enterColor(color):
+    """
+        Makes the root window have a certain color
+    """
     try:
         root.configure(bg=color)
     except TclError:
@@ -332,6 +344,9 @@ def enterColor(color):
     return
 
 def enterPayoffs():
+    """
+    Enters the payoffs from the Entries into a list
+    """
     numStrats1 = int(numStratsEntry1.get())
     numStrats2 = int(numStratsEntry2.get())
     payoffMatrixSlaves = payoffsFrame.grid_slaves()
@@ -531,6 +546,9 @@ def numStratsClickNoWarning():
     return
 
 def openFile():
+    """
+        opens a file and reads the data from it into a list
+    """
     root.filename = filedialog.askopenfilename(initialdir=".", title="Select a File", filetypes=(("Text files", "*.txt"),))
     
     if root.filename != '':
@@ -591,6 +609,9 @@ def openFile():
     return
 
 def saveAs():
+    """
+    Save the data of the current payoff matrix in a txt file
+    """
     numStrats1 = int(numStratsEntry1.get())
     numStrats2 = int(numStratsEntry2.get())
     
@@ -618,6 +639,9 @@ def saveAs():
     return
 
 def saveAsLatex():
+    """
+        Saves the current payoff matrix in the format of a buildable LaTeX array
+    """
     numStrats1 = int(numStratsEntry1.get())
     numStrats2 = int(numStratsEntry2.get())
     
@@ -645,6 +669,9 @@ def saveAsLatex():
     return
 
 def startMatch(p1, p2, t = 6):    
+    """
+    Runs an axelrod match between players of type p1 and p2 with t turns
+    """
     p1 = ""
     p2 = ""
     clicked1NoSpaces = clicked1.get().replace(" ", "")
@@ -742,6 +769,9 @@ def writeToFile(fileName, groupedPayoffs):
     return
 
 def writeToFileLatex(fileName, groupedPayoffs):
+    """
+        Writes the data of the current game into the fileName file in the format of a buildable LaTeX array
+    """
     LETTERS = ["a", "b", "c", "d", "e", "f","g", "h","i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z",]
     GREEK_LETTERS = [
         "alpha",
