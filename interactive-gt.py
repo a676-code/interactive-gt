@@ -365,60 +365,74 @@ def numStratsClick():
     """
     Resizes the payoff matrix according to the numbers of strategies entered in by the user
     """
-    proceed = messagebox.askokcancel("Clear Payoffs?", "This will clear the payoff matrix. Do you want to proceed?")
+    numStrats1 = int(numStratsEntry1.get())
+    numStrats2 = int(numStratsEntry2.get())
+    zeroStratsError = -1
+    oneByOneError = -1
+    if numStrats1 == 0 or numStrats2 == 0:
+        zeroStratsError = messagebox.showerror("Error", "A player may not have zero strategies.")
     
-    if (proceed == True):   
-        numStrats1 = int(numStratsEntry1.get())
-        numStrats2 = int(numStratsEntry2.get())
+    if zeroStratsError == -1:
+        if numStrats1 == 1 or numStrats2 == 1:
+            oneByOneError = messagebox.showerror("Error", "A player may not have only one strategy.")
+            return
         
-        # clearing the table
-        payoffMatrixSlaves = payoffsFrame.grid_slaves()
-        for slave in payoffMatrixSlaves:
-            slave.grid_remove()
-        
-        # refilling the table
-        for i in range(numStrats2):
-            e = Entry(payoffsFrame, width=10)
-            if i == 0:
-                e.insert(0, "L")
-            elif i > 0 and i < numStrats2 - 1 and numStrats2 == 3:
-                e.insert(0, "C")
-            elif i > 0 and i < numStrats2 - 1 and numStrats2 >= 3:
-                e.insert(0, "C" + str(i))
-            else:
-                e.insert(0, "R")
-            e.grid(row=0, column=i + 1, pady=5)
-            
-        for j in range(numStrats1):
-            e = Entry(payoffsFrame, width=10)
-            if j == 0:
-                e.insert(0, "U")
-            elif j > 0 and j < numStrats1 - 1 and numStrats1 == 3:
-                e.insert(0, "M")
-            elif j > 0 and j < numStrats1 - 1 and numStrats1 > 3:
-                e.insert(0, "M" + str(j))
-            else:
-                e.insert(0, "D")
-            e.grid(row=j + 1, column=0, padx=5)
+        if oneByOneError == -1:
+            proceed = messagebox.askokcancel("Clear Payoffs?", "This will clear the payoff matrix. Do you want to proceed?")
+            if (proceed == True):        
+                # clearing the table
+                payoffMatrixSlaves = payoffsFrame.grid_slaves()
+                for slave in payoffMatrixSlaves:
+                    slave.grid_remove()
+                
+                # refilling the table
+                for i in range(numStrats2):
+                    e = Entry(payoffsFrame, width=10)
+                    if i == 0:
+                        e.insert(0, "L")
+                    elif i > 0 and i < numStrats2 - 1 and numStrats2 == 3:
+                        e.insert(0, "C")
+                    elif i > 0 and i < numStrats2 - 1 and numStrats2 >= 3:
+                        e.insert(0, "C" + str(i))
+                    else:
+                        e.insert(0, "R")
+                    e.grid(row=0, column=i + 1, pady=5)
+                    
+                for j in range(numStrats1):
+                    e = Entry(payoffsFrame, width=10)
+                    if j == 0:
+                        e.insert(0, "U")
+                    elif j > 0 and j < numStrats1 - 1 and numStrats1 == 3:
+                        e.insert(0, "M")
+                    elif j > 0 and j < numStrats1 - 1 and numStrats1 > 3:
+                        e.insert(0, "M" + str(j))
+                    else:
+                        e.insert(0, "D")
+                    e.grid(row=j + 1, column=0, padx=5)
 
-        rows = []
-        for i in range(numStrats1):
-            cols = []
-            for j in range(numStrats2):
-                e = Entry(payoffsFrame, width=5)
-                e.grid(row=i + 1, column=j + 1, sticky=NSEW)
-                e.insert(END, '%d, %d' % (0, 0))
-                cols.append(e)
-            rows.append(cols)
-            
-        # Clearing the equilibria
-        equilibriaSlaves = equilibriaFrame.grid_slaves()
-        eqLabel = equilibriaSlaves[0]
-        if type(eqLabel).__name__ == "Label":
-            eqLabel.grid_remove()
-        
-        root.geometry(f"{45 * numStrats2 + 600}x{25 * numStrats1 + 300}")
-    return proceed
+                rows = []
+                for i in range(numStrats1):
+                    cols = []
+                    for j in range(numStrats2):
+                        e = Entry(payoffsFrame, width=5)
+                        e.grid(row=i + 1, column=j + 1, sticky=NSEW)
+                        e.insert(END, '%d, %d' % (0, 0))
+                        cols.append(e)
+                    rows.append(cols)
+                    
+                # Clearing the equilibria
+                equilibriaSlaves = equilibriaFrame.grid_slaves()
+                eqLabel = equilibriaSlaves[0]
+                if type(eqLabel).__name__ == "Label":
+                    eqLabel.grid_remove()
+                
+                root.geometry(f"{45 * numStrats2 + 600}x{25 * numStrats1 + 300}")
+                return proceed
+            else:
+                return
+        else:
+            return
+    return
 
 def numStratsClickNoWarning():
     """
@@ -426,6 +440,12 @@ def numStratsClickNoWarning():
     """
     numStrats1 = int(numStratsEntry1.get())
     numStrats2 = int(numStratsEntry2.get())
+    
+    if numStrats1 == 0 and numStrats2 == 0:
+        oneByOneError = messagebox.showerror("Error", "A player may not have zero strategies.")
+    
+    if numStrats1 == 1 and numStrats2 == 1:
+        oneByOneError = messagebox.showerror("Error", "The number of strategies of the players may not both be 1.")
     
     # clearing the table
     payoffMatrixSlaves = payoffsFrame.grid_slaves()
@@ -670,34 +690,189 @@ def writeToFile(fileName, groupedPayoffs):
     return
 
 def writeToFileLatex(fileName, groupedPayoffs):
+    LETTERS = ["a", "b", "c", "d", "e", "f","g", "h","i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z",]
+    GREEK_LETTERS = [
+        "alpha",
+        "beta",
+        "gamma",
+        "delta",
+        "epsilon",
+        "zeta",
+        "eta",
+        "theta",
+        "iota",
+        "kappa",
+        "lambda",
+        "mu", 
+        "nu",
+        "xi",
+        # "omicron",
+        "pi",
+        "rho",
+        "sigma",
+        "tau",
+        "upsilon",
+        "phi",
+        "chi",
+        "psi",
+        "omega"
+    ]
+    CAPITAL_GREEK_LETTERS = [
+        # "Alpha",
+        # "Beta",
+        "Gamma",
+        "Delta",
+        # "Epsilon",
+        # "Zeta",
+        # "Eta", 
+        "Theta",
+        # "Iota",
+        # "Kappa",
+        "Lambda",
+        # "Mu", 
+        # "Nu",
+        "Xi",
+        # "Omicron",
+        "Pi",
+        # "Rho",
+        "Sigma",
+        # "Tau",
+        # "Upsilon"
+        "Phi",
+        "Chi",
+        "Psi",
+        "Omega"
+    ]
+    
     numStrats1 = int(numStratsEntry1.get())
     numStrats2 = int(numStratsEntry2.get())
     
     # Getting list of the strategy names
+    """
+    We want to accept all names of the forms: 
+      X+, 
+      X+n+, 
+      X+_n+, 
+      g, 
+      gn+, and 
+      g_n, 
+    where X+ is a string of characters, g is the English name of a greek letter, and n+ is a string of digits, and reject all others. So, we want to reject things like (X+ X+), X+n+X+, X+g+X+, g+, g+n, n+, n+X+, X+_ and any name with multiple underscores
+    """
     payoffMatrixSlaves = payoffsFrame.grid_slaves()
-    strategyNames = payoffMatrixSlaves[numStrats1 * numStrats2:]
+    strategyNameEntries = payoffMatrixSlaves[numStrats1 * numStrats2:]
     
-    p1StrategyNames = strategyNames[:numStrats1]
-    p1StrategyNames.reverse()
-    p1StrategyNames = [name.get() for name in p1StrategyNames]
+    # P1 ###########################################################
+    p1StrategyNameEntries = strategyNameEntries[:numStrats1]
+    p1StrategyNameEntries.reverse()
+    p1StrategyNames = [name.get() for name in p1StrategyNameEntries]
+    
+    # Input validation; checking for invalid names and cancelling if rejects are found
+    for i, name in enumerate(p1StrategyNames):
+        if name[0].isalpha(): # starts with a letter
+            numUnderscores = 0
+            for char in name:
+                if char == "_":
+                    numUnderscores += 1
+                    if numUnderscores > 1:
+                        # ERROR: multiple underscores
+                        multipleUnderscoresError = messagebox.showerror("Error", f"Invalid strategy name \"{name}\". Strategy names may not have multiple underscores.")
+                        return
+                    
+            if " " in name:
+                # ERROR: spaces
+                spacesError = messagebox.showerror("Error", f"Invalid strategy name \"{name}\". Strategy names may not contain spaces.")
+                
+            if name[-1] == "_":
+                # ERRROR: ending underscore
+                endingUnderscoreError = messagebox.showerror("Error", f"Invalid strategy name \"{name}\". Strategy names may not end with an underscore.")
+            
+            # Getting the last index of the first alphabetical string in the name
+            num = 0
+            breakWhile = False
+            while num < len(name) and not name[num].isdigit():
+                for g in GREEK_LETTERS:
+                    if g in name[num + 1:len(name) - 1]:
+                        lastIndexOfFirstString = num
+                        breakWhile = True
+                        break
+                if breakWhile == True:
+                    break
+                if name[num].isdigit() or num == len(name) - 1:
+                    lastIndexOfFirstString = num
+                num += 1
+            print("LASTINDEX:", lastIndexOfFirstString)
+            
+            # if the name is just a an alphabetical strings
+            if name == name[0:lastIndexOfFirstString]:
+                print("NAME:", name)
+                for l in LETTERS:
+                    if name[lastIndexOfFirstString + 1].isdigit() and l in name[lastIndexOfFirstString + 1:len(name) - 1].lower():
+                        # ERROR: X+n+X+
+                        multipleCharStrings = messagebox.showerror("Error", f"Invalid strategy name \"{name}\". Strategy names cannot be of the form (X+)(n+)(X+), where X+ denotes a string of alphabetical characters and n+ denotes a string of digits.")
+                        return
+                
+                for g in GREEK_LETTERS:
+                    if g in name[lastIndexOfFirstString + 1:len(name) - 1].lower():
+                        # ERROR: X+g+X+
+                        greekInTheMiddleError = messagebox.showerror("Error", f"Invalid strategy name \"{name}\". Strategy names may not contain greek letters in the middle.")
+                        return
+            else: # name is not just an alphabetical string
+                print("ELSE")
+                print("STRING:", name[0:lastIndexOfFirstString])
+                print("name:", name)
+                if name in GREEK_LETTERS or name in CAPITAL_GREEK_LETTERS:
+                    p1StrategyNames[i] = "\\" + name
+        else:
+            # ERROR: n+, n+X, _X+
+            digitsAndUnderscoresError = messagebox.showerror("Error", f"Invalid strategy name \"{name}\". Strategy names may not begin with digits or underscores.")
+            return
+    
+    """
+    # inserting underscores into names of the form Xn*
     p1StrategyNames = [name[0] + "_" + name[1:] if containsDigit(name) else name for name in p1StrategyNames]
-    # adding braces around subscripts with more than one character
-    p1StrategyNamesPieces = [name.split("_") for name in p1StrategyNames]
-    p1StrategyNamesPieces = ["{" +  string + "}" if containsDigit(string) and len(string) > 1 else string for piece in p1StrategyNamesPieces for string in piece]
-    p1StrategyNames = [p1StrategyNamesPieces[i] + "_" + p1StrategyNamesPieces[i + 1] for i in range(1, len(p1StrategyNamesPieces) - 1, 2)]
-    p1StrategyNames.insert(0, "L")
-    p1StrategyNames.append("R")
     
-    p2StrategyNames = strategyNames[numStrats1:]
-    p2StrategyNames.reverse()
-    p2StrategyNames = [name.get() for name in p2StrategyNames]
-    p2StrategyNames = [name[0] + "_" + name[1:] if containsDigit(name) else name for name in p2StrategyNames]
     # adding braces around subscripts with more than one character
-    p2StrategyNamesPieces = [name.split("_") for name in p2StrategyNames]
-    p2StrategyNamesPieces = ["{" +  string + "}" if containsDigit(string) and len(string) > 1 else string for piece in p2StrategyNamesPieces for string in piece]
-    p2StrategyNames = [p2StrategyNamesPieces[i] + "_" + p2StrategyNamesPieces[i + 1] for i in range(1, len(p2StrategyNamesPieces) - 1, 2)]
-    p2StrategyNames.insert(0, "U")
-    p2StrategyNames.append("D")
+    p1StrategyNamePieces = [name.split("_") for name in p1StrategyNames] # = [C, 1, C, 2,...]
+    
+    p1StrategyNamePieces = ["\\" + string if string in GREEK_LETTERS or string in CAPITAL_GREEK_LETTERS else string for piece in p1StrategyNamePieces for string in piece]
+        
+    p1StrategyNamePieces = ["{" +  piece + "}" if containsDigit(piece) and len(piece) > 1 else piece for piece in p1StrategyNamePieces]
+    for piece in p1StrategyNamePieces:
+        print("p1:", piece)
+    
+    p1StrategyNames = [p1StrategyNamePieces[i] + "_" + p1StrategyNamePieces[i + 1] if "{" in p1StrategyNamePieces[i + 1] else p1StrategyNamePieces[i] for i in range(0, len(p1StrategyNamePieces) - 1)]
+    """
+    
+    # P2 ###########################################################
+    p2StrategyNamesEntries = strategyNameEntries[numStrats1:]
+    p2StrategyNamesEntries.reverse()
+    p2StrategyNames = [name.get() for name in p2StrategyNamesEntries]
+    
+    """
+    p2StrategyNames = [name[0] + "_" + name[1:] if containsDigit(name) else name for name in p2StrategyNames]
+
+    p2StrategyNamePieces = [name.split("_") for name in p2StrategyNames] # = [C, 1, C, 2,...]
+    
+    p2StrategyNamePieces = ["\\" + string if string in GREEK_LETTERS or string in CAPITAL_GREEK_LETTERS else string for piece in p2StrategyNamePieces for string in piece]
+    
+    # adding braces around subscripts with more than one character
+    p2StrategyNamePieces = ["{" +  piece + "}" if containsDigit(piece) and len(string) > 1 else piece for piece in p2StrategyNamePieces]
+    
+    p2StrategyNames = [p2StrategyNamePieces[i] + "_" + p2StrategyNamePieces[i + 1] 
+                       if "{" in p2StrategyNamePieces[i + 1] 
+                       else p2StrategyNamePieces[i] 
+                       for i in range(0, len(p2StrategyNamePieces) - 1)]
+    
+    p2StrategyNames = []
+    for i, name in enumerate(p2StrategyNamePieces):
+        if i < len(p2StrategyNamePieces) and "{" in p2StrategyNamePieces[i + 1]:
+            p2StrategyNames.append(p2StrategyNamePieces[i] + "_" + p2StrategyNamePieces[i + 1])
+        elif i < len(p2StrategyNamePieces):
+            p2StrategyNames.append(p2StrategyNamePieces[i])
+    
+    for name in p2StrategyNames:
+        print("p2:", name)
+    """
     
     with open(fileName, 'w') as file:
         file.write("\documentclass[12pt]{article}\n\n")
@@ -715,6 +890,7 @@ def writeToFileLatex(fileName, groupedPayoffs):
     with open(fileName, "w") as file:
         file.writelines(lines)        
         file.write("\t\t\hline\n")
+        # writing p2's strategy names
         nameString = " & ".join(p2StrategyNames)
         nameString = "& " + nameString + " "
         file.write("\t\t" + nameString + "\\\\ \hline\hline\n")
@@ -760,8 +936,6 @@ def writeToFileLatex(fileName, groupedPayoffs):
         for i, group in enumerate(groupedPayoffs):
             zeros1[i] = 1
             array1 = np.array(zeros1)
-            print("writing p1 i:", i)
-            print("writing p1 name:", p1StrategyNames[i])
             file.write("\t\t" + p1StrategyNames[i] + " & ")
             for j, payoff in enumerate(group):
                 zeros2[j] = 1
