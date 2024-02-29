@@ -9,6 +9,9 @@ import warnings
 
 # Function definitions
 def changeBackgroundColor():
+    """
+        Changes the background color of the window
+    """
     top = Toplevel()
     top.title("Enter a Color")
     top.iconbitmap("knight.ico")
@@ -763,7 +766,7 @@ def writeToFileLatex(fileName, groupedPayoffs):
       g, 
       gn+, and 
       g_n, 
-    where X+ is a string of characters, g is the English name of a greek letter, and n+ is a string of digits, and reject all others. So, we want to reject things like (X+ X+), X+n+X+, X+g+X+, g+, g+n, n+, n+X+, X+_ and any name with multiple underscores
+    where X+ is a string of characters, g is the English name of a greek letter, and n+ is a string of digits, and reject all others. So, we want to reject things like spaces, n+, n+X+, X+_ and any name with multiple underscores
     """
     payoffMatrixSlaves = payoffsFrame.grid_slaves()
     strategyNameEntries = payoffMatrixSlaves[numStrats1 * numStrats2:]
@@ -782,7 +785,7 @@ def writeToFileLatex(fileName, groupedPayoffs):
                     numUnderscores += 1
                     if numUnderscores > 1:
                         # ERROR: multiple underscores
-                        multipleUnderscoresError = messagebox.showerror("Error", f"Invalid strategy name \"{name}\". Strategy names may not have multiple underscores.")
+                        multipleUnderscoresError = messagebox.showerror("Error", f"Invalid strategy name \"{name}\". Strategy names may not contain multiple underscores.")
                         return
                     
             if " " in name:
@@ -794,92 +797,79 @@ def writeToFileLatex(fileName, groupedPayoffs):
                 endingUnderscoreError = messagebox.showerror("Error", f"Invalid strategy name \"{name}\". Strategy names may not end with an underscore.")
             
             # Getting the last index of the first alphabetical string in the name
-            num = 0
-            breakWhile = False
-            while num < len(name) and not name[num].isdigit():
-                for g in GREEK_LETTERS:
-                    if g in name[num + 1:len(name) - 1]:
-                        lastIndexOfFirstString = num
-                        breakWhile = True
-                        break
-                if breakWhile == True:
-                    break
-                if name[num].isdigit() or num == len(name) - 1:
-                    lastIndexOfFirstString = num
-                num += 1
-            print("LASTINDEX:", lastIndexOfFirstString)
+            # num = 0
+            # breakWhile = False
+            # while num < len(name) and not name[num].isdigit():
+            #     for g in GREEK_LETTERS:
+            #         if g in name[num + 1:len(name) - 1]:
+            #             lastIndexOfFirstString = num
+            #             breakWhile = True
+            #             break
+            #     if breakWhile == True:
+            #         break
+            #     if name[num].isdigit() or num == len(name) - 1:
+            #         lastIndexOfFirstString = num
+            #     num += 1
             
-            # if the name is just a an alphabetical strings
-            if name == name[0:lastIndexOfFirstString]:
-                print("NAME:", name)
-                for l in LETTERS:
-                    if name[lastIndexOfFirstString + 1].isdigit() and l in name[lastIndexOfFirstString + 1:len(name) - 1].lower():
-                        # ERROR: X+n+X+
-                        multipleCharStrings = messagebox.showerror("Error", f"Invalid strategy name \"{name}\". Strategy names cannot be of the form (X+)(n+)(X+), where X+ denotes a string of alphabetical characters and n+ denotes a string of digits.")
-                        return
-                
-                for g in GREEK_LETTERS:
-                    if g in name[lastIndexOfFirstString + 1:len(name) - 1].lower():
-                        # ERROR: X+g+X+
-                        greekInTheMiddleError = messagebox.showerror("Error", f"Invalid strategy name \"{name}\". Strategy names may not contain greek letters in the middle.")
-                        return
-            else: # name is not just an alphabetical string
-                print("ELSE")
-                print("STRING:", name[0:lastIndexOfFirstString])
-                print("name:", name)
-                if name in GREEK_LETTERS or name in CAPITAL_GREEK_LETTERS:
+            if name in GREEK_LETTERS or name in CAPITAL_GREEK_LETTERS:
                     p1StrategyNames[i] = "\\" + name
+            
+            if name[-1].isdigit() and "_" not in name:
+                # Getting the position of the last alphabetical character in the name
+                lastAlphaPos = -1
+                j = len(name) - 1
+                while j > 0 and lastAlphaPos == -1:
+                    if name[j].isalpha():
+                        lastAlphaPos = i
+                    j -= 1
+                # inserting an underscore at that position
+                p1StrategyNames[i] = name[:lastAlphaPos] + "_" + name[lastAlphaPos + 2:]
         else:
             # ERROR: n+, n+X, _X+
             digitsAndUnderscoresError = messagebox.showerror("Error", f"Invalid strategy name \"{name}\". Strategy names may not begin with digits or underscores.")
-            return
-    
-    """
-    # inserting underscores into names of the form Xn*
-    p1StrategyNames = [name[0] + "_" + name[1:] if containsDigit(name) else name for name in p1StrategyNames]
-    
-    # adding braces around subscripts with more than one character
-    p1StrategyNamePieces = [name.split("_") for name in p1StrategyNames] # = [C, 1, C, 2,...]
-    
-    p1StrategyNamePieces = ["\\" + string if string in GREEK_LETTERS or string in CAPITAL_GREEK_LETTERS else string for piece in p1StrategyNamePieces for string in piece]
-        
-    p1StrategyNamePieces = ["{" +  piece + "}" if containsDigit(piece) and len(piece) > 1 else piece for piece in p1StrategyNamePieces]
-    for piece in p1StrategyNamePieces:
-        print("p1:", piece)
-    
-    p1StrategyNames = [p1StrategyNamePieces[i] + "_" + p1StrategyNamePieces[i + 1] if "{" in p1StrategyNamePieces[i + 1] else p1StrategyNamePieces[i] for i in range(0, len(p1StrategyNamePieces) - 1)]
-    """
-    
+            return    
     # P2 ###########################################################
     p2StrategyNamesEntries = strategyNameEntries[numStrats1:]
     p2StrategyNamesEntries.reverse()
     p2StrategyNames = [name.get() for name in p2StrategyNamesEntries]
     
-    """
-    p2StrategyNames = [name[0] + "_" + name[1:] if containsDigit(name) else name for name in p2StrategyNames]
-
-    p2StrategyNamePieces = [name.split("_") for name in p2StrategyNames] # = [C, 1, C, 2,...]
-    
-    p2StrategyNamePieces = ["\\" + string if string in GREEK_LETTERS or string in CAPITAL_GREEK_LETTERS else string for piece in p2StrategyNamePieces for string in piece]
-    
-    # adding braces around subscripts with more than one character
-    p2StrategyNamePieces = ["{" +  piece + "}" if containsDigit(piece) and len(string) > 1 else piece for piece in p2StrategyNamePieces]
-    
-    p2StrategyNames = [p2StrategyNamePieces[i] + "_" + p2StrategyNamePieces[i + 1] 
-                       if "{" in p2StrategyNamePieces[i + 1] 
-                       else p2StrategyNamePieces[i] 
-                       for i in range(0, len(p2StrategyNamePieces) - 1)]
-    
-    p2StrategyNames = []
-    for i, name in enumerate(p2StrategyNamePieces):
-        if i < len(p2StrategyNamePieces) and "{" in p2StrategyNamePieces[i + 1]:
-            p2StrategyNames.append(p2StrategyNamePieces[i] + "_" + p2StrategyNamePieces[i + 1])
-        elif i < len(p2StrategyNamePieces):
-            p2StrategyNames.append(p2StrategyNamePieces[i])
-    
-    for name in p2StrategyNames:
-        print("p2:", name)
-    """
+    # Input validation; checking for invalid names and cancelling if rejects are found
+    for i, name in enumerate(p2StrategyNames):
+        if name[0].isalpha(): # starts with a letter
+            numUnderscores = 0
+            for char in name:
+                if char == "_":
+                    numUnderscores += 1
+                    if numUnderscores > 1:
+                        # ERROR: multiple underscores
+                        multipleUnderscoresError = messagebox.showerror("Error", f"Invalid strategy name \"{name}\". Strategy names may not contain multiple underscores.")
+                        return
+                    
+            if " " in name:
+                # ERROR: spaces
+                spacesError = messagebox.showerror("Error", f"Invalid strategy name \"{name}\". Strategy names may not contain spaces.")
+                
+            if name[-1] == "_":
+                # ERRROR: ending underscore
+                endingUnderscoreError = messagebox.showerror("Error", f"Invalid strategy name \"{name}\". Strategy names may not end with an underscore.")
+            
+            if name in GREEK_LETTERS or name in CAPITAL_GREEK_LETTERS:
+                    p2StrategyNames[i] = "\\" + name
+                    
+            if name[-1].isdigit() and "_" not in name:
+                # Getting the position of the last alphabetical character in the name
+                lastAlphaPos = -1
+                j = len(name) - 1
+                while j > 0 and lastAlphaPos == -1:
+                    if name[j].isalpha():
+                        lastAlphaPos = i
+                    j -= 1
+                # inserting an underscore at that position
+                p2StrategyNames[i] = name[:lastAlphaPos] + "_" + name[lastAlphaPos + 2:]
+        else:
+            # ERROR: n+, n+X, _X+
+            digitsAndUnderscoresError = messagebox.showerror("Error", f"Invalid strategy name \"{name}\". Strategy names may not begin with digits or underscores.")
+            return
     
     with open(fileName, 'w') as file:
         file.write("\documentclass[12pt]{article}\n\n")
