@@ -465,8 +465,7 @@ def numStratsClickNoWarning():
             if numStrats1 < 0 or numStrats2 < 0:
                 negativeStratsError = messagebox.showerror("Error", "A player may not have a negative number of strategies.")
                 return
-            if negativeStratsError == -1:
-                proceed = messagebox.askokcancel("Clear Payoffs?", "This will clear the payoff matrix. Do you want to proceed?")       
+            if negativeStratsError == -1:      
                 # clearing the table
                 payoffMatrixSlaves = payoffsFrame.grid_slaves()
                 for slave in payoffMatrixSlaves:
@@ -829,23 +828,28 @@ def writeToFileLatex(fileName, groupedPayoffs):
             #         lastIndexOfFirstString = num
             #     num += 1
             
+            # adding a slash to greek letters
             if name in GREEK_LETTERS or name in CAPITAL_GREEK_LETTERS:
-                    p1StrategyNames[i] = "\\" + name
+                p1StrategyNames[i] = "\\" + name
             
-            if name[-1].isdigit() and "_" not in name:
+            if name[-1].isdigit():
                 # Getting the position of the last alphabetical character in the name
                 lastAlphaPos = -1
                 j = len(name) - 1
                 while j > 0 and lastAlphaPos == -1:
                     if name[j].isalpha():
-                        lastAlphaPos = i
+                        lastAlphaPos = j
                     j -= 1
                 # inserting an underscore at that position
-                p1StrategyNames[i] = name[:lastAlphaPos] + "_" + name[lastAlphaPos + 2:]
+                if "_" not in name:
+                    p1StrategyNames[i] = name[:lastAlphaPos + 1] + "_" + name[lastAlphaPos + 1:]
+            
+            if name[:lastAlphaPos + 1] in GREEK_LETTERS or name[:lastAlphaPos + 1] in CAPITAL_GREEK_LETTERS:
+                p1StrategyNames[i] = "\\" + p1StrategyNames[i]
         else:
             # ERROR: n+, n+X, _X+
             digitsAndUnderscoresError = messagebox.showerror("Error", f"Invalid strategy name \"{name}\". Strategy names may not begin with digits or underscores.")
-            return    
+            return
     # P2 ###########################################################
     p2StrategyNamesEntries = strategyNameEntries[numStrats1:]
     p2StrategyNamesEntries.reverse()
@@ -874,16 +878,20 @@ def writeToFileLatex(fileName, groupedPayoffs):
             if name in GREEK_LETTERS or name in CAPITAL_GREEK_LETTERS:
                     p2StrategyNames[i] = "\\" + name
                     
-            if name[-1].isdigit() and "_" not in name:
+            if name[-1].isdigit():
                 # Getting the position of the last alphabetical character in the name
                 lastAlphaPos = -1
                 j = len(name) - 1
                 while j > 0 and lastAlphaPos == -1:
                     if name[j].isalpha():
-                        lastAlphaPos = i
+                        lastAlphaPos = j
                     j -= 1
                 # inserting an underscore at that position
-                p2StrategyNames[i] = name[:lastAlphaPos] + "_" + name[lastAlphaPos + 2:]
+                if "_" not in name:
+                    p2StrategyNames[i] = name[:lastAlphaPos + 1] + "_" + name[lastAlphaPos + 1:]
+            
+            if name[:lastAlphaPos + 1] in GREEK_LETTERS or name[:lastAlphaPos + 1] in CAPITAL_GREEK_LETTERS:
+                p2StrategyNames[i] = "\\" + p2StrategyNames[i]
         else:
             # ERROR: n+, n+X, _X+
             digitsAndUnderscoresError = messagebox.showerror("Error", f"Invalid strategy name \"{name}\". Strategy names may not begin with digits or underscores.")
