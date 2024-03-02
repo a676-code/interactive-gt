@@ -1119,7 +1119,7 @@ def startMatch(p1, p2, output, t = 6):
                 if type(options[counter]).__name__ == clicked1NoSpaces:
                     p1 = options[counter]
             except IndexError:
-                stratNotFoundError = messagebox.showerror("Error", "The strategy you entered for player 1 was not in axelrod's list of strategies. Perhaps you meant to capitalize the individual words?")
+                stratNotFoundError = messagebox.showerror("Error", f"The strategy you entered for player 1 \"{clicked1.get()}\" was not in axelrod's list of strategies. Perhaps you meant to capitalize the individual words?")
             counter += 1
         counter = 0
         while type(p2).__name__ == "str" and counter <= len(axl.strategies):
@@ -1132,14 +1132,13 @@ def startMatch(p1, p2, output, t = 6):
                     axelrodOutput2 = Label(axelrodFrame, text=str(match.final_score_per_turn()), bg="black", fg="white", relief=SUNKEN, anchor=E, )
                     axelrodOutput1.grid(row=5, column=0, columnspan=2, padx=10, pady=10, sticky=EW)
                     axelrodOutput2.grid(row=6, column=0, columnspan=2, padx=10, pady=10, sticky=EW)
+                    if axelrodOutput1.winfo_reqwidth() > axelrodOutput2.winfo_reqwidth():
+                        root.geometry(f"{axelrodOutput1.winfo_reqwidth() + 400}x425")
+                    else:
+                        root.geometry(f"700x{axelrodOutput2.winfo_reqwidth() + 200}")
             except IndexError:
-                stratNotFoundError = messagebox.showerror("Error", "The strategy you entered for player 2 was not in axelrod's list of strategies. Perhaps you meant to capitalize the individual words?")
-            counter += 1
-
-        if axelrodOutput1.winfo_reqwidth() > axelrodOutput2.winfo_reqwidth():
-            root.geometry(f"{axelrodOutput1.winfo_reqwidth() + 400}x425")
-        else:
-            root.geometry(f"700x{axelrodOutput2.winfo_reqwidth() + 200}")
+                stratNotFoundError = messagebox.showerror("Error", f"The strategy you entered for player 2 \"{clicked2.get()}\" was not in axelrod's list of strategies. Perhaps you meant to capitalize the individual words?")
+            counter += 1        
     return
 
 """def startTournament(t = 10, r = 5):
