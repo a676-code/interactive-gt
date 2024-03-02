@@ -1,5 +1,6 @@
 bos.txt
 errors.txt
+error.png
 file.*
 greek.txt
 interactiveGT.py
@@ -8,6 +9,8 @@ test.txt
 test2.txt
 testnash.py
 testaxelrod.py
+
+match.db
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
