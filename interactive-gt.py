@@ -431,14 +431,13 @@ def containsDigit(string):
 
 def db():
     global dbWindow
-    dbWindow = Tk()
+    dbWindow = Toplevel()
     dbWindow.title("Match DB")
-    dbWindow.geometry("700x425")
+    dbWindow.geometry("400x400")
     dbWindow.iconbitmap("C:/Users/aloun/Desktop/interactive-gt/knight.ico")
     
     # Create a database or connect to one
     conn = sqlite3.connect('match.db')
-    
     # Create cursor
     c = conn.cursor()
     
@@ -455,6 +454,7 @@ def db():
     global dbTurnsEntry
     global dbClicked1
     global dbClicked2
+    global dbDropdown1
     global selectIDEntry
     
     dbStrategyLabel1 = Label(dbWindow, text="Enter a strategy for player 1: ")
