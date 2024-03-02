@@ -1045,19 +1045,19 @@ def startMatch(p1, p2, output, t = 6):
         p2 = ""
         clicked1NoSpaces = clicked1.get().replace(" ", "")
         clicked2NoSpaces = clicked2.get().replace(" ", "")
-        counter1 = 0
-        while type(p1).__name__ == "str" and counter1 <= len(axl.strategies):
+        counter = 0
+        while type(p1).__name__ == "str" and counter <= len(axl.strategies):
             try:
-                if type(options[counter1]).__name__ == clicked1NoSpaces:
-                    p1 = options[counter1]
+                if type(options[counter]).__name__ == clicked1NoSpaces:
+                    p1 = options[counter]
             except IndexError:
                 stratNotFoundError = messagebox.showerror("Error", "The strategy you entered for player 1 was not in axelrod's list of strategies. Perhaps you meant to capitalize the individual words?")
-            counter1 += 1
-        counter2 = 0
-        while type(p2).__name__ == "str" and counter2 <= len(axl.strategies):
+            counter += 1
+        counter = 0
+        while type(p2).__name__ == "str" and counter <= len(axl.strategies):
             try:
-                if type(options[counter2]).__name__ == clicked2NoSpaces:
-                    p2 = options[counter2]
+                if type(options[counter]).__name__ == clicked2NoSpaces:
+                    p2 = options[counter]
                     
                     match = axl.Match((p1, p2), turns = t)
                     axelrodOutput1 = Label(axelrodFrame, text=str(match.play()), relief=SUNKEN, anchor=E)
@@ -1066,7 +1066,7 @@ def startMatch(p1, p2, output, t = 6):
                     axelrodOutput2.grid(row=6, column=0, columnspan=2, padx=10, pady=10, sticky=EW)
             except IndexError:
                 stratNotFoundError = messagebox.showerror("Error", "The strategy you entered for player 2 was not in axelrod's list of strategies. Perhaps you meant to capitalize the individual words?")
-            counter2 += 1
+            counter += 1
 
         if axelrodOutput1.winfo_reqwidth() > axelrodOutput2.winfo_reqwidth():
             root.geometry(f"{axelrodOutput1.winfo_reqwidth() + 400}x425")
@@ -1124,8 +1124,8 @@ def startMatch(p1, p2, output, t = 6):
         counter = 0
         while type(p2).__name__ == "str" and counter <= len(axl.strategies):
             try:
-                if type(options[counter2]).__name__ == clicked2NoSpaces:
-                    p2 = options[counter2]
+                if type(options[counter]).__name__ == clicked2NoSpaces:
+                    p2 = options[counter]
                     
                     match = axl.Match((p1, p2), turns = t)
                     axelrodOutput1 = Label(axelrodFrame, text=str(match.play()), relief=SUNKEN, anchor=E)
