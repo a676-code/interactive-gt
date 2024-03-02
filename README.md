@@ -7,5 +7,8 @@ Highlighted equilibria for a Battle of the Sexes, and an axelrod match between a
 A database of matches: 
 ![db](images/image2.png)
 
+The Update Record window:
+![update](images/image3.png)
+
 # Installation
 Currently, this application may only be installed by downloading `interactive-gt.py` and running it. 

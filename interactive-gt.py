@@ -1060,8 +1060,8 @@ def startMatch(p1, p2, output, t = 6):
                     p2 = options[counter]
                     
                     match = axl.Match((p1, p2), turns = t)
-                    axelrodOutput1 = Label(axelrodFrame, text=str(match.play()), relief=SUNKEN, anchor=E)
-                    axelrodOutput2 = Label(axelrodFrame, text=str(match.final_score_per_turn()), relief=SUNKEN, anchor=E)
+                    axelrodOutput1 = Label(axelrodFrame, text=str(match.play()), bg="black", fg="white", relief=SUNKEN, anchor=E)
+                    axelrodOutput2 = Label(axelrodFrame, text=str(match.final_score_per_turn()), bg="black", fg="white", relief=SUNKEN, anchor=E)
                     axelrodOutput1.grid(row=5, column=0, columnspan=2, padx=10, pady=10, sticky=EW)
                     axelrodOutput2.grid(row=6, column=0, columnspan=2, padx=10, pady=10, sticky=EW)
             except IndexError:
@@ -1128,8 +1128,8 @@ def startMatch(p1, p2, output, t = 6):
                     p2 = options[counter]
                     
                     match = axl.Match((p1, p2), turns = t)
-                    axelrodOutput1 = Label(axelrodFrame, text=str(match.play()), relief=SUNKEN, anchor=E, bg="black", fg="white")
-                    axelrodOutput2 = Label(axelrodFrame, text=str(match.final_score_per_turn()), relief=SUNKEN, anchor=E, bg="black", fg="white")
+                    axelrodOutput1 = Label(axelrodFrame, text=str(match.play()), bg="black", fg="white", relief=SUNKEN, anchor=E, )
+                    axelrodOutput2 = Label(axelrodFrame, text=str(match.final_score_per_turn()), bg="black", fg="white", relief=SUNKEN, anchor=E, )
                     axelrodOutput1.grid(row=5, column=0, columnspan=2, padx=10, pady=10, sticky=EW)
                     axelrodOutput2.grid(row=6, column=0, columnspan=2, padx=10, pady=10, sticky=EW)
             except IndexError:
