@@ -77,13 +77,47 @@ def clearDB():
         showRecordsLabel.grid(row=9, column=0, columnspan=2)
     
     conn.commit()
-    conn.close()    
-
+    conn.close()
+    
+def clearPayoffs():
+    """
+        Fills the payoff matrix with zeros and default strategy names
+    """
+    proceed = messagebox.askokcancel("Clear Payoffs?", "Are you sure you want to clear the payoff matrix?")
+    if (proceed == True):
+        numStrats1 = int(numStratsEntry1.get())
+        numStrats2 = int(numStratsEntry2.get())
+        
+        # clearing the table
+        payoffMatrixSlaves = payoffsFrame.grid_slaves()
+        payoffs = payoffMatrixSlaves[:numStrats1 * numStrats2]
+        for payoff in payoffs:
+            payoff.grid_remove()
+        
+        # refilling the table
+        rows = []
+        for i in range(numStrats1):
+            cols = []
+            for j in range(numStrats2):
+                e = Entry(payoffsFrame, width=5)
+                e.grid(row=i + 1, column=j + 1, sticky=NSEW)
+                cols.append(e)
+            rows.append(cols)
+            
+        # Clearing the equilibria
+        equilibriaSlaves = equilibriaFrame.grid_slaves()
+        eqLabel = equilibriaSlaves[0]
+        if type(eqLabel).__name__ == "Label":
+            eqLabel.grid_remove()
+        
+        root.geometry(f"{45 * numStrats2 + 600}x{25 * numStrats1 + 300}")
+    return
+    
 def clearPayoffMatrix():
     """
-        Fills the payoff matrix with zeros
+        Fills the payoff matrix with zeros and default strategy names
     """
-    proceed = messagebox.askokcancel("Clear Payoffs?", "Are you sure you want to clear the payoff matrix? ")
+    proceed = messagebox.askokcancel("Clear Payoffs?", "Are you sure you want to clear the payoff matrix?")
     if (proceed == True):
         numStrats1 = int(numStratsEntry1.get())
         numStrats2 = int(numStratsEntry2.get())
@@ -96,26 +130,10 @@ def clearPayoffMatrix():
         # refilling the table
         for i in range(numStrats2):
             e = Entry(payoffsFrame, width=10)
-            if i == 0:
-                e.insert(0, "L")
-            elif i > 0 and i < numStrats2 - 1 and numStrats2 == 3:
-                e.insert(0, "C")
-            elif i > 0 and i < numStrats2 - 1 and numStrats2 >= 3:
-                e.insert(0, "C" + str(i))
-            else:
-                e.insert(0, "R")
             e.grid(row=0, column=i + 1, pady=5)
             
         for j in range(numStrats1):
             e = Entry(payoffsFrame, width=10)
-            if j == 0:
-                e.insert(0, "U")
-            elif j > 0 and j < numStrats1 - 1 and numStrats1 == 3:
-                e.insert(0, "M")
-            elif j > 0 and j < numStrats1 - 1 and numStrats1 > 3:
-                e.insert(0, "M" + str(j))
-            else:
-                e.insert(0, "D")
             e.grid(row=j + 1, column=0, padx=5)
 
         rows = []
@@ -124,7 +142,6 @@ def clearPayoffMatrix():
             for j in range(numStrats2):
                 e = Entry(payoffsFrame, width=5)
                 e.grid(row=i + 1, column=j + 1, sticky=NSEW)
-                e.insert(END, '%d, %d' % (0, 0))
                 cols.append(e)
             rows.append(cols)
             
@@ -136,6 +153,33 @@ def clearPayoffMatrix():
         
         root.geometry(f"{45 * numStrats2 + 600}x{25 * numStrats1 + 300}")
     return
+
+def clearStrategies():
+    """
+    Clears p1 and p2's strategy names
+    """
+    resetStrategiesWarning = messagebox.askokcancel("Clear Strategy Names", "Are you sure you want to clear the strategy names?") 
+    
+    if resetStrategiesWarning == True:
+        numStrats1 = int(numStratsEntry1.get())
+        numStrats2 = int(numStratsEntry2.get())
+        
+        # clearing the strategies
+        payoffMatrixSlaves = payoffsFrame.grid_slaves()
+        strategies = payoffMatrixSlaves[numStrats1 * numStrats2:]
+        for slave in strategies:
+            slave.grid_remove()
+        
+        # refilling the table
+        for i in range(numStrats2):
+            e = Entry(payoffsFrame, width=10)
+            e.grid(row=0, column=i + 1, pady=5)
+            
+        for j in range(numStrats1):
+            e = Entry(payoffsFrame, width=10)
+            e.grid(row=j + 1, column=0, padx=5)
+    else:
+        return
 
 def computeEquilibria(output):
     """
@@ -771,6 +815,107 @@ def openFile():
                     for i, payoff in enumerate(row):
                         payoff.insert(0, stringPayoffs[i])
     return
+
+def resetPayoffMatrix():
+    """
+        Fills the payoff matrix with zeros and default strategy names
+    """
+    proceed = messagebox.askokcancel("Clear Payoffs?", "Are you sure you want to reset the payoff matrix?")
+    if (proceed == True):
+        numStrats1 = int(numStratsEntry1.get())
+        numStrats2 = int(numStratsEntry2.get())
+        
+        # clearing the table
+        payoffMatrixSlaves = payoffsFrame.grid_slaves()
+        for slave in payoffMatrixSlaves:
+            slave.grid_remove()
+        
+        # refilling the table
+        for i in range(numStrats2):
+            e = Entry(payoffsFrame, width=10)
+            if i == 0:
+                e.insert(0, "L")
+            elif i > 0 and i < numStrats2 - 1 and numStrats2 == 3:
+                e.insert(0, "C")
+            elif i > 0 and i < numStrats2 - 1 and numStrats2 >= 3:
+                e.insert(0, "C" + str(i))
+            else:
+                e.insert(0, "R")
+            e.grid(row=0, column=i + 1, pady=5)
+            
+        for j in range(numStrats1):
+            e = Entry(payoffsFrame, width=10)
+            if j == 0:
+                e.insert(0, "U")
+            elif j > 0 and j < numStrats1 - 1 and numStrats1 == 3:
+                e.insert(0, "M")
+            elif j > 0 and j < numStrats1 - 1 and numStrats1 > 3:
+                e.insert(0, "M" + str(j))
+            else:
+                e.insert(0, "D")
+            e.grid(row=j + 1, column=0, padx=5)
+
+        rows = []
+        for i in range(numStrats1):
+            cols = []
+            for j in range(numStrats2):
+                e = Entry(payoffsFrame, width=5)
+                e.grid(row=i + 1, column=j + 1, sticky=NSEW)
+                e.insert(END, '%d, %d' % (0, 0))
+                cols.append(e)
+            rows.append(cols)
+            
+        # Clearing the equilibria
+        equilibriaSlaves = equilibriaFrame.grid_slaves()
+        eqLabel = equilibriaSlaves[0]
+        if type(eqLabel).__name__ == "Label":
+            eqLabel.grid_remove()
+        
+        root.geometry(f"{45 * numStrats2 + 600}x{25 * numStrats1 + 300}")
+    return
+
+def resetStrategies():
+    """
+    Resets p1's strategy names to U M1 M2 ... D and p2's strategy names to L C1 C2 ... R
+    """
+    resetStrategiesWarning = messagebox.askokcancel("Clear Strategy Names", "Are you sure you want to reset the strategy names?") 
+    
+    if resetStrategiesWarning == True:
+        numStrats1 = int(numStratsEntry1.get())
+        numStrats2 = int(numStratsEntry2.get())
+        
+        # clearing the strategies
+        payoffMatrixSlaves = payoffsFrame.grid_slaves()
+        strategies = payoffMatrixSlaves[numStrats1 * numStrats2:]
+        for slave in strategies:
+            slave.grid_remove()
+        
+        # refilling the table
+        for i in range(numStrats2):
+            e = Entry(payoffsFrame, width=10)
+            if i == 0:
+                e.insert(0, "L")
+            elif i > 0 and i < numStrats2 - 1 and numStrats2 == 3:
+                e.insert(0, "C")
+            elif i > 0 and i < numStrats2 - 1 and numStrats2 >= 3:
+                e.insert(0, "C" + str(i))
+            else:
+                e.insert(0, "R")
+            e.grid(row=0, column=i + 1, pady=5)
+            
+        for j in range(numStrats1):
+            e = Entry(payoffsFrame, width=10)
+            if j == 0:
+                e.insert(0, "U")
+            elif j > 0 and j < numStrats1 - 1 and numStrats1 == 3:
+                e.insert(0, "M")
+            elif j > 0 and j < numStrats1 - 1 and numStrats1 > 3:
+                e.insert(0, "M" + str(j))
+            else:
+                e.insert(0, "D")
+            e.grid(row=j + 1, column=0, padx=5)
+    else:
+        return
 
 def saveAs():
     """
@@ -1438,7 +1583,11 @@ file_menu.add_command(label="Save as LaTeX", command=saveAsLatex)
 
 edit_menu = Menu(menubar)
 menubar.add_cascade(label="Edit", menu=edit_menu)
+edit_menu.add_command(label="Clear Payoffs", command=clearPayoffs)
 edit_menu.add_command(label="Clear Payoff Matrix", command=clearPayoffMatrix)
+edit_menu.add_command(label="Clear Strategy Names", command=clearStrategies)
+edit_menu.add_command(label="Reset Payoff Matrix", command=resetPayoffMatrix)
+edit_menu.add_command(label="Reset Strategy Names", command=resetStrategies)
 
 option_menu = Menu(menubar)
 menubar.add_cascade(label="Options", menu=option_menu)
