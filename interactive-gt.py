@@ -20,12 +20,12 @@ def addRecord():
     clicked1NoSpaces = dbClicked1.get().replace(" ", "")
     clicked2NoSpaces = dbClicked2.get().replace(" ", "")
     counter = 0
-    while type(p1).__name__ == "str":
+    while type(p1).__name__ == "str" and counter < len(axl.strategies):
         if type(options[counter]).__name__ == clicked1NoSpaces:
             p1 = options[counter]
         counter += 1
     counter = 0
-    while type(p2).__name__ == "str":
+    while type(p2).__name__ == "str" and counter < len(axl.strategies):
         if type(options[counter]).__name__ == clicked2NoSpaces:
             p2 = options[counter]
         counter += 1
@@ -832,6 +832,38 @@ def saveAsLatex():
     fileNameButton.grid(row=0, column=2)
     return
 
+def saveRecord():
+    """
+    Saves an updated record into the database
+    """
+    conn = sqlite3.connect('match.db')
+    c = conn.cursor()
+    
+    record_id = selectIDEntry.get()
+    c.execute(""" UPDATE matches SET 
+              strategy1 = :strategy1, 
+              strategy2 = :strategy2, 
+              numTurns = :numTurns, 
+              output = :output,
+              score1 = :score1,
+              score2 = :score2
+              
+              WHERE oid = :oid""",
+              {
+                  'strategy1': updateClicked1.get(), 
+                  'strategy2': updateClicked2.get(), 
+                  'numTurns': numTurnsEntry.get(),
+                  'output': outputEntry.get(),
+                  'score1': score1Entry.get(),
+                  'score2': score2Entry.get(),
+                  'oid': record_id 
+              })
+    
+    conn.commit()
+    conn.close()
+    topUpdate.destroy()
+    
+
 def showRecords():
     # Create a database or connect to one
     conn = sqlite3.connect('match.db')
@@ -905,12 +937,12 @@ def startMatch(p1, p2, output, t = 6):
         clicked1NoSpaces = clicked1.get().replace(" ", "")
         clicked2NoSpaces = clicked2.get().replace(" ", "")
         counter = 0
-        while type(p1).__name__ == "str":
+        while type(p1).__name__ == "str" and counter < len(axl.strategies):
             if type(options[counter]).__name__ == clicked1NoSpaces:
                 p1 = options[counter]
             counter += 1
         counter = 0
-        while type(p2).__name__ == "str":
+        while type(p2).__name__ == "str" and counter < len(axl.strategies):
             if type(options[counter]).__name__ == clicked2NoSpaces:
                 p2 = options[counter]
             counter += 1
@@ -936,16 +968,16 @@ def startMatch(p1, p2, output, t = 6):
         p2 = ""
         clicked1NoSpaces = clicked1.get().replace(" ", "")
         clicked2NoSpaces = clicked2.get().replace(" ", "")
-        counter1 = 0
-        while type(p1).__name__ == "str" and counter1 <= len(axl.strategies):
+        counter = 0
+        while type(p1).__name__ == "str" and counter <= len(axl.strategies):
             try:
-                if type(options[counter1]).__name__ == clicked1NoSpaces:
-                    p1 = options[counter1]
+                if type(options[counter]).__name__ == clicked1NoSpaces:
+                    p1 = options[counter]
             except IndexError:
                 stratNotFoundError = messagebox.showerror("Error", "The strategy you entered for player 1 was not in axelrod's list of strategies. Perhaps you meant to capitalize the individual words?")
-            counter1 += 1
-        counter2 = 0
-        while type(p2).__name__ == "str" and counter2 <= len(axl.strategies):
+            counter += 1
+        counter = 0
+        while type(p2).__name__ == "str" and counter <= len(axl.strategies):
             try:
                 if type(options[counter2]).__name__ == clicked2NoSpaces:
                     p2 = options[counter2]
@@ -957,7 +989,7 @@ def startMatch(p1, p2, output, t = 6):
                     axelrodOutput2.grid(row=6, column=0, columnspan=2, padx=10, pady=10, sticky=EW)
             except IndexError:
                 stratNotFoundError = messagebox.showerror("Error", "The strategy you entered for player 2 was not in axelrod's list of strategies. Perhaps you meant to capitalize the individual words?")
-            counter2 += 1
+            counter += 1
 
         if axelrodOutput1.winfo_reqwidth() > axelrodOutput2.winfo_reqwidth():
             root.geometry(f"{axelrodOutput1.winfo_reqwidth() + 400}x425")
@@ -990,8 +1022,9 @@ def updateRecord():
         c.execute("SELECT * FROM matches WHERE oid=" + recordID)
     except sqlite3.OperationalError:
         IDNotSelectedError = messagebox.showerror("Error", "You must enter an ID in the entry field to update a record.")
-        return  
-        
+        return
+    
+    global topUpdate
     topUpdate = Toplevel()
     topUpdate.title("Update a Record")
     topUpdate.iconbitmap("knight.ico")
@@ -999,10 +1032,18 @@ def updateRecord():
         
     records = c.fetchall()
     
+    global updateClicked1
+    global updateClicked2
+    global numTurnsEntry
+    global outputEntry
+    global score1Entry
+    global score2Entry
+    
     options = [s() for s in axl.strategies]
-    updateClicked1 = StringVar
-    updateClicked1.set(str(options[0]))
-    updateClicked2 = StringVar
+    updateClicked1 = StringVar()
+    print("op0: ", options[0])
+    updateClicked1.set(options[0])
+    updateClicked2 = StringVar()
     updateClicked2.set(options[0])
     
     # Labels and input fields
@@ -1014,13 +1055,13 @@ def updateRecord():
     numTurnsEntry = Entry(topUpdate, width=20)
     outputLabel = Label(topUpdate, text="output: ")
     outputEntry = Entry(topUpdate, width=20)
-    score1Label = Entry(topUpdate, text="Score 1: ")
+    score1Label = Label(topUpdate, text="Score 1: ")
     score1Entry = Entry(topUpdate, width=20)
-    score2Label = Entry(topUpdate, text="Score 2: ")
+    score2Label = Label(topUpdate, text="Score 2: ")
     score2Entry = Entry(topUpdate, width=20)
     
     # Putting everything in the topUpdate window
-    strategyLabel1.grid(row=0, column=0)
+    strategy1Label.grid(row=0, column=0)
     strategy1Dropdown.grid(row=0, column=1)
     strategy2Label.grid(row=1, column=0)
     strategy2Dropdown.grid(row=1, column=1)
@@ -1043,7 +1084,7 @@ def updateRecord():
         score2Entry.insert(0, record[5])
         
     saveButton = Button(topUpdate, text="Save Record", command=saveRecord)
-    saveButton.grid(row=5, column=0)
+    saveButton.grid(row=5, column=0, columnspan=2)
     
     conn.commit()
     conn.close()
@@ -1378,6 +1419,7 @@ def writeToFileLatex(fileName, groupedPayoffs):
         file.write("\end{document}")
     return
 
+###################################################################
 # Defining the root window
 root = Tk()
 root.title("Interactive GT")
@@ -1527,6 +1569,7 @@ clicked2NoSpaces = clicked2.get().replace(" ", "")
 counter = 0
 while type(p1).__name__ == "str":
     if type(options[counter]).__name__ == clicked1NoSpaces:
+        print("counter:", counter)
         p1 = options[counter]
     counter += 1
 counter = 0
