@@ -73,7 +73,7 @@ def clearDB():
     
     if clearDBWarning == True:
         c.execute("DELETE FROM matches")
-        showRecordsLabel = Label(dbWindow, text="")
+        showRecordsLabel = Label(dbWindow, text="", bg="black", fg="white")
         showRecordsLabel.grid(row=9, column=0, columnspan=2)
     
     conn.commit()
@@ -274,7 +274,7 @@ def computeEquilibria(output):
             if type(eqSlaves[0]).__name__ == "Label":
                 eqSlaves[0].grid_remove()
             
-            equilibriaOutput = Label(equilibriaFrame, text=eqString, bd=1, relief=SUNKEN, anchor=E)
+            equilibriaOutput = Label(equilibriaFrame, text=eqString, bd=1, relief=SUNKEN, anchor=E, bg="black", fg="white")
             equilibriaOutput.grid(row=2, column=0, columnspan=2, padx=5, pady=5)
             root.geometry("750x425")
             
@@ -414,7 +414,7 @@ def computeEquilibria(output):
             if type(eqSlaves[0]).__name__ == "Label":
                 eqSlaves[0].grid_remove()
                 
-            equilibriaOutput = Label(equilibriaFrame, text=eqString, bd=1, relief=SUNKEN, anchor=E)    
+            equilibriaOutput = Label(equilibriaFrame, text=eqString, bd=1, relief=SUNKEN, anchor=E, bg="black", fg="white")    
             equilibriaOutput.grid(row=2, column=0, columnspan=2, padx=5, pady=5)
             root.geometry("750x425")
         else:
@@ -1025,8 +1025,8 @@ def showRecords():
     
     global showRecordsLabel
     
-    showRecordsLabel = Label(dbWindow, text=recordsString)
-    showRecordsLabel.grid(row=9, column=0, columnspan=2)
+    showRecordsLabel = Label(dbWindow, text=recordsString, bg="black", fg="white")
+    showRecordsLabel.grid(row=9, column=0, columnspan=2, padx=10)
     
     # Commit changes
     conn.commit()
@@ -1128,8 +1128,8 @@ def startMatch(p1, p2, output, t = 6):
                     p2 = options[counter]
                     
                     match = axl.Match((p1, p2), turns = t)
-                    axelrodOutput1 = Label(axelrodFrame, text=str(match.play()), relief=SUNKEN, anchor=E)
-                    axelrodOutput2 = Label(axelrodFrame, text=str(match.final_score_per_turn()), relief=SUNKEN, anchor=E)
+                    axelrodOutput1 = Label(axelrodFrame, text=str(match.play()), relief=SUNKEN, anchor=E, bg="black", fg="white")
+                    axelrodOutput2 = Label(axelrodFrame, text=str(match.final_score_per_turn()), relief=SUNKEN, anchor=E, bg="black", fg="white")
                     axelrodOutput1.grid(row=5, column=0, columnspan=2, padx=10, pady=10, sticky=EW)
                     axelrodOutput2.grid(row=6, column=0, columnspan=2, padx=10, pady=10, sticky=EW)
             except IndexError:
@@ -1173,7 +1173,7 @@ def updateRecord():
     topUpdate = Toplevel()
     topUpdate.title("Update a Record")
     topUpdate.iconbitmap("knight.ico")
-    topUpdate.geometry("400x400")
+    topUpdate.geometry("400x170")
         
     records = c.fetchall()
     
@@ -1186,7 +1186,6 @@ def updateRecord():
     
     options = [s() for s in axl.strategies]
     updateClicked1 = StringVar()
-    print("op0: ", options[0])
     updateClicked1.set(options[0])
     updateClicked2 = StringVar()
     updateClicked2.set(options[0])
@@ -1197,27 +1196,27 @@ def updateRecord():
     strategy2Label = Label(topUpdate, text="Strategy 2: ")
     strategy2Dropdown = ttk.Combobox(topUpdate, textvariable=updateClicked2, values=options)
     numTurnsLabel = Label(topUpdate, text="Number of turns: ")
-    numTurnsEntry = Entry(topUpdate, width=20)
+    numTurnsEntry = Entry(topUpdate, width=5)
     outputLabel = Label(topUpdate, text="output: ")
-    outputEntry = Entry(topUpdate, width=20)
+    outputEntry = Entry(topUpdate, width=45)
     score1Label = Label(topUpdate, text="Score 1: ")
     score1Entry = Entry(topUpdate, width=20)
     score2Label = Label(topUpdate, text="Score 2: ")
     score2Entry = Entry(topUpdate, width=20)
     
     # Putting everything in the topUpdate window
-    strategy1Label.grid(row=0, column=0)
-    strategy1Dropdown.grid(row=0, column=1)
-    strategy2Label.grid(row=1, column=0)
-    strategy2Dropdown.grid(row=1, column=1)
-    numTurnsLabel.grid(row=2, column=0)
-    numTurnsEntry.grid(row=2, column=1)
-    outputLabel.grid(row=3, column=0)
-    outputEntry.grid(row=3, column=1)
-    score1Label.grid(row=3, column=0)
-    score1Entry.grid(row=3, column=1)
-    score2Label.grid(row=4, column=0)
-    score2Entry.grid(row=4, column=1)
+    strategy1Label.grid(row=0, column=0, sticky=E)
+    strategy1Dropdown.grid(row=0, column=1, sticky=W)
+    strategy2Label.grid(row=1, column=0, sticky=E)
+    strategy2Dropdown.grid(row=1, column=1, sticky=W)
+    numTurnsLabel.grid(row=2, column=0, padx=(10, 0), sticky=E)
+    numTurnsEntry.grid(row=2, column=1, sticky=W)
+    outputLabel.grid(row=3, column=0, sticky=E)
+    outputEntry.grid(row=3, column=1, sticky=W)
+    score1Label.grid(row=4, column=0, sticky=E)
+    score1Entry.grid(row=4, column=1, sticky=W)
+    score2Label.grid(row=5, column=0, sticky=E)
+    score2Entry.grid(row=5, column=1, sticky=W, pady=(0,5))
     
     # Loop through results
     for record in records:
@@ -1229,7 +1228,7 @@ def updateRecord():
         score2Entry.insert(0, record[5])
         
     saveButton = Button(topUpdate, text="Save Record", command=saveRecord)
-    saveButton.grid(row=5, column=0, columnspan=2)
+    saveButton.grid(row=6, column=0, columnspan=2)
     
     conn.commit()
     conn.close()
