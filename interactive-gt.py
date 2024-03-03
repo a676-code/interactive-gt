@@ -10,30 +10,30 @@ import sqlite3
 import itertools
 
 # Function definitions
-# def addAllPairs():
-# """
-# Inserts a match between every possible pair of strategies with a set number of turns. 
-# """
-#     conn = sqlite3.connect('match.db')
-#     c = conn.cursor()
-    
-#     options = [s() for s in axl.strategies]
-#     for i, pair in enumerate(itertools.product(options, repeat=2)):
-#         print("Inserting pair " + str(i))
-#         c.execute("INSERT INTO matches VALUES (:strategy1, :strategy2, :numTurns, :output, :score1, :score2)",
-#             {
-#                 'strategy1': str(pair[0]),
-#                 'strategy2': str(pair[1]),
-#                 'numTurns': dbTurnsEntry.get(),
-#                 'output': str(dbStartMatch(pair[0], pair[1], int(dbTurnsEntry.get()))[0]), 
-#                 'score1': dbStartMatch(pair[0], pair[1], int(dbTurnsEntry.get()))[1][0], 
-#                 'score2':dbStartMatch(pair[0], pair[1], int(dbTurnsEntry.get()))[1][1]
-#             }
-#         )
-    
-#     conn.commit()
-#     conn.close()
-#     return
+def addAllPairs():
+    """
+    Inserts a match between every possible pair of strategies with a set number of turns. 
+    """
+    conn = sqlite3.connect('match.db')
+    c = conn.cursor()
+
+    options = [s() for s in axl.strategies]
+    for i, pair in enumerate(itertools.product(options, repeat=2)):
+        print("Inserting pair " + str(i))
+        c.execute("INSERT INTO matches VALUES (:strategy1, :strategy2, :numTurns, :output, :score1, :score2)",
+            {
+                'strategy1': str(pair[0]),
+                'strategy2': str(pair[1]),
+                'numTurns': dbTurnsEntry.get(),
+                'output': str(dbStartMatch(pair[0], pair[1], int(dbTurnsEntry.get()))[0]), 
+                'score1': dbStartMatch(pair[0], pair[1], int(dbTurnsEntry.get()))[1][0], 
+                'score2':dbStartMatch(pair[0], pair[1], int(dbTurnsEntry.get()))[1][1]
+            }
+        )
+
+    conn.commit()
+    conn.close()
+    return
 
 def addRecord():
     conn = sqlite3.connect('match.db')
@@ -493,7 +493,7 @@ def db():
     dbTurnsEntry = Entry(dbWindow, width=5)
     dbTurnsEntry.insert(0, "6")
     addRecordButton = Button(dbWindow, text="Add Record", command=addRecord)
-    # addAllPairsButton = Button(dbWindow, text="Add All Pairs for a Given Number of Turns", command=addAllPairs)
+    addAllPairsButton = Button(dbWindow, text="Add All Pairs for a Given Number of Turns", command=addAllPairs)
     showRecordsButton = Button(dbWindow, text="Show Records", command=showRecords)
     selectIDLabel = Label(dbWindow, text="Select ID: ")
     selectIDEntry = Entry(dbWindow, width=20)
@@ -510,7 +510,7 @@ def db():
     dbTurnsLabel.grid(row=2, column=0, padx=(5, 0), pady=(0,5), sticky=E)
     dbTurnsEntry.grid(row=2, column=1, pady=(0, 5), sticky=W)
     addRecordButton.grid(row=3, column=0, columnspan=2, padx=5, pady=(0, 5), ipadx=141)
-    # addAllPairsButton.grid(row=4, column=0, columnspan=2, padx=5, pady=(0, 5), ipadx=62)
+    addAllPairsButton.grid(row=4, column=0, columnspan=2, padx=5, pady=(0, 5), ipadx=62)
     showRecordsButton.grid(row=5, column=0, columnspan=2, padx=5, pady=(0, 5), ipadx=135)
     selectIDLabel.grid(row=6, column=0, pady=(0, 5), sticky=E)
     selectIDEntry.grid(row=6, column=1, pady=(0, 5), sticky=W)
@@ -1081,21 +1081,28 @@ def showRecords():
     records = c.fetchall()
     
     recordsString = ""
+    recordsList = []
     for i, record in enumerate(records):
-        if i < len(records) - 1:
-            recordsString += str(record[0]) + " " + str(record[1]) + " " + str(record[2]) + " " + str(record[3]) + " " + str(record[4]) + " " + str(record[5]) + " " + str(record[6]) + "\n"
-        else:
-            recordsString += str(record[0]) + " " + str(record[1]) + " " + str(record[2]) + " " + str(record[3]) + " " + str(record[4]) + " " + str(record[5]) + " " + str(record[6])
+        recordsList.append(
+            str(record[0]) + " " + str(record[1]) + " " + str(record[2]) + " " + str(record[3]) + " " + str(record[4]) + " " + str(record[5]) + " " + str(record[6])
+        )
+    recordsList.reverse()
     
-    global showRecordsLabel
+    myFrame = LabelFrame(dbWindow)
     
-    # Clearing the records label
-    dbWindowSlaves = dbWindow.grid_slaves()
-    if type(dbWindowSlaves[0]).__name__ == "Label":
-        dbWindowSlaves[0].grid_remove()
+    xscrollbar = Scrollbar(myFrame, orient=HORIZONTAL)
+    yscrollbar = Scrollbar(myFrame, orient=VERTICAL)
     
-    showRecordsLabel = Label(dbWindow, text=recordsString, bg="black", fg="white")
-    showRecordsLabel.grid(row=11, column=0, columnspan=2, padx=10)
+    showRecordsListBox = Listbox(myFrame, width=50, xscrollcommand=xscrollbar.set, yscrollcommand=yscrollbar.set, bg="black", fg="white")
+    for record in recordsList:
+        showRecordsListBox.insert(0, record)
+    
+    myFrame.grid(row=11, column=0, columnspan=2)
+    showRecordsListBox.grid(row=0, column=0, padx=10, sticky=NSEW)
+    xscrollbar.grid(row=1, column=0, columnspan=2, sticky=EW)
+    xscrollbar.config(command = showRecordsListBox.xview)
+    yscrollbar.grid(row=0, column=1, sticky=NS)
+    yscrollbar.config(command = showRecordsListBox.yview)
     
     # Commit changes
     conn.commit()
