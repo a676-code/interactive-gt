@@ -1092,9 +1092,10 @@ def showRecords():
     
     c.execute("SELECT *, oid FROM matches")
     records = c.fetchall()
-    
-    recordsString = ""
+    numRecords = len(records)
+
     recordsList = []
+    recordsList.append(f"{numRecords} records retrieved from the matches table\n")
     for i, record in enumerate(records):
         recordsList.append(
             str(record[0]) + " " + str(record[1]) + " " + str(record[2]) + " " + str(record[3]) + " " + str(record[4]) + " " + str(record[5]) + " " + str(record[6])
