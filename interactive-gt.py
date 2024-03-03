@@ -7,10 +7,35 @@ import axelrod as axl
 import numpy as np
 import warnings
 import sqlite3
+import itertools
 
 # Function definitions
-def addRecord():
+# def addAllPairs():
+# """
+# Inserts a match between every possible pair of strategies with a set number of turns. 
+# """
+#     conn = sqlite3.connect('match.db')
+#     c = conn.cursor()
     
+#     options = [s() for s in axl.strategies]
+#     for i, pair in enumerate(itertools.product(options, repeat=2)):
+#         print("Inserting pair " + str(i))
+#         c.execute("INSERT INTO matches VALUES (:strategy1, :strategy2, :numTurns, :output, :score1, :score2)",
+#             {
+#                 'strategy1': str(pair[0]),
+#                 'strategy2': str(pair[1]),
+#                 'numTurns': dbTurnsEntry.get(),
+#                 'output': str(dbStartMatch(pair[0], pair[1], int(dbTurnsEntry.get()))[0]), 
+#                 'score1': dbStartMatch(pair[0], pair[1], int(dbTurnsEntry.get()))[1][0], 
+#                 'score2':dbStartMatch(pair[0], pair[1], int(dbTurnsEntry.get()))[1][1]
+#             }
+#         )
+    
+#     conn.commit()
+#     conn.close()
+#     return
+
+def addRecord():
     conn = sqlite3.connect('match.db')
     c = conn.cursor()
     
@@ -468,6 +493,7 @@ def db():
     dbTurnsEntry = Entry(dbWindow, width=5)
     dbTurnsEntry.insert(0, "6")
     addRecordButton = Button(dbWindow, text="Add Record", command=addRecord)
+    # addAllPairsButton = Button(dbWindow, text="Add All Pairs for a Given Number of Turns", command=addAllPairs)
     showRecordsButton = Button(dbWindow, text="Show Records", command=showRecords)
     selectIDLabel = Label(dbWindow, text="Select ID: ")
     selectIDEntry = Entry(dbWindow, width=20)
@@ -478,23 +504,23 @@ def db():
         
     # Putting everything in the top window
     dbStrategyLabel1.grid(row=0, column=0, padx=(5, 0), sticky=E)
-    dbStrategyLabel2.grid(row=1, column=0, padx=(5, 0), sticky=E)
     dbDropdown1.grid(row=0, column=1, padx=(0, 5), pady=5, sticky=W)
+    dbStrategyLabel2.grid(row=1, column=0, padx=(5, 0), sticky=E)
     dbDropdown2.grid(row=1, column=1, padx=(0, 5),pady=(0,5), sticky=W)
     dbTurnsLabel.grid(row=2, column=0, padx=(5, 0), pady=(0,5), sticky=E)
     dbTurnsEntry.grid(row=2, column=1, pady=(0, 5), sticky=W)
     addRecordButton.grid(row=3, column=0, columnspan=2, padx=5, pady=(0, 5), ipadx=141)
-    showRecordsButton.grid(row=4, column=0, columnspan=2, padx=5, pady=(0, 5), ipadx=135)
-    selectIDLabel.grid(row=5, column=0, pady=(0, 5), sticky=E)
-    selectIDEntry.grid(row=5, column=1, pady=(0, 5), sticky=W)
-    deleteRecordButton.grid(row=6, column=0, columnspan=2, padx=5, pady=(0, 5), ipadx=135)
-    updateRecordButton.grid(row=7, column=0, columnspan=2, padx=5, pady=(0, 5), ipadx=132)
-    resetRecordButton.grid(row=8, column=0, columnspan=2, padx=5, pady=(0, 5), ipadx=136)
-    clearDBButton.grid(row=9, column=0, columnspan=2, padx=5, pady=(0, 5), ipadx=148)
+    # addAllPairsButton.grid(row=4, column=0, columnspan=2, padx=5, pady=(0, 5), ipadx=62)
+    showRecordsButton.grid(row=5, column=0, columnspan=2, padx=5, pady=(0, 5), ipadx=135)
+    selectIDLabel.grid(row=6, column=0, pady=(0, 5), sticky=E)
+    selectIDEntry.grid(row=6, column=1, pady=(0, 5), sticky=W)
+    deleteRecordButton.grid(row=7, column=0, columnspan=2, padx=5, pady=(0, 5), ipadx=135)
+    updateRecordButton.grid(row=8, column=0, columnspan=2, padx=5, pady=(0, 5), ipadx=132)
+    resetRecordButton.grid(row=9, column=0, columnspan=2, padx=5, pady=(0, 5), ipadx=136)
+    clearDBButton.grid(row=10, column=0, columnspan=2, padx=5, pady=(0, 5), ipadx=148)
     
     # Commit changes
     conn.commit()
-
     # Close Connection
     conn.close()
     return
@@ -1056,10 +1082,10 @@ def showRecords():
     
     recordsString = ""
     for i, record in enumerate(records):
-        if i < len(records):
-            recordsString += str(record[0]) + " " + str(record[1]) + " " + str(record[2]) + " " + str(record[3]) + " " + str(record[4]) + " " + str(record[5]) + " " + str(record[6])
-        else:
+        if i < len(records) - 1:
             recordsString += str(record[0]) + " " + str(record[1]) + " " + str(record[2]) + " " + str(record[3]) + " " + str(record[4]) + " " + str(record[5]) + " " + str(record[6]) + "\n"
+        else:
+            recordsString += str(record[0]) + " " + str(record[1]) + " " + str(record[2]) + " " + str(record[3]) + " " + str(record[4]) + " " + str(record[5]) + " " + str(record[6])
     
     global showRecordsLabel
     
@@ -1069,7 +1095,7 @@ def showRecords():
         dbWindowSlaves[0].grid_remove()
     
     showRecordsLabel = Label(dbWindow, text=recordsString, bg="black", fg="white")
-    showRecordsLabel.grid(row=10, column=0, columnspan=2, padx=10)
+    showRecordsLabel.grid(row=11, column=0, columnspan=2, padx=10)
     
     # Commit changes
     conn.commit()
@@ -1133,8 +1159,7 @@ def startMatch(p1, p2, output, t = 6):
             if type(options[counter]).__name__ == clicked2NoSpaces:
                 p2 = options[counter]
             counter += 1
-        
-        # """
+
         c.execute("INSERT INTO matches VALUES (:strategy1, :strategy2, :numTurns, :output, :score1, :score2)",
             {
                 'strategy1': clicked1.get(),
@@ -1145,7 +1170,6 @@ def startMatch(p1, p2, output, t = 6):
                 'score2': dbStartMatch(p1, p2, int(turnsEntry.get()))[1][1]
             }
         )
-        # """
         
         conn.commit()
         conn.close()
