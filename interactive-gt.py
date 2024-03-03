@@ -7,7 +7,7 @@ import axelrod as axl
 import numpy as np
 import warnings
 import sqlite3
-import itertools
+from itertools import combinations
 
 # Function definitions
 def addAllPairs():
@@ -18,7 +18,8 @@ def addAllPairs():
     c = conn.cursor()
 
     options = [s() for s in axl.strategies]
-    for i, pair in enumerate(itertools.product(options, repeat=2)):
+    C = combinations(options, r=2)    
+    for i, pair in enumerate(C):
         print("Inserting pair " + str(i))
         c.execute("INSERT INTO matches VALUES (:strategy1, :strategy2, :numTurns, :output, :score1, :score2)",
             {
@@ -28,6 +29,18 @@ def addAllPairs():
                 'output': str(dbStartMatch(pair[0], pair[1], int(dbTurnsEntry.get()))[0]), 
                 'score1': dbStartMatch(pair[0], pair[1], int(dbTurnsEntry.get()))[1][0], 
                 'score2':dbStartMatch(pair[0], pair[1], int(dbTurnsEntry.get()))[1][1]
+            }
+        )
+    # Inserting pairs (s, s) for each strategy s
+    for strategy in options:
+        c.execute("INSERT INTO matches VALUES (:strategy1, :strategy2, :numTurns, :output, :score1, :score2)",
+            {
+                'strategy1': str(strategy),
+                'strategy2': str(strategy),
+                'numTurns': dbTurnsEntry.get(),
+                'output': str(dbStartMatch(strategy, strategy, int(dbTurnsEntry.get()))[0]), 
+                'score1': dbStartMatch(strategy, strategy, int(dbTurnsEntry.get()))[1][0], 
+                'score2':dbStartMatch(strategy, strategy, int(dbTurnsEntry.get()))[1][1]
             }
         )
 
