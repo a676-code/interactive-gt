@@ -10,5 +10,8 @@ An SQLite database of matches with a match for every pair of strategies with 1 t
 The Update Record window: \
 ![update](images/image3.png)
 
+The Search Records window: \
+![search](images/image4.png)
+
 # Installation
 Currently, this application may only be installed by downloading `interactive-gt.py` and running it. 

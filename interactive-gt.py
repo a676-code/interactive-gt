@@ -26,9 +26,9 @@ def addAllPairs():
                 'strategy1': str(pair[0]),
                 'strategy2': str(pair[1]),
                 'numTurns': dbTurnsEntry.get(),
-                'output': str(dbStartMatch(pair[0], pair[1], int(dbTurnsEntry.get()))[0]), 
-                'score1': dbStartMatch(pair[0], pair[1], int(dbTurnsEntry.get()))[1][0], 
-                'score2':dbStartMatch(pair[0], pair[1], int(dbTurnsEntry.get()))[1][1]
+                'output': str(dbPlayMatch(pair[0], pair[1], int(dbTurnsEntry.get()))[0]), 
+                'score1': dbPlayMatch(pair[0], pair[1], int(dbTurnsEntry.get()))[1][0], 
+                'score2':dbPlayMatch(pair[0], pair[1], int(dbTurnsEntry.get()))[1][1]
             }
         )
     # Inserting pairs (s, s) for each strategy s
@@ -38,9 +38,9 @@ def addAllPairs():
                 'strategy1': str(strategy),
                 'strategy2': str(strategy),
                 'numTurns': dbTurnsEntry.get(),
-                'output': str(dbStartMatch(strategy, strategy, int(dbTurnsEntry.get()))[0]), 
-                'score1': dbStartMatch(strategy, strategy, int(dbTurnsEntry.get()))[1][0], 
-                'score2':dbStartMatch(strategy, strategy, int(dbTurnsEntry.get()))[1][1]
+                'output': str(dbPlayMatch(strategy, strategy, int(dbTurnsEntry.get()))[0]), 
+                'score1': dbPlayMatch(strategy, strategy, int(dbTurnsEntry.get()))[1][0], 
+                'score2':dbPlayMatch(strategy, strategy, int(dbTurnsEntry.get()))[1][1]
             }
         )
 
@@ -74,9 +74,9 @@ def addRecord():
             'strategy1': dbClicked1.get(),
             'strategy2': dbClicked2.get(),
             'numTurns': dbTurnsEntry.get(),
-            'output': str(dbStartMatch(p1, p2, int(dbTurnsEntry.get()))[0]),
-            'score1': dbStartMatch(p1, p2, int(dbTurnsEntry.get()))[1][0],
-            'score2': dbStartMatch(p1, p2, int(dbTurnsEntry.get()))[1][1]
+            'output': str(dbPlayMatch(p1, p2, int(dbTurnsEntry.get()))[0]),
+            'score1': dbPlayMatch(p1, p2, int(dbTurnsEntry.get()))[1][0],
+            'score2': dbPlayMatch(p1, p2, int(dbTurnsEntry.get()))[1][1]
         }
     )
     # """
@@ -508,6 +508,7 @@ def db():
     addRecordButton = Button(dbWindow, text="Add Record", command=addRecord)
     addAllPairsButton = Button(dbWindow, text="Add All Pairs for a Given Number of Turns", command=addAllPairs)
     showRecordsButton = Button(dbWindow, text="Show Records", command=showRecords)
+    searchRecordsButton = Button(dbWindow, text="Search Records", command=searchRecords)
     selectIDLabel = Label(dbWindow, text="Select ID: ")
     selectIDEntry = Entry(dbWindow, width=20)
     deleteRecordButton = Button(dbWindow, text="Delete Record", command=deleteRecord)
@@ -525,12 +526,13 @@ def db():
     addRecordButton.grid(row=3, column=0, columnspan=2, padx=5, pady=(0, 5), ipadx=141)
     addAllPairsButton.grid(row=4, column=0, columnspan=2, padx=5, pady=(0, 5), ipadx=62)
     showRecordsButton.grid(row=5, column=0, columnspan=2, padx=5, pady=(0, 5), ipadx=135)
-    selectIDLabel.grid(row=6, column=0, pady=(0, 5), sticky=E)
-    selectIDEntry.grid(row=6, column=1, pady=(0, 5), sticky=W)
-    deleteRecordButton.grid(row=7, column=0, columnspan=2, padx=5, pady=(0, 5), ipadx=135)
-    updateRecordButton.grid(row=8, column=0, columnspan=2, padx=5, pady=(0, 5), ipadx=132)
-    resetRecordButton.grid(row=9, column=0, columnspan=2, padx=5, pady=(0, 5), ipadx=136)
-    clearDBButton.grid(row=10, column=0, columnspan=2, padx=5, pady=(0, 5), ipadx=148)
+    searchRecordsButton.grid(row=6, column=0, columnspan=2, padx=5, pady=(0, 5), ipadx=132)
+    selectIDLabel.grid(row=7, column=0, pady=(0, 5), sticky=E)
+    selectIDEntry.grid(row=7, column=1, pady=(0, 5), sticky=W)
+    deleteRecordButton.grid(row=8, column=0, columnspan=2, padx=5, pady=(0, 5), ipadx=135)
+    updateRecordButton.grid(row=9, column=0, columnspan=2, padx=5, pady=(0, 5), ipadx=132)
+    resetRecordButton.grid(row=10, column=0, columnspan=2, padx=5, pady=(0, 5), ipadx=136)
+    clearDBButton.grid(row=11, column=0, columnspan=2, padx=5, pady=(0, 5), ipadx=148)
     
     # Commit changes
     conn.commit()
@@ -538,7 +540,7 @@ def db():
     conn.close()
     return
 
-def dbStartMatch(p1, p2, t = 6):    
+def dbPlayMatch(p1, p2, t = 6):    
     """
     Runs an axelrod match between players of type p1 and p2 with t turns and returns a tuple of the match output and scores
     """    
@@ -1043,9 +1045,9 @@ def resetRecord():
                   'strategy1': dbClicked1.get(), 
                   'strategy2': dbClicked2.get(), 
                   'numTurns': dbTurnsEntry.get(),
-                  'output': dbStartMatch(dbClicked1.get(), dbClicked2.get(), int(dbTurnsEntry.get()))[0],
-                  'score1': dbStartMatch(dbClicked1.get(), dbClicked2.get(), int(dbTurnsEntry.get()))[1][0],
-                  'score2': dbStartMatch(dbClicked1.get(), dbClicked2.get(), int(dbTurnsEntry.get()))[1][1],
+                  'output': dbPlayMatch(dbClicked1.get(), dbClicked2.get(), int(dbTurnsEntry.get()))[0],
+                  'score1': dbPlayMatch(dbClicked1.get(), dbClicked2.get(), int(dbTurnsEntry.get()))[1][0],
+                  'score2': dbPlayMatch(dbClicked1.get(), dbClicked2.get(), int(dbTurnsEntry.get()))[1][1],
                   'oid': recordID
               })    
     
@@ -1096,7 +1098,7 @@ def showRecords():
 
     recordsList = []
     recordsList.append(f"{numRecords} records retrieved from the matches table\n")
-    for i, record in enumerate(records):
+    for record in records:
         recordsList.append(
             str(record[0]) + " " + str(record[1]) + " " + str(record[2]) + " " + str(record[3]) + " " + str(record[4]) + " " + str(record[5]) + " " + str(record[6])
         )
@@ -1125,7 +1127,64 @@ def showRecords():
     
     return
 
-def startMatch(p1, p2, output, t = 6):
+def searchRecords():
+    global topSearch
+    
+    topSearch = Toplevel()
+    topSearch.title("Search Records")
+    topSearch.iconbitmap("knight.ico")
+    topSearch.geometry("400x180")
+    
+    global searchClicked1
+    global searchClicked2
+    global numTurnsSearchEntry
+    global outputSearchEntry
+    global score1SearchEntry
+    global score2SearchEntry
+    global IDEntry
+    
+    options = [s() for s in axl.strategies]
+    searchClicked1 = StringVar()
+    searchClicked2 = StringVar()
+    
+    # Labels and input fields
+    strategy1SearchLabel = Label(topSearch, text="Strategy 1: ")
+    strategy1SearchDropdown = ttk.Combobox(topSearch, textvariable=searchClicked1, values=options)
+    strategy2SearchLabel = Label(topSearch, text="Strategy 2: ")
+    strategy2SearchDropdown = ttk.Combobox(topSearch, textvariable=searchClicked2, values=options)
+    numTurnsSearchLabel = Label(topSearch, text="Number of turns: ")
+    numTurnsSearchEntry = Entry(topSearch, width=5)
+    outputSearchLabel = Label(topSearch, text="Output: ")
+    outputSearchEntry = Entry(topSearch, width=45)
+    score1SearchLabel = Label(topSearch, text="Score 1: ")
+    score1SearchEntry = Entry(topSearch, width=20)
+    score2SearchLabel = Label(topSearch, text="Score 2: ")
+    score2SearchEntry = Entry(topSearch, width=20)
+    IDLabel = Label(topSearch, text="ID: ")
+    IDEntry = Entry(topSearch, width=20)
+    
+    # Putting everything in the topSearch window
+    strategy1SearchLabel.grid(row=0, column=0, sticky=E)
+    strategy1SearchDropdown.grid(row=0, column=1, sticky=W)
+    strategy2SearchLabel.grid(row=1, column=0, sticky=E)
+    strategy2SearchDropdown.grid(row=1, column=1, sticky=W)
+    numTurnsSearchLabel.grid(row=2, column=0, padx=(10, 0), sticky=E)
+    numTurnsSearchEntry.grid(row=2, column=1, sticky=W)
+    outputSearchLabel.grid(row=3, column=0, sticky=E)
+    outputSearchEntry.grid(row=3, column=1, sticky=W)
+    score1SearchLabel.grid(row=4, column=0, sticky=E)
+    score1SearchEntry.grid(row=4, column=1, sticky=W)
+    score2SearchLabel.grid(row=5, column=0, sticky=E)
+    score2SearchEntry.grid(row=5, column=1, sticky=W, pady=(0,5))
+    IDLabel.grid(row=6, column=0, sticky=E)
+    IDEntry.grid(row=6, column=1, sticky=W)
+    
+    submitButton = Button(topSearch, text="Submit", command=submit)
+    submitButton.grid(row=7, column=0, columnspan=2)
+    
+    return
+
+def playMatch(p1, p2, output, t = 6):
     """
     Runs an axelrod match between players of type p1 and p2 with t turns
     """
@@ -1186,9 +1245,9 @@ def startMatch(p1, p2, output, t = 6):
                 'strategy1': clicked1.get(),
                 'strategy2': clicked2.get(),
                 'numTurns': turnsEntry.get(),
-                'output': str(dbStartMatch(p1, p2, int(turnsEntry.get()))[0]),
-                'score1': dbStartMatch(p1, p2, int(turnsEntry.get()))[1][0],
-                'score2': dbStartMatch(p1, p2, int(turnsEntry.get()))[1][1]
+                'output': str(dbPlayMatch(p1, p2, int(turnsEntry.get()))[0]),
+                'score1': dbPlayMatch(p1, p2, int(turnsEntry.get()))[1][0],
+                'score2': dbPlayMatch(p1, p2, int(turnsEntry.get()))[1][1]
             }
         )
         
@@ -1240,6 +1299,65 @@ def startMatch(p1, p2, output, t = 6):
     axelrodOutput1.grid(row=5, column=0, columnspan=2, padx=10, pady=10, sticky=EW)
     axelrodOutput2.grid(row=6, column=0, columnspan=2, padx=10, pady=10, sticky=EW)
     return"""
+    
+def submit():
+    """
+    Submits the user's query when searching the match database
+    """
+    conn = sqlite3.connect('match.db')
+    c = conn.cursor()
+    
+    # Building the query that we'll search with
+    tupleSize = 0
+    searchQuery = "SELECT *, oid FROM matches"
+    if searchClicked1.get() != "":
+        searchQuery = searchQuery + " WHERE strategy1='" + searchClicked1.get() + "'"
+    if searchClicked2.get() != "":
+        searchQuery = searchQuery + " AND strategy2='" + searchClicked2.get() + "'"
+    if numTurnsSearchEntry.get() != "":
+        searchQuery = searchQuery + " AND numTurns='" + numTurnsSearchEntry.get() + "'"
+    if outputSearchEntry.get() != "":
+        searchQuery = searchQuery + " AND output='" + outputSearchEntry.get() + "'"
+    if score1SearchEntry.get() != "":
+        searchQuery = searchQuery + " AND score1='" + score1SearchEntry.get() + "'"
+    if score2SearchEntry.get() != "":
+        searchQuery = searchQuery + " AND score2='" + score2SearchEntry.get() + "'"
+        tupleSize += 1
+    if IDEntry.get() != "":
+        searchQuery = searchQuery + " AND oid='" + IDEntry.get() + "'"
+    
+    c.execute(searchQuery)
+    
+    records = c.fetchall()
+    numRecords = len(records)
+    
+    recordsList = []
+    recordsList.append(f"{numRecords} records retrieved from the matches table\n")
+    for record in records:
+        recordsList.append(str(record[0]) + " " + str(record[1]) + " " + str(record[2]) + " " + str(record[3]) + " " + str(record[4]) + " " + str(record[5]) + " " + str(record[6]))
+    recordsList.reverse()
+    
+    searchResultsFrame = LabelFrame(topSearch)
+    
+    xscrollbar = Scrollbar(searchResultsFrame, orient=HORIZONTAL)
+    yscrollbar = Scrollbar(searchResultsFrame, orient=VERTICAL)
+    
+    showRecordsListBox = Listbox(searchResultsFrame, width=50, xscrollcommand=xscrollbar.set, yscrollcommand=yscrollbar.set, bg="black", fg="white")
+    for record in recordsList:
+        showRecordsListBox.insert(0, record)
+    
+    searchResultsFrame.grid(row=11, column=0, columnspan=2)
+    showRecordsListBox.grid(row=0, column=0, padx=10, sticky=NSEW)
+    xscrollbar.grid(row=1, column=0, columnspan=2, sticky=EW)
+    xscrollbar.config(command = showRecordsListBox.xview)
+    yscrollbar.grid(row=0, column=1, sticky=NS)
+    yscrollbar.config(command = showRecordsListBox.yview)
+    
+    topSearch.geometry("400x400")
+    
+    conn.commit()
+    conn.close()    
+    return
 
 def updateRecord():
     """
@@ -1814,7 +1932,7 @@ while type(p2).__name__ == "str":
         p2 = options[counter]
     counter += 1
 
-matchButton = Button(axelrodFrame, text="Start Match", command=lambda: startMatch(p1, p2, dbOutput.get(), int(turnsEntry.get())))
+matchButton = Button(axelrodFrame, text="Play Match", command=lambda: playMatch(p1, p2, dbOutput.get(), int(turnsEntry.get())))
 # tournamentButton = Button(axelrodFrame, text="Start Tournament", command=startTournament(int(turnsEntry.get())))
 dbButton = Button(axelrodFrame, text="View Database", command=db)
 
