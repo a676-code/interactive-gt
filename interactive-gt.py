@@ -73,8 +73,6 @@ def clearDB():
     
     if clearDBWarning == True:
         c.execute("DELETE FROM matches")
-        showRecordsLabel = Label(dbWindow, text="", bg="black", fg="white")
-        showRecordsLabel.grid(row=9, column=0, columnspan=2)
     
     conn.commit()
     conn.close()
@@ -83,7 +81,7 @@ def clearPayoffs():
     """
         Fills the payoff matrix with zeros and default strategy names
     """
-    proceed = messagebox.askokcancel("Clear Payoffs?", "Are you sure you want to clear the payoff matrix?")
+    proceed = messagebox.askokcancel("Clear Payoffs?", "Are you sure you want to clear the payoffs?")
     if (proceed == True):
         numStrats1 = int(numStratsEntry1.get())
         numStrats2 = int(numStratsEntry2.get())
@@ -471,10 +469,11 @@ def db():
     dbTurnsEntry.insert(0, "6")
     addRecordButton = Button(dbWindow, text="Add Record", command=addRecord)
     showRecordsButton = Button(dbWindow, text="Show Records", command=showRecords)
-    selectIDLabel = Label(dbWindow, text="Select ID")
+    selectIDLabel = Label(dbWindow, text="Select ID: ")
     selectIDEntry = Entry(dbWindow, width=20)
     deleteRecordButton = Button(dbWindow, text="Delete Record", command=deleteRecord)
     updateRecordButton = Button(dbWindow, text="Update Record", command=updateRecord)
+    resetRecordButton = Button(dbWindow, text="Reset Record", command=resetRecord)
     clearDBButton = Button(dbWindow, text="Clear DB", command=clearDB)
         
     # Putting everything in the top window
@@ -490,7 +489,8 @@ def db():
     selectIDEntry.grid(row=5, column=1, pady=(0, 5), sticky=W)
     deleteRecordButton.grid(row=6, column=0, columnspan=2, padx=5, pady=(0, 5), ipadx=135)
     updateRecordButton.grid(row=7, column=0, columnspan=2, padx=5, pady=(0, 5), ipadx=132)
-    clearDBButton.grid(row=8, column=0, columnspan=2, padx=5, pady=(0, 5), ipadx=148)
+    resetRecordButton.grid(row=8, column=0, columnspan=2, padx=5, pady=(0, 5), ipadx=136)
+    clearDBButton.grid(row=9, column=0, columnspan=2, padx=5, pady=(0, 5), ipadx=148)
     
     # Commit changes
     conn.commit()
@@ -502,30 +502,30 @@ def db():
 def dbStartMatch(p1, p2, t = 6):    
     """
     Runs an axelrod match between players of type p1 and p2 with t turns and returns a tuple of the match output and scores
-    """
+    """    
     p1 = ""
     p2 = ""
     clicked1NoSpaces = clicked1.get().replace(" ", "")
     clicked2NoSpaces = clicked2.get().replace(" ", "")
-    counter1 = 0
-    while type(p1).__name__ == "str" and counter1 <= len(axl.strategies):
+    counter= 0
+    while type(p1).__name__ == "str" and counter <= len(axl.strategies):
         try:
-            if type(options[counter1]).__name__ == clicked1NoSpaces:
-                p1 = options[counter1]
+            if type(options[counter]).__name__ == clicked1NoSpaces:
+                p1 = options[counter]
         except IndexError:
             stratNotFoundError = messagebox.showerror("Error", "The strategy you entered for player 1 was not in axelrod's list of strategies. Perhaps you meant to capitalize the individual words?")
-        counter1 += 1
-    counter2 = 0
-    while type(p2).__name__ == "str" and counter2 <= len(axl.strategies):
+        counter += 1  
+    
+    counter = 0
+    while type(p2).__name__ == "str" and counter <= len(axl.strategies):
         try:
-            if type(options[counter2]).__name__ == clicked2NoSpaces:
-                p2 = options[counter2]
+            if type(options[counter]).__name__ == clicked2NoSpaces:
+                p2 = options[counter]
                 
                 match = axl.Match((p1, p2), turns = t)
         except IndexError:
             stratNotFoundError = messagebox.showerror("Error", "The strategy you entered for player 2 was not in axelrod's list of strategies. Perhaps you meant to capitalize the individual words?")
-        counter2 += 1
-
+        counter += 1
     return (str(match.play()), match.final_score_per_turn())
 
 def deleteRecord():
@@ -536,7 +536,7 @@ def deleteRecord():
     try:
         c.execute("DELETE FROM matches WHERE oid=" + selectIDEntry.get())
     except sqlite3.OperationalError:
-        IDNotSelectedError = messagebox.showerror("Error", "You must enter an ID in the entry field to delete a record.")            
+        IDNotSelectedError = messagebox.showerror("Error", "You must enter an ID to delete a record.")            
     
     conn.commit()
     conn.close()
@@ -619,7 +619,7 @@ def numStratsClick():
                 negativeStratsError = messagebox.showerror("Error", "A player may not have a negative number of strategies.")
                 return
             if negativeStratsError == -1:
-                proceed = messagebox.askokcancel("Clear Payoffs?", "This will clear the payoff matrix. Do you want to proceed?")
+                proceed = messagebox.askokcancel("Clear Payoffs?", "This will reset the payoff matrix. Do you want to proceed?")
                 if (proceed == True):        
                     # clearing the table
                     payoffMatrixSlaves = payoffsFrame.grid_slaves()
@@ -977,6 +977,42 @@ def saveAsLatex():
     fileNameButton.grid(row=0, column=2)
     return
 
+def resetRecord():
+    """
+    Resets or recomputes the values that should be in a record according to the given inputs. 
+    """
+    conn = sqlite3.connect('match.db')
+    c = conn.cursor()
+    
+    # Check if an ID was actually selected
+    recordID  = selectIDEntry.get()
+    if recordID == "":
+        emptyRecordIDError = messagebox.showerror("Error", "You must enter an ID to reset a record.")
+        conn.commit()
+        conn.close()
+        return
+    
+    c.execute("""UPDATE matches SET
+              strategy1 = :strategy1, 
+              strategy2 = :strategy2, 
+              numTurns = :numTurns, 
+              output = :output,
+              score1 = :score1,
+              score2 = :score2
+              WHERE oid = :oid""",
+              {
+                  'strategy1': dbClicked1.get(), 
+                  'strategy2': dbClicked2.get(), 
+                  'numTurns': dbTurnsEntry.get(),
+                  'output': dbStartMatch(dbClicked1.get(), dbClicked2.get(), int(dbTurnsEntry.get()))[0],
+                  'score1': dbStartMatch(dbClicked1.get(), dbClicked2.get(), int(dbTurnsEntry.get()))[1][0],
+                  'score2': dbStartMatch(dbClicked1.get(), dbClicked2.get(), int(dbTurnsEntry.get()))[1][1],
+                  'oid': recordID
+              })    
+    
+    conn.commit()
+    conn.close()
+
 def saveRecord():
     """
     Saves an updated record into the database
@@ -985,14 +1021,13 @@ def saveRecord():
     c = conn.cursor()
     
     record_id = selectIDEntry.get()
-    c.execute(""" UPDATE matches SET 
+    c.execute("""UPDATE matches SET 
               strategy1 = :strategy1, 
               strategy2 = :strategy2, 
               numTurns = :numTurns, 
               output = :output,
               score1 = :score1,
               score2 = :score2
-              
               WHERE oid = :oid""",
               {
                   'strategy1': updateClicked1.get(), 
@@ -1020,17 +1055,24 @@ def showRecords():
     records = c.fetchall()
     
     recordsString = ""
-    for record in records:
-        recordsString += str(record[0]) + " " + str(record[1]) + " " + str(record[2]) + " " + str(record[3]) + " " + str(record[4]) + " " + str(record[5]) + " " + str(record[6]) + "\n"
+    for i, record in enumerate(records):
+        if i < len(records):
+            recordsString += str(record[0]) + " " + str(record[1]) + " " + str(record[2]) + " " + str(record[3]) + " " + str(record[4]) + " " + str(record[5]) + " " + str(record[6])
+        else:
+            recordsString += str(record[0]) + " " + str(record[1]) + " " + str(record[2]) + " " + str(record[3]) + " " + str(record[4]) + " " + str(record[5]) + " " + str(record[6]) + "\n"
     
     global showRecordsLabel
     
+    # Clearing the records label
+    dbWindowSlaves = dbWindow.grid_slaves()
+    if type(dbWindowSlaves[0]).__name__ == "Label":
+        dbWindowSlaves[0].grid_remove()
+    
     showRecordsLabel = Label(dbWindow, text=recordsString, bg="black", fg="white")
-    showRecordsLabel.grid(row=9, column=0, columnspan=2, padx=10)
+    showRecordsLabel.grid(row=10, column=0, columnspan=2, padx=10)
     
     # Commit changes
     conn.commit()
-
     # Close Connection
     conn.close()
     
@@ -1138,13 +1180,13 @@ def startMatch(p1, p2, output, t = 6):
                         root.geometry(f"700x{axelrodOutput2.winfo_reqwidth() + 200}")
             except IndexError:
                 stratNotFoundError = messagebox.showerror("Error", f"The strategy you entered for player 2 \"{clicked2.get()}\" was not in axelrod's list of strategies. Perhaps you meant to capitalize the individual words?")
-            counter += 1        
+            counter += 1
     return
 
 """def startTournament(t = 10, r = 5):
     players = [s() for s in axl.demo_strategies]
     tournament = axl.Tournament(players=players, turns=t, repetitions=r)
-    results = tournament.play() 
+    results = tournament.play()
     print("results:", results)
     
     axelrodOutput1 = Label(axelrodFrame, text=results, relief=SUNKEN, bd=1, anchor=E)
@@ -1156,7 +1198,7 @@ def startMatch(p1, p2, output, t = 6):
 
 def updateRecord():
     """
-    Updates a record in the matches table
+    Allows the user to manually update a record in the matches table
     """    
     conn = sqlite3.connect('match.db')
     c = conn.cursor()
@@ -1165,7 +1207,10 @@ def updateRecord():
     try:
         c.execute("SELECT * FROM matches WHERE oid=" + recordID)
     except sqlite3.OperationalError:
-        IDNotSelectedError = messagebox.showerror("Error", "You must enter an ID in the entry field to update a record.")
+        IDNotSelectedError = messagebox.showerror("Error", "You must enter an ID to update a record.")
+        
+        conn.commit()
+        conn.close()
         return
     
     global topUpdate
@@ -1196,7 +1241,7 @@ def updateRecord():
     strategy2Dropdown = ttk.Combobox(topUpdate, textvariable=updateClicked2, values=options)
     numTurnsLabel = Label(topUpdate, text="Number of turns: ")
     numTurnsEntry = Entry(topUpdate, width=5)
-    outputLabel = Label(topUpdate, text="output: ")
+    outputLabel = Label(topUpdate, text="Output: ")
     outputEntry = Entry(topUpdate, width=45)
     score1Label = Label(topUpdate, text="Score 1: ")
     score1Entry = Entry(topUpdate, width=20)
@@ -1716,7 +1761,6 @@ clicked2NoSpaces = clicked2.get().replace(" ", "")
 counter = 0
 while type(p1).__name__ == "str":
     if type(options[counter]).__name__ == clicked1NoSpaces:
-        print("counter:", counter)
         p1 = options[counter]
     counter += 1
 counter = 0
