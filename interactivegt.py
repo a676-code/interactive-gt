@@ -1369,32 +1369,40 @@ def submit():
     records = c.fetchall()
     numRecords = len(records)
     
-    recordsList = []
-    recordsList.append(f"{numRecords} records retrieved from the matches table\n")
-    for record in records:
-        recordsList.append(str(record[0]) + " " + str(record[1]) + " " + str(record[2]) + " " + str(record[3]) + " " + str(record[4]) + " " + str(record[5]) + " " + str(record[6]))
-    recordsList.reverse()
+    proceed = True
+    if numRecords >= 100000:
+        proceed = messagebox.askyesno("Warning", f"The number of records retrieved from the database was {numRecords}. This may take some time. Do you want to proceed?")
     
-    searchResultsFrame = LabelFrame(topSearch)
-    
-    xscrollbar = Scrollbar(searchResultsFrame, orient=HORIZONTAL)
-    yscrollbar = Scrollbar(searchResultsFrame, orient=VERTICAL)
-    
-    showRecordsListBox = Listbox(searchResultsFrame, width=50, xscrollcommand=xscrollbar.set, yscrollcommand=yscrollbar.set, bg="black", fg="white")
-    for record in recordsList:
-        showRecordsListBox.insert(0, record)
-    
-    searchResultsFrame.grid(row=11, column=0, columnspan=2)
-    showRecordsListBox.grid(row=0, column=0, padx=10, sticky=NSEW)
-    xscrollbar.grid(row=1, column=0, columnspan=2, sticky=EW)
-    xscrollbar.config(command = showRecordsListBox.xview)
-    yscrollbar.grid(row=0, column=1, sticky=NS)
-    yscrollbar.config(command = showRecordsListBox.yview)
-    
-    topSearch.geometry("400x400")
-    
-    conn.commit()
-    conn.close()    
+    if proceed == True:
+        recordsList = []
+        recordsList.append(f"{numRecords} records retrieved from the matches table\n")
+        for record in records:
+            recordsList.append(str(record[0]) + " " + str(record[1]) + " " + str(record[2]) + " " + str(record[3]) + " " + str(record[4]) + " " + str(record[5]) + " " + str(record[6]))
+        recordsList.reverse()
+        
+        searchResultsFrame = LabelFrame(topSearch)
+        
+        xscrollbar = Scrollbar(searchResultsFrame, orient=HORIZONTAL)
+        yscrollbar = Scrollbar(searchResultsFrame, orient=VERTICAL)
+        
+        showRecordsListBox = Listbox(searchResultsFrame, width=50, xscrollcommand=xscrollbar.set, yscrollcommand=yscrollbar.set, bg="black", fg="white")
+        for record in recordsList:
+            showRecordsListBox.insert(0, record)
+        
+        searchResultsFrame.grid(row=11, column=0, columnspan=2)
+        showRecordsListBox.grid(row=0, column=0, padx=10, sticky=NSEW)
+        xscrollbar.grid(row=1, column=0, columnspan=2, sticky=EW)
+        xscrollbar.config(command = showRecordsListBox.xview)
+        yscrollbar.grid(row=0, column=1, sticky=NS)
+        yscrollbar.config(command = showRecordsListBox.yview)
+        
+        topSearch.geometry("400x400")
+        
+        conn.commit()
+        conn.close()
+    else:
+        conn.commit()
+        conn.close()
     return
 
 def updateRecord():
