@@ -1,3 +1,7 @@
+# interactivegt.py
+# Author: Andrew W. Lounsbury
+# Date: 3/3/24
+# Description: Creates a GUI for analyzing 2-player games as well as a database of axelrod matches
 from tkinter import *
 from tkinter import ttk
 from tkinter import messagebox
@@ -1310,21 +1314,55 @@ def submit():
     # Building the query that we'll search with
     tupleSize = 0
     searchQuery = "SELECT *, oid FROM matches"
+    whereAdded = False
     if searchClicked1.get() != "":
-        searchQuery = searchQuery + " WHERE strategy1='" + searchClicked1.get() + "'"
+        if not whereAdded:
+            searchQuery = searchQuery + " WHERE "
+            whereAdded = True
+        searchQuery = searchQuery + "strategy1='" + searchClicked1.get() + "'"
     if searchClicked2.get() != "":
-        searchQuery = searchQuery + " AND strategy2='" + searchClicked2.get() + "'"
+        if not whereAdded:
+            searchQuery = searchQuery + " WHERE "
+            whereAdded = True
+        else:
+            searchQuery = searchQuery + " AND "
+        searchQuery = searchQuery + "strategy2='" + searchClicked2.get() + "'"
     if numTurnsSearchEntry.get() != "":
-        searchQuery = searchQuery + " AND numTurns='" + numTurnsSearchEntry.get() + "'"
+        if not whereAdded:
+            searchQuery = searchQuery + " WHERE "
+            whereAdded = True
+        else: 
+            searchQuery = searchQuery + " AND "
+        searchQuery = searchQuery + "numTurns=" + numTurnsSearchEntry.get()
     if outputSearchEntry.get() != "":
-        searchQuery = searchQuery + " AND output='" + outputSearchEntry.get() + "'"
+        if not whereAdded:
+            searchQuery = searchQuery + " WHERE "
+            whereAdded = True
+        else:
+            searchQuery = searchQuery + " AND "
+        searchQuery = searchQuery + "output='" + outputSearchEntry.get() + "'"
     if score1SearchEntry.get() != "":
-        searchQuery = searchQuery + " AND score1='" + score1SearchEntry.get() + "'"
+        if not whereAdded:
+            searchQuery = searchQuery + " WHERE "
+            whereAdded = True
+        else:
+            searchQuery = searchQuery + " AND "
+        searchQuery = searchQuery + "score1='" + score1SearchEntry.get() + "'"
     if score2SearchEntry.get() != "":
-        searchQuery = searchQuery + " AND score2='" + score2SearchEntry.get() + "'"
+        if not whereAdded:
+            searchQuery = searchQuery + " WHERE "
+            whereAdded = True
+        else:
+            searchQuery = searchQuery + " AND "
+        searchQuery = searchQuery + "score2='" + score2SearchEntry.get() + "'"
         tupleSize += 1
     if IDEntry.get() != "":
-        searchQuery = searchQuery + " AND oid='" + IDEntry.get() + "'"
+        if not whereAdded:
+            searchQuery = searchQuery + " WHERE "
+            whereAdded = True
+        else:
+            searchQuery = searchQuery + " AND "
+        searchQuery = searchQuery + "oid='" + IDEntry.get() + "'"
     
     c.execute(searchQuery)
     
