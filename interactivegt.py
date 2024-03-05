@@ -45,7 +45,7 @@ def addAllPairs():
                 'numTurns': dbTurnsEntry.get(),
                 'output': str(dbPlayMatch(strategy, strategy, int(dbTurnsEntry.get()))[0]), 
                 'score1': dbPlayMatch(strategy, strategy, int(dbTurnsEntry.get()))[1][0], 
-                'score2':dbPlayMatch(strategy, strategy, int(dbTurnsEntry.get()))[1][1]
+                'score2': dbPlayMatch(strategy, strategy, int(dbTurnsEntry.get()))[1][1]
             }
         )
         print("Inserting output " + str(dbPlayMatch(strategy, strategy, int(dbTurnsEntry.get()))[0]))
@@ -516,7 +516,7 @@ def db():
     dbWindow = Toplevel()
     dbWindow.title("Match DB")
     dbWindow.geometry("400x400")
-    dbWindow.iconbitmap("C:/Users/aloun/Desktop/interactive-gt/knight.ico")
+    dbWindow.iconbitmap("knight.ico")
     
     # Create a database or connect to one
     conn = sqlite3.connect('match.db')
@@ -628,6 +628,18 @@ def deleteRecord():
     conn.commit()
     conn.close()
     return
+
+def eliminateStrictlyDominatedStrategies():
+    """
+    UNFINISHED
+    Compares all payoffs of all pairs of strategies for both players and eliminates strategies that are strictly dominated.    
+    """
+    numStrats1 = int(numStratsEntry1.get())
+    numStrats2 = int(numStratsEntry2.get())
+    payoffMatrixSlaves = payoffsFrame.grid_slaves()
+    outcomes = payoffMatrixSlaves[:numStrats1 * numStrats2]
+    outcomes.reverse()
+    groupedOutcomes = [payoffs[i:i + numStrats2] for i in range(0, len(payoffs), numStrats2)]
 
 def enterColor(color):
     """
@@ -1870,7 +1882,7 @@ def writeToFileLatex(fileName, groupedPayoffs):
 root = Tk()
 root.title("Interactive GT")
 root.geometry("700x425")
-root.iconbitmap("C:/Users/aloun/Desktop/interactive-gt/knight.ico")
+root.iconbitmap("knight.ico")
 
 # Menu bar
 menubar = Menu(root)
