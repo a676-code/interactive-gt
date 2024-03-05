@@ -14,4 +14,4 @@ The Search Records window: \
 ![search](images/image4.png)
 
 # Installation
-Currently, this application may only be installed by downloading `interactive-gt.py` and running it. 
+Currently, this application may only be installed by downloading `interactivegt.py` and running it. 
