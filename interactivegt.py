@@ -241,21 +241,18 @@ def computeEquilibria(output):
                 # resetting the generator
                 eqs = G.support_enumeration()
             eqList = list(eqs)
-            newList = []
+            newEqList = []
             for eq in eqList:
                 newEq = []
                 for strat in eq:
                     newEq.append(strat.tolist())
-                newList.append(newEq)
+                newEqList.append(newEq)
 
-            eqString = ""
-            for i, eq in enumerate(newList):
-                for j, strat in enumerate(eq):
-                    eqString = eqString + str(strat)
-                    if j < len(eq) - 1:
-                        eqString = eqString + ", "
-                if i < len(newList) - 1:
-                    eqString = eqString + "\n"
+            eqs = G.support_enumeration()
+            eqList = [str(len(list(eqs))) + " equilibria returned\n"]
+            for i, eq in enumerate(newEqList):
+                eqList.append(str(eq[0]) + ", " + str(eq[1]))
+            eqList.reverse()
             
             eqs = G.support_enumeration()
             pureEquilibria = []
@@ -266,7 +263,7 @@ def computeEquilibria(output):
                 else:
                     mixedEquilibria.append(e)
 
-            # Coloring the equilibria yellow
+            # Coloring the equilibria yellow ####################
             payoffMatrixSlaves = payoffsFrame.grid_slaves()
             outcomes = payoffMatrixSlaves[:numStrats1 * numStrats2]
             
@@ -311,11 +308,25 @@ def computeEquilibria(output):
             
             # clearing the previous set of equilibria
             eqSlaves = equilibriaFrame.grid_slaves()
-            if type(eqSlaves[0]).__name__ == "Label":
+            if type(eqSlaves[0]).__name__ == "Listbox":
                 eqSlaves[0].grid_remove()
             
-            equilibriaOutput = Label(equilibriaFrame, text=eqString, bd=1, relief=SUNKEN, anchor=E, bg="black", fg="white")
-            equilibriaOutput.grid(row=2, column=0, columnspan=2, padx=5, pady=5)
+            myFrame = LabelFrame(equilibriaFrame)
+    
+            xscrollbar = Scrollbar(myFrame, orient=HORIZONTAL)
+            yscrollbar = Scrollbar(myFrame, orient=VERTICAL)
+            
+            equilibriaOutputListBox = Listbox(myFrame, width=50, xscrollcommand=xscrollbar.set, yscrollcommand=yscrollbar.set, bg="black", fg="white")
+            for eq in eqList:
+                equilibriaOutputListBox.insert(0, eq)
+            
+            myFrame.grid(row=2, column=0, columnspan=2)
+            equilibriaOutputListBox.grid(row=0, column=0, padx=10, sticky=NSEW)
+            xscrollbar.grid(row=1, column=0, columnspan=2, sticky=EW)
+            xscrollbar.config(command = equilibriaOutputListBox.xview)
+            yscrollbar.grid(row=0, column=1, sticky=NS)
+            yscrollbar.config(command = equilibriaOutputListBox.yview)
+                        
             root.geometry("750x425")
             
         elif output == 1: # Named Strategies
@@ -329,9 +340,17 @@ def computeEquilibria(output):
             else:
                 # resetting the generator
                 eqs = G.support_enumeration()
+            eqList = list(eqs)
+            newEqList = []
+            for eq in eqList:
+                newEq = []
+                for strat in eq:
+                    newEq.append(strat.tolist())
+                newEqList.append(newEq)
             
             pureEquilibria = []
             mixedEquilibria = []
+            eqs = G.support_enumeration()
             for e in eqs:
                 if e[0][0] == 0.0 or e[0][0] == 1.0:
                     pureEquilibria.append(e)
@@ -390,9 +409,16 @@ def computeEquilibria(output):
                     namedEquilibria.append((p1StrategyNames[p1Strat].get(), p2StrategyNames[p2Strat].get()))
                 else:
                     namedEquilibria.append(list(eq))
+                    
+            eqs = G.support_enumeration()
+            eqList = [str(len(list(eqs))) + " equilibria returned\n"]
+            for i, eq in enumerate(namedEquilibria):
+                eqList.append("(" + str(eq[0]) + ", " + str(eq[1]) + ")")
+            eqList.reverse()
             
             # Creating the string to go in the label
-            eqString = ""
+            eqs = G.support_enumeration()
+            eqString = str(len(list(eqs))) + " equilibria returned\n"
             for i, eq in enumerate(namedEquilibria):
                 for j, strat in enumerate(eq):
                     if j == 0:
@@ -451,11 +477,24 @@ def computeEquilibria(output):
                     
             # clearing the previous set of equilibria
             eqSlaves = equilibriaFrame.grid_slaves()
-            if type(eqSlaves[0]).__name__ == "Label":
+            if type(eqSlaves[0]).__name__ == "Listbox":
                 eqSlaves[0].grid_remove()
-                
-            equilibriaOutput = Label(equilibriaFrame, text=eqString, bd=1, relief=SUNKEN, anchor=E, bg="black", fg="white")    
-            equilibriaOutput.grid(row=2, column=0, columnspan=2, padx=5, pady=5)
+            
+            myFrame = LabelFrame(equilibriaFrame)
+    
+            xscrollbar = Scrollbar(myFrame, orient=HORIZONTAL)
+            yscrollbar = Scrollbar(myFrame, orient=VERTICAL)
+            
+            equilibriaOutputListBox = Listbox(myFrame, width=50, xscrollcommand=xscrollbar.set, yscrollcommand=yscrollbar.set, bg="black", fg="white")
+            for eq in eqList:
+                equilibriaOutputListBox.insert(0, eq)
+            
+            myFrame.grid(row=2, column=0, columnspan=2)
+            equilibriaOutputListBox.grid(row=0, column=0, padx=10, sticky=NSEW)
+            xscrollbar.grid(row=1, column=0, columnspan=2, sticky=EW)
+            xscrollbar.config(command = equilibriaOutputListBox.xview)
+            yscrollbar.grid(row=0, column=1, sticky=NS)
+            yscrollbar.config(command = equilibriaOutputListBox.yview)
             root.geometry("750x425")
         else:
             print("Error: variable output has taken on an unexpected value")
