@@ -35,6 +35,7 @@ def addAllPairs():
                 'score2':dbPlayMatch(pair[0], pair[1], int(dbTurnsEntry.get()))[1][1]
             }
         )
+        print("Inserting output " + str(dbPlayMatch(pair[0], pair[1], int(dbTurnsEntry.get()))[0]))
     # Inserting pairs (s, s) for each strategy s
     for strategy in options:
         c.execute("INSERT INTO matches VALUES (:strategy1, :strategy2, :numTurns, :output, :score1, :score2)",
@@ -47,6 +48,8 @@ def addAllPairs():
                 'score2':dbPlayMatch(strategy, strategy, int(dbTurnsEntry.get()))[1][1]
             }
         )
+        print("Inserting output " + str(dbPlayMatch(strategy, strategy, int(dbTurnsEntry.get()))[0]))
+    
 
     conn.commit()
     conn.close()
@@ -1359,6 +1362,7 @@ def submit():
             searchQuery = searchQuery + " WHERE "
             whereAdded = True
         searchQuery = searchQuery + "strategy1='" + searchClicked1.get() + "'"
+        searchQuery = searchQuery + " OR strategy2='" + searchClicked1.get() + "'"
     if searchClicked2.get() != "":
         if not whereAdded:
             searchQuery = searchQuery + " WHERE "
@@ -1366,6 +1370,9 @@ def submit():
         else:
             searchQuery = searchQuery + " AND "
         searchQuery = searchQuery + "strategy2='" + searchClicked2.get() + "'"
+        searchQuery = searchQuery + "or strategy1='" + searchClicked2.get() + "'"
+    if searchClicked1.get() != "" and searchClicked2.get() != "":
+        searchQuery = searchQuery + " OR strategy1='" + searchClicked2.get() + "' AND strategy2='" + searchClicked1.get() + "'"
     if numTurnsSearchEntry.get() != "":
         if not whereAdded:
             searchQuery = searchQuery + " WHERE "
@@ -1414,7 +1421,10 @@ def submit():
     
     if proceed == True:
         recordsList = []
-        recordsList.append(f"{numRecords} records retrieved from the matches table\n")
+        if numRecords == 1:
+            recordsList.append(f"{numRecords} record retrieved from the matches table\n")
+        else: 
+            recordsList.append(f"{numRecords} records retrieved from the matches table\n")
         for record in records:
             recordsList.append(str(record[0]) + " " + str(record[1]) + " " + str(record[2]) + " " + str(record[3]) + " " + str(record[4]) + " " + str(record[5]) + " " + str(record[6]))
         recordsList.reverse()
