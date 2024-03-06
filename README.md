@@ -18,7 +18,14 @@ Suppose that there's a wife and her husband who are in two separate places and c
 
 This game is a game of coordination because they have to try to choose the same place, and we call it a _Battle of the Sexes_. We can call it $G$ and represent it with the following payoff matrix: 
 
-$
+|       |      | Wife |       |
+|-------|------|-------|------|
+|       |      |  F   |   B   |
+|Husband| F    | 2, 1  | 0, 0 |
+|       | B    | 0, 0  | 1, 2 |
+
+
+<!-- $
     \begin{array}{|cc||c|c|}
         \hline
         G & & Wife & \\
@@ -26,13 +33,18 @@ $
         Husband & F & 2, 1 & 0, 0 \\ \hline
         & B & 0, 0 & 1, 2 \\ \hline
     \end{array}
-$
+$ -->
 
 We call each pair $(F, F), (F, B), (B, F)$, and $(B, B)$ _outcomes_. We call the numbers associated with each player in each outcome _payoffs_. We call the options $F$ and $B$ _strategies_. 
 ### Best Responses
 Now, suppose that the wife chooses $F$; ignore the scenario where she chooses $B$. 
 
-$
+|       |      | Wife |
+|-------|------|-------|
+|       |      |  F   |
+|Husband| F    | <mark>2</mark>, 1  |
+|       | B    | <mark>0</mark>, 0  |
+<!-- $
     \begin{array}{|cc||c|}
         \hline
         & & Wife \\
@@ -40,7 +52,7 @@ $
         Husband & F & \colorbox{yellow}{2}, 1 \\ \hline
         & B & \colorbox{yellow}{0}, 0\\ \hline
     \end{array}
-$
+$ -->
 
 Here, we see that the husband is choosing between 2 and 0. Obviously, he'll choose 2 because $2 > 0$, so we mark it:
 
