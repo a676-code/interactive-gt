@@ -161,11 +161,12 @@ $ -->
 ### Pure Equilibria
 Note that in the game $G$, every payoff in outcomes $(F, F)$ and $(B, B)$ is marked as a best response. Also, note that this game now looks like the matrix in the first photo (image1.png) above: 
 
-|       |      | Wife |       |
+![payoff matrix](images/image5.png)
+<!-- |       |      | Wife |       |
 |-------|------|-------|------|
 |       |      |  F   |   B   |
 |Husband| F    | (2), (1)  | 0, 0 |
-|       | B    | 0, 0  | (1), (2) |
+|       | B    | 0, 0  | (1), (2) | -->
 <!-- $
     \begin{array}{|cc||c|c|}
         \hline
