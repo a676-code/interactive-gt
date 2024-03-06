@@ -1934,6 +1934,7 @@ p2strat2Name.grid(row=0, column=2, pady=5)
 p1strat1Name.grid(row=1, column=0, padx=5)
 p1strat2Name.grid(row=2, column=0, padx=5)
 
+# Putting the payoffs in the frame
 # https://www.activestate.com/resources/quick-reads/how-to-display-data-in-a-table-using-tkinter/
 rows = []
 for i in range(int(numStratsEntry1.get())):
@@ -1944,6 +1945,8 @@ for i in range(int(numStratsEntry1.get())):
         e.insert(END, '%d, %d' % (0, 0))
         cols.append(e)
     rows.append(cols)
+    
+eliminateStrictlyDominatedStrategiesButton = Button(root, text="Eliminate Strictly Dominated Strategies", command=eliminateStrictlyDominatedStrategies)
 
 payoffMatrixSlaves = payoffsFrame.grid_slaves()
 payoffMatrixSlaves.pop()
@@ -1967,7 +1970,8 @@ for p in payoffs:
             newPayoffs.append(row)
             numInRow = 0
             row = []
-            
+
+# separating p1 and p2's payoffs to be entered into nashpy
 p1Matrix = []
 p2Matrix = []
 for i in range(numStrats1):
@@ -2053,10 +2057,12 @@ numStratsButton.grid(row=1, column=2, padx=5, pady=5)
 
 payoffsFrame.grid(row=0, column=1, padx=10, pady=10)
 
-equilibriaFrame.grid(row=1, column=0, padx=10, pady=10)
+eliminateStrictlyDominatedStrategiesButton.grid(row=1, column=1, padx=10, pady=10)
+
+equilibriaFrame.grid(row=2, column=0, padx=10, pady=10)
 equilibriaButton.grid(row=1, column=1, padx=10, pady=10)
 
-axelrodFrame.grid(row=1, column=1, padx=10, pady=10)
+axelrodFrame.grid(row=2, column=1, padx=10, pady=10)
 strategyLabel1.grid(row=0, column=0, sticky=W)
 dropdown1.grid(row=0, column=1, sticky=W)
 strategyLabel2.grid(row=1, column=0, sticky=W)
