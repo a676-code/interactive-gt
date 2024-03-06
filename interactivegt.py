@@ -22,7 +22,7 @@ def addAllPairs():
     c = conn.cursor()
 
     options = [s() for s in axl.strategies]
-    C = combinations(options, r=2)    
+    C = combinations(options, r=2)
     for i, pair in enumerate(C):
         print("Inserting pair " + str(i))
         c.execute("INSERT INTO matches VALUES (:strategy1, :strategy2, :numTurns, :output, :score1, :score2)",
@@ -54,6 +54,9 @@ def addAllPairs():
     conn.commit()
     conn.close()
     return
+
+def addToDBClicked(value):
+    dbOutput.set(value)
 
 def addRecord():
     conn = sqlite3.connect('match.db')
@@ -640,6 +643,13 @@ def eliminateStrictlyDominatedStrategies():
     outcomes = payoffMatrixSlaves[:numStrats1 * numStrats2]
     outcomes.reverse()
     groupedOutcomes = [payoffs[i:i + numStrats2] for i in range(0, len(payoffs), numStrats2)]
+    strategies = payoffMatrixSlaves[numStrats1 * numStrats2:]
+    strategies.reverse()
+    p1Strategies = [i for i in range(numStrats1)]
+    p2Strategies = [i for i in range(numStrats2)]
+    
+    C1 = combinations(p1Strategies, r=2)
+    C2 = combinations(p2Strategies, r=2)
 
 def enterColor(color):
     """
@@ -695,6 +705,12 @@ def enterPayoffs():
     global G
     G = nash.Game(p1Matrix, p2Matrix)
     return True
+
+def equilibriaOutputStyleclicked(value):
+    eqOutput.set(value)
+
+def myfunction(event):
+    rootCanvas.configure(scrollregion=rootCanvas.bbox("all"), width=root.winfo_width() - 25, height=root.winfo_height() - 25)
 
 def numStratsClick():
     """
@@ -1906,8 +1922,20 @@ option_menu = Menu(menubar)
 menubar.add_cascade(label="Options", menu=option_menu)
 option_menu.add_command(label="Change Background Color", command=changeBackgroundColor)
 
+# rootFrame < rootCanvas < root
+rootCanvas = Canvas(root) # canvas in root
+rootFrame = Frame(rootCanvas) # frame in canvas
+xRootScrollbar = Scrollbar(root, orient="horizontal", command=rootCanvas.xview) # scrollbar in root
+yRootScrollbar = Scrollbar(root, orient="vertical", command=rootCanvas.yview)   # scrollbar in root
+rootCanvas.configure(xscrollcommand = xRootScrollbar.set, yscrollcommand = yRootScrollbar.set)
+xRootScrollbar.pack(side=BOTTOM, fill=X)
+yRootScrollbar.pack(side=RIGHT, fill=Y)
+rootCanvas.pack(side=TOP)
+rootCanvas.create_window((0, 0), window=rootFrame, anchor = "nw")
+rootFrame.bind("<Configure>", myfunction)
+
 # numStrats Frame
-numStratsFrame = LabelFrame(root, text="Numbers of Strategies", padx=10, pady=10)
+numStratsFrame = LabelFrame(rootFrame, text="Numbers of Strategies", padx=10, pady=10)
 
 numStratsLabel1 = Label(numStratsFrame, text="Number of strategies for player 1: ")
 numStratsLabel2 = Label(numStratsFrame, text="Number of strategies for player 2: ")
@@ -1918,7 +1946,7 @@ numStratsEntry2.insert(0, "2")
 numStratsButton = Button(numStratsFrame, text="Enter", command=numStratsClick)
 
 # Payoffs Frame
-payoffsFrame = LabelFrame(root, text="Payoffs", padx=10, pady=10)
+payoffsFrame = LabelFrame(rootFrame, text="Payoffs", padx=10, pady=10)
 
 # Adding strategy names
 p2strat1Name = Entry(payoffsFrame, width=10)
@@ -1946,9 +1974,10 @@ for i in range(int(numStratsEntry1.get())):
         cols.append(e)
     rows.append(cols)
     
-eliminateStrictlyDominatedStrategiesButton = Button(root, text="Eliminate Strictly Dominated Strategies", command=eliminateStrictlyDominatedStrategies)
+eliminateStrictlyDominatedStrategiesButton = Button(rootFrame, text="Eliminate Strictly Dominated Strategies", command=eliminateStrictlyDominatedStrategies)
 
 payoffMatrixSlaves = payoffsFrame.grid_slaves()
+# removing the strategy names from payoffMatrixSlaves
 payoffMatrixSlaves.pop()
 payoffMatrixSlaves.pop()
 payoffMatrixSlaves.pop()
@@ -1987,13 +2016,10 @@ global G
 G = nash.Game(p1Matrix, p2Matrix)
 
 # Equilibria Frame
-equilibriaFrame = LabelFrame(root, text="Equilibria" , padx=10, pady=10)
+equilibriaFrame = LabelFrame(rootFrame, text="Equilibria" , padx=10, pady=10)
 
 eqOutput = IntVar()
 eqOutput.set("0")
-
-def equilibriaOutputStyleclicked(value):
-    eqOutput.set(value)
 
 Radiobutton(equilibriaFrame, text="Standard nashpy Output", variable=eqOutput, value=0, command=lambda: equilibriaOutputStyleclicked(eqOutput.get())).grid(row=0, column=0, sticky=W)
 Radiobutton(equilibriaFrame, text="Named Strategies", variable=eqOutput, value=1, command=lambda: equilibriaOutputStyleclicked(eqOutput.get())).grid(row=1, column=0, sticky=W)
@@ -2001,7 +2027,7 @@ Radiobutton(equilibriaFrame, text="Named Strategies", variable=eqOutput, value=1
 equilibriaButton = Button(equilibriaFrame, text="Compute Equilibria", command=lambda: computeEquilibria(eqOutput.get()))
 
 # Axelrod Frame
-axelrodFrame = LabelFrame(root, text="axelrod" , padx=10, pady=10)
+axelrodFrame = LabelFrame(rootFrame, text="axelrod" , padx=10, pady=10)
 strategyLabel1 = Label(axelrodFrame, text="Enter a strategy for player 1: ")
 strategyLabel2 = Label(axelrodFrame, text="Enter a strategy for player 2: ")
 options = [s() for s in axl.strategies]
@@ -2020,9 +2046,6 @@ turnsEntry.insert(0, "6")
 
 dbOutput = IntVar()
 dbOutput.set("0")
-
-def addToDBClicked(value):
-    dbOutput.set(value)
 
 Radiobutton(axelrodFrame, text="Add to Database", variable=dbOutput, value=0, command=lambda: addToDBClicked(dbOutput.get())).grid(row=3, column=0, sticky=W)
 Radiobutton(axelrodFrame, text="Don't Add to Database", variable=dbOutput, value=1, command=lambda: addToDBClicked(dbOutput.get())).grid(row=4, column=0, sticky=W)
