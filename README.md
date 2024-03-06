@@ -18,7 +18,7 @@ Suppose that there's a wife and her husband who are in two separate places and c
 
 This game is a game of coordination because they have to try to choose the same place, and we call it a _Battle of the Sexes_. We can call it $G$ and represent it with the following payoff matrix: 
 
-|       |      | Wife |       |
+|   $G$    |      | Wife |       |
 |-------|------|-------|------|
 |       |      |  F   |   B   |
 |Husband| F    | 2, 1  | 0, 0 |
@@ -56,7 +56,7 @@ $ -->
 
 Here, we see that the husband is choosing between 2 and 0. Obviously, he'll choose 2 because $2 > 0$, so we mark it:
 
-|       |      | Wife |       |
+|   $G$    |      | Wife |       |
 |-------|------|-------|------|
 |       |      |  F   |   B   |
 |Husband| F    | (2), 1  | 0, 0 |
@@ -93,7 +93,7 @@ $ -->
 
 Therefore, we have all the best responses of the husband: 
 
-|       |      | Wife |       |
+|    $G$   |      | Wife |       |
 |-------|------|-------|------|
 |       |      |  F   |   B   |
 |Husband| F    | (2), 1  | 0, 0 |
@@ -143,7 +143,7 @@ $ -->
 
 We then have all the best responses
 
-|       |      | Wife |       |
+|    $G$   |      | Wife |       |
 |-------|------|-------|------|
 |       |      |  F   |   B   |
 |Husband| F    | (2), (1)  | 0, 0 |
