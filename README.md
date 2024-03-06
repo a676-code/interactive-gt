@@ -14,7 +14,7 @@ The Search Records window: \
 ![search](images/image4.png)
 
 ## Explanation of the First Image
-Suppose that there's a wife and her husband who are in two separate places and can't talk to each other. The wife prefers to go to a ballet ($B$), and the husband prefers to go to a fight (F). They must both choose an event and go there. Suppose also that the husband receives \$2 if he meets his wife at the fight (because he prefers it) and the wife receives \$1 if she meets her husband at the fight. On the other hand, the husband receives \$1 if he meets his wife at the ballet, and the wife receives \$2 if she meets her husband at the ballet (because she prefers it). If they choose to go to different places, they're sad and both receive \$0.
+Suppose that there's a wife and her husband who are in two separate places and can't talk to each other. The wife prefers to go to a ballet ($B$), and the husband prefers to go to a fight ($F$). They must both choose an event and go there. Suppose also that the husband receives \$2 if he meets his wife at the fight (because he prefers it) and the wife receives \$1 if she meets her husband at the fight. On the other hand, the husband receives \$1 if he meets his wife at the ballet, and the wife receives \$2 if she meets her husband at the ballet (because she prefers it). If they choose to go to different places, they're sad and both receive \$0.
 
 This game is a game of coordination because they have to try to choose the same place, and we call it a _Battle of the Sexes_. We can call it $G$ and represent it with the following payoff matrix: 
 
