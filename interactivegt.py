@@ -642,14 +642,86 @@ def eliminateStrictlyDominatedStrategies():
     payoffMatrixSlaves = payoffsFrame.grid_slaves()
     outcomes = payoffMatrixSlaves[:numStrats1 * numStrats2]
     outcomes.reverse()
-    groupedOutcomes = [payoffs[i:i + numStrats2] for i in range(0, len(payoffs), numStrats2)]
+    strategyNames = payoffMatrixSlaves[numStrats1 * numStrats2:]
+    p1StrategyNameEntries = strategyNames[:numStrats1]
+    p1StrategyNameEntries.reverse()
+    p2StrategyNameEntries = strategyNames[numStrats2:]
+    p2StrategyNameEntries.reverse()
+    groupedOutcomes = [outcomes[i:i + numStrats2] for i in range(0, len(outcomes), numStrats2)]
+    
+    for outcome in groupedOutcomes:
+        print("outcome: ", outcome)
+    
+    newGroupedOutcomes = []
+    for outcome in groupedOutcomes:
+        row = []
+        for i in range(numStrats2):
+            row.append(outcome[i])
+        newGroupedOutcomes.append(row)
+        
+    for i in range(numStrats1):
+        print(newGroupedOutcomes[i])
+    
+    outcomesListList= []
+    for outcome in newGroupedOutcomes:
+        outcomesListList.append(outcome)
+        
+    print("THIS: ", outcomesListList[1][1])
+    
+    for i in range(numStrats1):
+        # for j in range(numStrats2):
+        #     print("(i, j): ", (i, j))
+        print(str(outcomesListList[i]) + " ")
+    
     strategies = payoffMatrixSlaves[numStrats1 * numStrats2:]
     strategies.reverse()
     p1Strategies = [i for i in range(numStrats1)]
     p2Strategies = [i for i in range(numStrats2)]
     
-    C1 = combinations(p1Strategies, r=2)
-    C2 = combinations(p2Strategies, r=2)
+    C1 = combinations(p1Strategies, r=2) # pairs of p1's strategies to compare; indices
+    C2 = combinations(p2Strategies, r=2) # pairs of p2's strategies to compare
+    
+    for pair in C1:
+        greaterThanFound = False
+        lessThanFound = False
+        equalFound = False
+        print("pair:", pair)
+        for i in range(numStrats1):
+            print("\ti: ", i)
+            print("ONE:", outcomesListList[i][pair[0]].get())
+            print("TWO:", outcomesListList[i][pair[1]].get())
+            if outcomesListList[i][pair[0]].get().split(", ")[1] < outcomesListList[i][pair[1]].get().split(", ")[1]:
+                # print(outcomesListList[i][pair[0]][1].get() + " < " + outcomesListList[i][pair[1]][1].get())
+                lessThanFound = True
+            elif int(outcomesListList[i][pair[0]].get().split(", ")[1]) > int(outcomesListList[i][pair[1]].get().split(", ")[1]):
+                greaterThanFound = True
+            else: # equal payoffs were found
+                break
+            if lessThanFound and greaterThanFound: # neither is strictly dominated
+                break
+    if lessThanFound and not greaterThanFound: # remove strategy pair[0]
+        numStrats2 -= 1
+        p2StrategyNameEntries[pair[0]].grid_remove()
+        for i in range(numStrats1):
+            print("< popping: ", outcomesListList[i][pair[0]])
+            outcomesListList[i][pair[0]].grid_remove()
+            print("perhaps: ", outcomesListList[i][pair[0]])
+            print("maybe: ", outcomesListList[i][pair[0]].get())
+            outcomesListList[i].pop(pair[0])
+    if greaterThanFound and not lessThanFound: # remove strategy pair[1]
+        numStrats2 -= 1
+        p2StrategyNameEntries[pair[1]].grid_remove()
+        for i in range(numStrats1):
+            print("> popping: ", outcomesListList[i][pair[1]])
+            outcomesListList[i][pair[1]].grid_remove()
+            print("perhaps: ", outcomesListList[i][pair[1]])
+            print("maybe 2:", outcomesListList[i][pair[1]].get())
+            outcomesListList[i].pop(pair[1])
+    
+    print("RESULT:")
+    for i in range(numStrats1):
+        for j in range(numStrats2):
+            print(outcomesListList[i][j].get())
 
 def enterColor(color):
     """
@@ -690,7 +762,8 @@ def enterPayoffs():
                 newPayoffs.append(row)
                 numInRow = 0
                 row = []
-                
+         
+    # separating p1 and p2's payoffs       
     p1Matrix = []
     p2Matrix = []
     for i in range(numStrats1):
@@ -895,7 +968,7 @@ def openFile():
                 strategyNames = payoffMatrixSlaves[numStrats1 * numStrats2:]
                 p1StrategyNameEntries = strategyNames[:numStrats1]
                 p1StrategyNameEntries.reverse()
-                p2StrategyNameEntries= strategyNames[numStrats2:]
+                p2StrategyNameEntries = strategyNames[numStrats2:]
                 p2StrategyNameEntries.reverse()
                 
                 for i, entry in enumerate(p1StrategyNameEntries):
