@@ -1,6 +1,6 @@
 # interactivegt.py
 # Author: Andrew W. Lounsbury
-# Date: 3/3/24
+# Date: 3/7/24
 # Description: Creates a GUI for analyzing 2-player games as well as a database of axelrod matches
 from tkinter import *
 from tkinter import ttk
@@ -678,10 +678,10 @@ def eliminateStrictlyDominatedStrategies():
     p1Strategies = [i for i in range(numStrats1)]
     p2Strategies = [i for i in range(numStrats2)]
     
-    C1 = combinations(p1Strategies, r=2) # pairs of p1's strategies to compare; indices
-    C2 = combinations(p2Strategies, r=2) # pairs of p2's strategies to compare
+    pairs1 = combinations(p1Strategies, r=2) # pairs of p1's strategies to compare; indices
+    pairs2 = combinations(p2Strategies, r=2) # pairs of p2's strategies to compare
     
-    for pair in C1:
+    for pair in pairs1:
         greaterThanFound = False
         lessThanFound = False
         equalFound = False
@@ -708,7 +708,7 @@ def eliminateStrictlyDominatedStrategies():
                 outcomesListList[i][pair[1]].grid_remove()
                 outcomesListList[i].pop(pair[1])
             
-    for pair in C2:
+    for pair in pairs2:
         print("pair:", pair)
         greaterThanFound = False
         lessThanFound = False
@@ -740,7 +740,7 @@ def eliminateStrictlyDominatedStrategies():
             print("len1: ", len(outcomesListList[0]))
             print("len2: ", len(outcomesListList[1]))
             print("len3: ", len(outcomesListList[2]))
-            for j in range(numStrats2):
+            for j in range(numStrats2 - 1):
                 print("\tj2: ", j)
                 # print("\tREMOVING 2: ", outcomesListList[pair[1]][j].get())
                 outcomesListList[pair[1]][j].grid_remove()
