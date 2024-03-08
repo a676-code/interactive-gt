@@ -685,13 +685,9 @@ def eliminateStrictlyDominatedStrategies():
         greaterThanFound = False
         lessThanFound = False
         equalFound = False
-        print("pair:", pair)
+        # searching for < or > among the payoffs
         for i in range(numStrats1):
-            print("\ti: ", i)
-            print("ONE:", outcomesListList[i][pair[0]].get())
-            print("TWO:", outcomesListList[i][pair[1]].get())
-            if outcomesListList[i][pair[0]].get().split(", ")[1] < outcomesListList[i][pair[1]].get().split(", ")[1]:
-                # print(outcomesListList[i][pair[0]][1].get() + " < " + outcomesListList[i][pair[1]][1].get())
+            if int(outcomesListList[i][pair[0]].get().split(", ")[1]) < int(outcomesListList[i][pair[1]].get().split(", ")[1]):
                 lessThanFound = True
             elif int(outcomesListList[i][pair[0]].get().split(", ")[1]) > int(outcomesListList[i][pair[1]].get().split(", ")[1]):
                 greaterThanFound = True
@@ -699,29 +695,61 @@ def eliminateStrictlyDominatedStrategies():
                 break
             if lessThanFound and greaterThanFound: # neither is strictly dominated
                 break
-    if lessThanFound and not greaterThanFound: # remove strategy pair[0]
-        numStrats2 -= 1
-        p2StrategyNameEntries[pair[0]].grid_remove()
-        for i in range(numStrats1):
-            print("< popping: ", outcomesListList[i][pair[0]])
-            outcomesListList[i][pair[0]].grid_remove()
-            print("perhaps: ", outcomesListList[i][pair[0]])
-            print("maybe: ", outcomesListList[i][pair[0]].get())
-            outcomesListList[i].pop(pair[0])
-    if greaterThanFound and not lessThanFound: # remove strategy pair[1]
-        numStrats2 -= 1
-        p2StrategyNameEntries[pair[1]].grid_remove()
-        for i in range(numStrats1):
-            print("> popping: ", outcomesListList[i][pair[1]])
-            outcomesListList[i][pair[1]].grid_remove()
-            print("perhaps: ", outcomesListList[i][pair[1]])
-            print("maybe 2:", outcomesListList[i][pair[1]].get())
-            outcomesListList[i].pop(pair[1])
-    
-    print("RESULT:")
-    for i in range(numStrats1):
+        if lessThanFound and not greaterThanFound: # remove strategy pair[0]
+            numStrats2 -= 1
+            p2StrategyNameEntries[pair[0]].grid_remove()
+            for i in range(numStrats1):
+                outcomesListList[i][pair[0]].grid_remove()
+                outcomesListList[i].pop(pair[0])
+        if greaterThanFound and not lessThanFound: # remove strategy pair[1]
+            numStrats2 -= 1
+            p2StrategyNameEntries[pair[1]].grid_remove()
+            for i in range(numStrats1):
+                outcomesListList[i][pair[1]].grid_remove()
+                outcomesListList[i].pop(pair[1])
+            
+    for pair in C2:
+        print("pair:", pair)
+        greaterThanFound = False
+        lessThanFound = False
+        equalFound = False
+        # searching for < or > among the payoffs
         for j in range(numStrats2):
-            print(outcomesListList[i][j].get())
+            if int(outcomesListList[pair[0]][j].get().split(", ")[0]) < int(outcomesListList[pair[1]][j].get().split(", ")[0]):
+                print("checking " + outcomesListList[pair[0]][j].get().split(", ")[0] + " < " + outcomesListList[pair[1]][j].get().split(", ")[0])
+                lessThanFound = True
+            elif int(outcomesListList[pair[0]][j].get().split(", ")[0]) > int(outcomesListList[pair[1]][j].get().split(", ")[0]):
+                print("checking " + outcomesListList[pair[0]][j].get().split(", ")[0] + " > " + outcomesListList[pair[1]][j].get().split(", ")[0])
+                greaterThanFound = True
+            else: # equal payoffs were found
+                break
+            if lessThanFound and greaterThanFound: # neither is strictly dominated
+                break
+        if lessThanFound and not greaterThanFound: # remove strategy pair[0]
+            numStrats1 -= 1
+            p1StrategyNameEntries[pair[0]].grid_remove()
+            for j in range(numStrats2):
+                print("\tj: ", j)
+                print("\tREMOVING: ", outcomesListList[pair[0]][j].get())
+                outcomesListList[pair[0]][j].grid_remove()
+                outcomesListList[pair[0]].pop(j)
+        if greaterThanFound and not lessThanFound: # remove strategy pair[1]
+            numStrats1 -= 1
+            p1StrategyNameEntries[pair[1]].grid_remove()
+            print("LEN: ", len(outcomesListList))
+            print("len1: ", len(outcomesListList[0]))
+            print("len2: ", len(outcomesListList[1]))
+            print("len3: ", len(outcomesListList[2]))
+            for j in range(numStrats2):
+                print("\tj2: ", j)
+                # print("\tREMOVING 2: ", outcomesListList[pair[1]][j].get())
+                outcomesListList[pair[1]][j].grid_remove()
+                outcomesListList[pair[1]].pop(j)
+        
+        print("RESULTS: ")
+        for outcome in outcomesListList:
+            for payoff in outcome:
+                print(payoff.get())
 
 def enterColor(color):
     """
@@ -988,7 +1016,7 @@ def openFile():
                         payoff.delete(0, 'end')
                 
                 # filling the payoff matrix with the values from the file
-                for line_index, line in enumerate(file):            
+                for line_index, line in enumerate(file):
                     payoffLine = line.split(" ")
                     if payoffLine[-1] == "\n":
                         payoffLine.pop()
@@ -1113,11 +1141,18 @@ def saveAs():
     numStrats2 = int(numStratsEntry2.get())
     
     payoffMatrixSlaves = payoffsFrame.grid_slaves()
-    outcomes = payoffMatrixSlaves[:numStrats1 * numStrats2]
-    payoffs = [outcome.get() for outcome in outcomes]
-    payoffs.reverse()
-    payoffs = [[payoff[0], payoff[3]] for payoff in payoffs]
+    outcomeEntries = payoffMatrixSlaves[:numStrats1 * numStrats2]
+    outcomes = [entry.get() for entry in outcomeEntries]
+    outcomes.reverse()
+    
+    payoffs = [outcome.split(", ") for outcome in outcomes]
+    
     groupedPayoffs = [payoffs[i:i + numStrats2] for i in range(0, len(payoffs), numStrats2)]
+    
+    print("groupedPayoffs FIRST:")
+    for group in groupedPayoffs:
+        for payoff in group:
+            print(str(payoff) + " ")
     
     # Prompting the user for a file name
     top = Toplevel()
@@ -1674,6 +1709,12 @@ def writeToFile(fileName, groupedPayoffs):
     p2StrategyNamesString = " ".join(p2StrategyNames)
     p2StrategyNamesString = p2StrategyNamesString + "\n"
     
+    print("groupedPayoffs:")
+    for group in groupedPayoffs:
+        for payoff in group:
+            print(str(payoff) + " ")
+    
+    # writing to file
     with open(fileName, 'w') as file:
         file.write(str(numStrats1) + " " + str(numStrats2) + "\n")
         file.write(p1StrategyNamesString)
@@ -1681,8 +1722,10 @@ def writeToFile(fileName, groupedPayoffs):
         for i, group in enumerate(groupedPayoffs):
             for j, payoff in enumerate(group):
                 if j < numStrats2 - 1:
+                    print("writing: ", str(payoff[0]) + " " + str(payoff[1]) + " ")
                     file.write(str(payoff[0]) + " " + str(payoff[1]) + " ")
                 else:
+                    print("writing: ", str(payoff[0]) + " " + str(payoff[1]))
                     file.write(str(payoff[0]) + " " + str(payoff[1]))
             if i < len(groupedPayoffs) - 1:
                 file.write("\n")
