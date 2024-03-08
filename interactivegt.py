@@ -740,11 +740,15 @@ def eliminateStrictlyDominatedStrategies():
             print("len1: ", len(outcomesListList[0]))
             print("len2: ", len(outcomesListList[1]))
             print("len3: ", len(outcomesListList[2]))
-            for j in range(numStrats2 - 1):
-                print("\tj2: ", j)
-                # print("\tREMOVING 2: ", outcomesListList[pair[1]][j].get())
+            numDeleted = 0
+            for j in range(numStrats2):
+                j -= numDeleted
+                print("LEN3: ", len(outcomesListList[pair[1]]))
+                print("\tpair[1], j2: ", (pair[1], j))
+                print("\tREMOVING 2: ", outcomesListList[pair[1]][j].get())
                 outcomesListList[pair[1]][j].grid_remove()
                 outcomesListList[pair[1]].pop(j)
+                numDeleted += 1
         
         print("RESULTS: ")
         for outcome in outcomesListList:
