@@ -729,23 +729,14 @@ def eliminateStrictlyDominatedStrategies():
             numStrats1 -= 1
             p1StrategyNameEntries[pair[0]].grid_remove()
             for j in range(numStrats2):
-                print("\tj: ", j)
-                print("\tREMOVING: ", outcomesListList[pair[0]][j].get())
                 outcomesListList[pair[0]][j].grid_remove()
                 outcomesListList[pair[0]].pop(j)
         if greaterThanFound and not lessThanFound: # remove strategy pair[1]
             numStrats1 -= 1
             p1StrategyNameEntries[pair[1]].grid_remove()
-            print("LEN: ", len(outcomesListList))
-            print("len1: ", len(outcomesListList[0]))
-            print("len2: ", len(outcomesListList[1]))
-            print("len3: ", len(outcomesListList[2]))
             numDeleted = 0
             for j in range(numStrats2):
                 j -= numDeleted
-                print("LEN3: ", len(outcomesListList[pair[1]]))
-                print("\tpair[1], j2: ", (pair[1], j))
-                print("\tREMOVING 2: ", outcomesListList[pair[1]][j].get())
                 outcomesListList[pair[1]][j].grid_remove()
                 outcomesListList[pair[1]].pop(j)
                 numDeleted += 1
