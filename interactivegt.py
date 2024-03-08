@@ -649,29 +649,16 @@ def eliminateStrictlyDominatedStrategies():
     p2StrategyNameEntries.reverse()
     groupedOutcomes = [outcomes[i:i + numStrats2] for i in range(0, len(outcomes), numStrats2)]
     
-    for outcome in groupedOutcomes:
-        print("outcome: ", outcome)
-    
     newGroupedOutcomes = []
     for outcome in groupedOutcomes:
         row = []
         for i in range(numStrats2):
             row.append(outcome[i])
         newGroupedOutcomes.append(row)
-        
-    for i in range(numStrats1):
-        print(newGroupedOutcomes[i])
     
     outcomesListList= []
     for outcome in newGroupedOutcomes:
         outcomesListList.append(outcome)
-        
-    print("THIS: ", outcomesListList[1][1])
-    
-    for i in range(numStrats1):
-        # for j in range(numStrats2):
-        #     print("(i, j): ", (i, j))
-        print(str(outcomesListList[i]) + " ")
     
     strategies = payoffMatrixSlaves[numStrats1 * numStrats2:]
     strategies.reverse()
@@ -681,7 +668,39 @@ def eliminateStrictlyDominatedStrategies():
     pairs1 = combinations(p1Strategies, r=2) # pairs of p1's strategies to compare; indices
     pairs2 = combinations(p2Strategies, r=2) # pairs of p2's strategies to compare
     
+    # eliminating strategies for player 1
     for pair in pairs1:
+        greaterThanFound = False
+        lessThanFound = False
+        equalFound = False
+        # searching for < or > among the payoffs
+        for j in range(numStrats2):
+            if int(outcomesListList[pair[0]][j].get().split(", ")[0]) < int(outcomesListList[pair[1]][j].get().split(", ")[0]):
+                lessThanFound = True
+            elif int(outcomesListList[pair[0]][j].get().split(", ")[0]) > int(outcomesListList[pair[1]][j].get().split(", ")[0]):
+                greaterThanFound = True
+            else: # equal payoffs were found
+                break
+            if lessThanFound and greaterThanFound: # neither is strictly dominated
+                break
+        if lessThanFound and not greaterThanFound: # remove strategy pair[0]
+            numStrats1 -= 1
+            p1StrategyNameEntries[pair[0]].grid_remove()
+            for j in range(numStrats2):
+                outcomesListList[pair[0]][j].grid_remove()
+                outcomesListList[pair[0]].pop(j)
+        if greaterThanFound and not lessThanFound: # remove strategy pair[1]
+            numStrats1 -= 1
+            p1StrategyNameEntries[pair[1]].grid_remove()
+            numDeleted = 0
+            for j in range(numStrats2):
+                j -= numDeleted
+                outcomesListList[pair[1]][j].grid_remove()
+                outcomesListList[pair[1]].pop(j)
+                numDeleted += 1
+    
+    # eliminating strategies for player 2
+    for pair in pairs2:
         greaterThanFound = False
         lessThanFound = False
         equalFound = False
@@ -707,44 +726,7 @@ def eliminateStrictlyDominatedStrategies():
             for i in range(numStrats1):
                 outcomesListList[i][pair[1]].grid_remove()
                 outcomesListList[i].pop(pair[1])
-            
-    for pair in pairs2:
-        print("pair:", pair)
-        greaterThanFound = False
-        lessThanFound = False
-        equalFound = False
-        # searching for < or > among the payoffs
-        for j in range(numStrats2):
-            if int(outcomesListList[pair[0]][j].get().split(", ")[0]) < int(outcomesListList[pair[1]][j].get().split(", ")[0]):
-                print("checking " + outcomesListList[pair[0]][j].get().split(", ")[0] + " < " + outcomesListList[pair[1]][j].get().split(", ")[0])
-                lessThanFound = True
-            elif int(outcomesListList[pair[0]][j].get().split(", ")[0]) > int(outcomesListList[pair[1]][j].get().split(", ")[0]):
-                print("checking " + outcomesListList[pair[0]][j].get().split(", ")[0] + " > " + outcomesListList[pair[1]][j].get().split(", ")[0])
-                greaterThanFound = True
-            else: # equal payoffs were found
-                break
-            if lessThanFound and greaterThanFound: # neither is strictly dominated
-                break
-        if lessThanFound and not greaterThanFound: # remove strategy pair[0]
-            numStrats1 -= 1
-            p1StrategyNameEntries[pair[0]].grid_remove()
-            for j in range(numStrats2):
-                outcomesListList[pair[0]][j].grid_remove()
-                outcomesListList[pair[0]].pop(j)
-        if greaterThanFound and not lessThanFound: # remove strategy pair[1]
-            numStrats1 -= 1
-            p1StrategyNameEntries[pair[1]].grid_remove()
-            numDeleted = 0
-            for j in range(numStrats2):
-                j -= numDeleted
-                outcomesListList[pair[1]][j].grid_remove()
-                outcomesListList[pair[1]].pop(j)
-                numDeleted += 1
-        
-        print("RESULTS: ")
-        for outcome in outcomesListList:
-            for payoff in outcome:
-                print(payoff.get())
+    return
 
 def enterColor(color):
     """
@@ -1143,11 +1125,6 @@ def saveAs():
     payoffs = [outcome.split(", ") for outcome in outcomes]
     
     groupedPayoffs = [payoffs[i:i + numStrats2] for i in range(0, len(payoffs), numStrats2)]
-    
-    print("groupedPayoffs FIRST:")
-    for group in groupedPayoffs:
-        for payoff in group:
-            print(str(payoff) + " ")
     
     # Prompting the user for a file name
     top = Toplevel()
