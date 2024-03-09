@@ -634,7 +634,7 @@ def deleteRecord():
     conn.close()
     return
 
-def eliminateStrictlyDominatedStrategies():
+def eliminateStrictlyDominatedStrategies(steps):
     """
     UNFINISHED
     Compares all payoffs of all pairs of strategies for both players and eliminates strategies that are strictly dominated.    
@@ -676,7 +676,94 @@ def eliminateStrictlyDominatedStrategies():
     
     continue1 = True
     continue2 = True
-    while (numCombos1 != 0 or numCombos2 != 0) and continue1 or continue2:
+    if steps == 0: # perform full iesds computation with one click
+        while (numCombos1 != 0 or numCombos2 != 0) and continue1 or continue2:
+            pairs1 = combinations(p1Strategies, r=2) # pairs of p1's strategies to compare; indices
+            pairs2 = combinations(p2Strategies, r=2) # pairs of p2's strategies to compare; indices
+            numCombos1 = sum(1 for ignore in pairs1)
+            numCombos2 = sum(1 for ignore in pairs2)
+            pairs1 = combinations(p1Strategies, r=2) # pairs of p1's strategies to compare; indices
+            pairs2 = combinations(p2Strategies, r=2) # pairs of p2's strategies to compare; indices
+            # eliminating strategies for player 1
+            for pair in pairs1:
+                greaterThanFound1 = False
+                lessThanFound1 = False
+                equalFound1 = False
+                # searching for < or > among the payoffs
+                for j in range(numStrats2):
+                    if int(outcomesListList[pair[0]][j].get().split(", ")[0]) < int(outcomesListList[pair[1]][j].get().split(", ")[0]):
+                        lessThanFound1 = True
+                    elif int(outcomesListList[pair[0]][j].get().split(", ")[0]) > int(outcomesListList[pair[1]][j].get().split(", ")[0]):
+                        greaterThanFound1 = True
+                    else: # equal payoffs were found
+                        continue1 = False
+                        break
+                    if lessThanFound1 and greaterThanFound1: # neither is strictly dominated
+                        continue1 = False
+                        break
+                if lessThanFound1 and not greaterThanFound1: # remove strategy pair[0]
+                    continue2 = True # after removing a strategy for p1, we want to ensure we check p2's strategies again
+                    numStrats1 -= 1
+                    numStratsEntry1.delete(0, END)
+                    numStratsEntry1.insert(0, numStrats1)
+                    p1StrategyNameEntries[pair[0]].grid_remove()
+                    for j in range(numStrats2):
+                        outcomesListList[pair[0]][j].grid_remove()
+                        outcomesListList[pair[0]].pop(j)
+                if greaterThanFound1 and not lessThanFound1: # remove strategy pair[1]
+                    continue2 = True # after removing a strategy for p1, we want to ensure we check p2's strategies again
+                    numStrats1 -= 1
+                    numStratsEntry1.delete(0, END)
+                    numStratsEntry1.insert(0, numStrats1)
+                    p1StrategyNameEntries[pair[1]].grid_remove()
+                    numDeleted = 0
+                    for j in range(numStrats2):
+                        j -= numDeleted
+                        outcomesListList[pair[1]][j].grid_remove()
+                        outcomesListList[pair[1]].pop(j)
+                        numDeleted += 1
+            
+                # eliminating strategies for player 2
+                for pair in pairs2:
+                    greaterThanFound2 = False
+                    lessThanFound2 = False
+                    equalFound2 = False
+                    # searching for < or > among the payoffs
+                    for i in range(numStrats1):
+                        if len(outcomesListList[pair[0]]) == 0 or len(outcomesListList[pair[1]]) == 0:
+                            continue2 == False
+                            break
+                        if int(outcomesListList[i][pair[0]].get().split(", ")[1]) < int(outcomesListList[i][pair[1]].get().split(", ")[1]):
+                            lessThanFound2 = True
+                        elif int(outcomesListList[i][pair[0]].get().split(", ")[1]) > int(outcomesListList[i][pair[1]].get().split(", ")[1]):
+                            greaterThanFound2 = True
+                        else: # equal payoffs were found
+                            continue2 = False
+                            break
+                        if lessThanFound2 and greaterThanFound2: # neither is strictly dominated
+                            continue2 = False
+                            break
+                    if lessThanFound2 and not greaterThanFound2: # remove strategy pair[0]
+                        numStrats2 -= 1
+                        numStratsEntry2.delete(0, END)
+                        numStratsEntry2.insert(0, numStrats2)
+                        p2StrategyNameEntries[pair[0]].grid_remove()
+                        for i in range(numStrats1):
+                            outcomesListList[i][pair[0]].grid_remove()
+                            outcomesListList[i].pop(pair[0])
+                        continue1 = True # after removing a strategy for p2, we want to check p1's strategies again
+                        continue2 = False # we don't want to continue checking p2 until we've checked p1 again
+                    if greaterThanFound2 and not lessThanFound2: # remove strategy pair[1]
+                        numStrats2 -= 1
+                        numStratsEntry2.delete(0, END)
+                        numStratsEntry2.insert(0, numStrats2)
+                        p2StrategyNameEntries[pair[1]].grid_remove()
+                        for i in range(numStrats1):
+                            outcomesListList[i][pair[1]].grid_remove()
+                            outcomesListList[i].pop(pair[1])
+                        continue1 = True # after removing a strategy for p2, we want to check p1's strategies again
+                        continue2 = False # we don't want to continue checking p2 until we've checked p1 again
+    elif steps == 1: # perform iesds computation step by step
         pairs1 = combinations(p1Strategies, r=2) # pairs of p1's strategies to compare; indices
         pairs2 = combinations(p2Strategies, r=2) # pairs of p2's strategies to compare; indices
         numCombos1 = sum(1 for ignore in pairs1)
@@ -695,12 +782,8 @@ def eliminateStrictlyDominatedStrategies():
                 elif int(outcomesListList[pair[0]][j].get().split(", ")[0]) > int(outcomesListList[pair[1]][j].get().split(", ")[0]):
                     greaterThanFound1 = True
                 else: # equal payoffs were found
-                    print("equal 1")
-                    continue1 = False
                     break
                 if lessThanFound1 and greaterThanFound1: # neither is strictly dominated
-                    print("both found 1")
-                    continue1 = False
                     break
             if lessThanFound1 and not greaterThanFound1: # remove strategy pair[0]
                 continue2 = True # after removing a strategy for p1, we want to ensure we check p2's strategies again
@@ -732,17 +815,14 @@ def eliminateStrictlyDominatedStrategies():
             # searching for < or > among the payoffs
             for i in range(numStrats1):
                 if len(outcomesListList[pair[0]]) == 0 or len(outcomesListList[pair[1]]) == 0:
-                    continue2 == False
                     break
                 if int(outcomesListList[i][pair[0]].get().split(", ")[1]) < int(outcomesListList[i][pair[1]].get().split(", ")[1]):
                     lessThanFound2 = True
                 elif int(outcomesListList[i][pair[0]].get().split(", ")[1]) > int(outcomesListList[i][pair[1]].get().split(", ")[1]):
                     greaterThanFound2 = True
                 else: # equal payoffs were found
-                    continue2 = False
                     break
                 if lessThanFound2 and greaterThanFound2: # neither is strictly dominated
-                    continue2 = False
                     break
             if lessThanFound2 and not greaterThanFound2: # remove strategy pair[0]
                 numStrats2 -= 1
@@ -752,8 +832,6 @@ def eliminateStrictlyDominatedStrategies():
                 for i in range(numStrats1):
                     outcomesListList[i][pair[0]].grid_remove()
                     outcomesListList[i].pop(pair[0])
-                continue1 = True # after removing a strategy for p2, we want to check p1's strategies again
-                continue2 = False # we don't want to continue checking p2 until we've checked p1 again
             if greaterThanFound2 and not lessThanFound2: # remove strategy pair[1]
                 numStrats2 -= 1
                 numStratsEntry2.delete(0, END)
@@ -762,8 +840,9 @@ def eliminateStrictlyDominatedStrategies():
                 for i in range(numStrats1):
                     outcomesListList[i][pair[1]].grid_remove()
                     outcomesListList[i].pop(pair[1])
-                continue1 = True # after removing a strategy for p2, we want to check p1's strategies again
-                continue2 = False # we don't want to continue checking p2 until we've checked p1 again
+    else:
+        print(f"Unexpected value {steps} for variable\"steps\"")
+        stepsError = messagebox.showError("Error", f"Unexpected value {steps} for variable\"steps\"")
     return
 
 def enterColor(color):
@@ -824,9 +903,6 @@ def enterPayoffs():
 
 def equilibriaOutputStyleClicked(value):
     eqOutput.set(value)
-    
-def iesdsStepsClicked(value):
-    iesdsSteps.set(value)
     
 def export(fileName, records):
     # input validation
@@ -895,6 +971,9 @@ def exportSearchGetFileName(records):
     fileNameEntry.grid(row=0, column=1)
     fileNameButton.grid(row=0, column=2)
     return
+
+def iesdsStepsClicked(value):
+    iesdsSteps.set(value)
 
 def myfunction(event):
     rootCanvas.configure(scrollregion=rootCanvas.bbox("all"), width=root.winfo_width() - 25, height=root.winfo_height() - 25)
@@ -2227,7 +2306,7 @@ iesdsSteps.set("0")
 Radiobutton(iesdsFrame, text="Full Computation", variable=iesdsSteps, value=0, command=lambda: iesdsStepsClicked(iesdsSteps.get())).grid(row=0, column=0, sticky=W)
 Radiobutton(iesdsFrame, text="Computation in Steps", variable=iesdsSteps, value=1, command=lambda: iesdsStepsClicked(iesdsSteps.get())).grid(row=1, column=0, sticky=W)
     
-iesdsButton = Button(iesdsFrame, text="Eliminate Strictly Dominated Strategies", command=eliminateStrictlyDominatedStrategies)
+iesdsButton = Button(iesdsFrame, text="Eliminate Strictly Dominated Strategies", command=lambda: eliminateStrictlyDominatedStrategies(iesdsSteps.get()))
 
 # Equilibria Frame
 equilibriaFrame = LabelFrame(rootFrame, text="Equilibria" , padx=10, pady=10)
@@ -2297,7 +2376,7 @@ payoffsFrame.grid(row=0, column=1, padx=10, pady=10)
 iesdsFrame.grid(row=1, column=1, padx=10, pady=10)
 iesdsButton.grid(row=2, column=0)
 
-equilibriaFrame.grid(row=2, column=0, padx=10, pady=10)
+equilibriaFrame.grid(row=1, column=0, rowspan=2, padx=10, pady=10)
 equilibriaButton.grid(row=1, column=1, padx=10, pady=10)
 
 axelrodFrame.grid(row=2, column=1, padx=10, pady=10)
