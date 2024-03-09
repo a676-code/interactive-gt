@@ -156,7 +156,7 @@ def clearPayoffs():
         if type(eqLabel).__name__ == "Label":
             eqLabel.grid_remove()
         
-        root.geometry(f"{45 * numStrats2 + 600}x{25 * numStrats1 + 300}")
+        root.geometry(f"{45 * numStrats2 + 700}x{25 * numStrats1 + 490}")
     return
     
 def clearPayoffMatrix():
@@ -197,7 +197,7 @@ def clearPayoffMatrix():
         if type(eqLabel).__name__ == "Label":
             eqLabel.grid_remove()
         
-        root.geometry(f"{45 * numStrats2 + 600}x{25 * numStrats1 + 300}")
+        root.geometry(f"{45 * numStrats2 + 700}x{25 * numStrats1 + 490}")
     return
 
 def clearStrategies():
@@ -333,7 +333,7 @@ def computeEquilibria(output):
             yscrollbar.grid(row=0, column=1, sticky=NS)
             yscrollbar.config(command = equilibriaOutputListBox.yview)
                         
-            root.geometry("750x425")
+            root.geometry("750x490")
             
         elif output == 1: # Named Strategies
             eqs = G.support_enumeration()
@@ -501,7 +501,7 @@ def computeEquilibria(output):
             xscrollbar.config(command = equilibriaOutputListBox.xview)
             yscrollbar.grid(row=0, column=1, sticky=NS)
             yscrollbar.config(command = equilibriaOutputListBox.yview)
-            root.geometry("750x425")
+            root.geometry("750x490")
         else:
             print("Error: variable output has taken on an unexpected value")
         return
@@ -690,15 +690,6 @@ def eliminateStrictlyDominatedStrategies():
             equalFound1 = False
             # searching for < or > among the payoffs
             for j in range(numStrats2):
-                # print("pair[0], pair[1], j", (pair[0], pair[1], j))
-                # print("LEN: ", len(outcomesListList))
-                # print("len0: ", len(outcomesListList[pair[0]]))
-                # print("len1: ", len(outcomesListList[pair[1]]))
-                # if len(outcomesListList[pair[0]]) == 0 or len(outcomesListList[pair[1]]) == 0:
-                #     print(str(outcomesListList[pair[0]]) + str(outcomesListList[pair[1]]))
-                #     print("length is zero 1")
-                #     continue1 == False
-                #     break
                 if int(outcomesListList[pair[0]][j].get().split(", ")[0]) < int(outcomesListList[pair[1]][j].get().split(", ")[0]):
                     lessThanFound1 = True
                 elif int(outcomesListList[pair[0]][j].get().split(", ")[0]) > int(outcomesListList[pair[1]][j].get().split(", ")[0]):
@@ -773,14 +764,6 @@ def eliminateStrictlyDominatedStrategies():
                     outcomesListList[i].pop(pair[1])
                 continue1 = True # after removing a strategy for p2, we want to check p1's strategies again
                 continue2 = False # we don't want to continue checking p2 until we've checked p1 again
-        if numCombos1 == 0:
-            print("numCombos1 = 0")
-        if numCombos2 == 0:
-            print("numCombos2 = 0")
-        if not continue1:
-            print("not continue1")
-        if not continue2:
-            print("not continue2")
     return
 
 def enterColor(color):
@@ -841,6 +824,9 @@ def enterPayoffs():
 
 def equilibriaOutputStyleClicked(value):
     eqOutput.set(value)
+    
+def iesdsStepsClicked(value):
+    iesdsSteps.set(value)
     
 def export(fileName, records):
     # input validation
@@ -983,7 +969,7 @@ def numStratsClick():
                     if type(eqLabel).__name__ == "Label":
                         eqLabel.grid_remove()
                     
-                    root.geometry(f"{45 * numStrats2 + 600}x{25 * numStrats1 + 300}")
+                    root.geometry(f"{45 * numStrats2 + 700}x{25 * numStrats1 + 490}")
                     return proceed
                 else:
                     return
@@ -1061,7 +1047,7 @@ def numStratsClickNoWarning():
                 if type(eqLabel).__name__ == "Label":
                     eqLabel.grid_remove()
                 
-                root.geometry(f"{45 * numStrats2 + 600}x{25 * numStrats1 + 300}")
+                root.geometry(f"{45 * numStrats2 + 700}x{25 * numStrats1 + 490}")
                 return
             else:
                 return
@@ -1187,7 +1173,7 @@ def resetPayoffMatrix():
         if type(eqLabel).__name__ == "Label":
             eqLabel.grid_remove()
         
-        root.geometry(f"{45 * numStrats2 + 600}x{25 * numStrats1 + 300}")
+        root.geometry(f"{45 * numStrats2 + 700}x{25 * numStrats1 + 490}")
     return
 
 def resetStrategies():
@@ -1494,7 +1480,7 @@ def playMatch(p1, p2, output, t = 6):
             counter += 1
 
         if axelrodOutput1.winfo_reqwidth() > axelrodOutput2.winfo_reqwidth():
-            root.geometry(f"{axelrodOutput1.winfo_reqwidth() + 400}x425")
+            root.geometry(f"{axelrodOutput1.winfo_reqwidth() + 400}x495")
         else:
             root.geometry(f"700x{axelrodOutput2.winfo_reqwidth() + 200}")
         
@@ -2116,7 +2102,7 @@ def writeToFileLatex(fileName, groupedPayoffs):
 # Defining the root window
 root = Tk()
 root.title("Interactive GT")
-root.geometry("700x425")
+root.geometry("700x490")
 root.iconbitmap("knight.ico")
 
 # Menu bar
@@ -2233,9 +2219,15 @@ global G
 G = nash.Game(p1Matrix, p2Matrix)
 
 # Eliminate Strictly Dominated Strategies Frame
-eliminateStrictlyDominatedStrategiesFrame = Frame(rootFrame)
+iesdsFrame = LabelFrame(rootFrame, text="IESDS", padx=10, pady=10)
+
+iesdsSteps = IntVar()
+iesdsSteps.set("0")
+
+Radiobutton(iesdsFrame, text="Full Computation", variable=iesdsSteps, value=0, command=lambda: iesdsStepsClicked(iesdsSteps.get())).grid(row=0, column=0, sticky=W)
+Radiobutton(iesdsFrame, text="Computation in Steps", variable=iesdsSteps, value=1, command=lambda: iesdsStepsClicked(iesdsSteps.get())).grid(row=1, column=0, sticky=W)
     
-eliminateStrictlyDominatedStrategiesButton = Button(eliminateStrictlyDominatedStrategiesFrame, text="Eliminate Strictly Dominated Strategies", command=eliminateStrictlyDominatedStrategies)
+iesdsButton = Button(iesdsFrame, text="Eliminate Strictly Dominated Strategies", command=eliminateStrictlyDominatedStrategies)
 
 # Equilibria Frame
 equilibriaFrame = LabelFrame(rootFrame, text="Equilibria" , padx=10, pady=10)
@@ -2243,8 +2235,8 @@ equilibriaFrame = LabelFrame(rootFrame, text="Equilibria" , padx=10, pady=10)
 eqOutput = IntVar()
 eqOutput.set("0")
 
-Radiobutton(equilibriaFrame, text="Standard nashpy Output", variable=eqOutput, value=0, command=lambda: equilibriaOutputStyleclicked(eqOutput.get())).grid(row=0, column=0, sticky=W)
-Radiobutton(equilibriaFrame, text="Named Strategies", variable=eqOutput, value=1, command=lambda: equilibriaOutputStyleclicked(eqOutput.get())).grid(row=1, column=0, sticky=W)
+Radiobutton(equilibriaFrame, text="Standard nashpy Output", variable=eqOutput, value=0, command=lambda: equilibriaOutputStyleClicked(eqOutput.get())).grid(row=0, column=0, sticky=W)
+Radiobutton(equilibriaFrame, text="Named Strategies", variable=eqOutput, value=1, command=lambda: equilibriaOutputStyleClicked(eqOutput.get())).grid(row=1, column=0, sticky=W)
 
 equilibriaButton = Button(equilibriaFrame, text="Compute Equilibria", command=lambda: computeEquilibria(eqOutput.get()))
 
@@ -2302,8 +2294,8 @@ numStratsButton.grid(row=1, column=2, padx=5, pady=5)
 
 payoffsFrame.grid(row=0, column=1, padx=10, pady=10)
 
-eliminateStrictlyDominatedStrategiesFrame.grid(row=1, column=1, padx=10, pady=10)
-eliminateStrictlyDominatedStrategiesButton.pack()
+iesdsFrame.grid(row=1, column=1, padx=10, pady=10)
+iesdsButton.grid(row=2, column=0)
 
 equilibriaFrame.grid(row=2, column=0, padx=10, pady=10)
 equilibriaButton.grid(row=1, column=1, padx=10, pady=10)
