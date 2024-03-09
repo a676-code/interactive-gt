@@ -815,10 +815,11 @@ def export(fileName, records):
     with open(fileName, 'w') as file:
         for i, record in enumerate(records):
             print(record)
+            print("TWO: ", record[2])
             file.write(
                 "\"" + str(record[0]) + "\",\"" + 
                 str(record[1])+ "\",\"" + 
-                str(records[2]) + "\",\"" + 
+                str(record[2]) + "\",\"" + 
                 str(record[3]) + "\",\"" + 
                 str(record[4]) + "\",\"" + 
                 str(record[5]) + "\",\"" + 
@@ -826,7 +827,6 @@ def export(fileName, records):
             if i < len(records) - 1:
                 file.write("\n")
         
-    
 def exportGetFileName():
      # Create a database or connect to one
     conn = sqlite3.connect('match.db')
@@ -854,6 +854,22 @@ def exportGetFileName():
     conn.commit()
     # Close Connection
     conn.close()
+    return
+
+def exportSearchGetFileName(records):    
+    top = Toplevel()
+    top.title("Export to csv")
+    top.iconbitmap("knight.ico")
+    top.geometry("250x30")
+    
+    fileNameLabel = Label(top, text="Enter a File Name: ")
+    fileNameEntry = Entry(top, width=15)
+    fileNameButton = Button(top, text="Enter", command=lambda: export(fileNameEntry.get(), records))
+    
+    # Putting everything in the top window
+    fileNameLabel.grid(row=0, column=0)
+    fileNameEntry.grid(row=0, column=1)
+    fileNameButton.grid(row=0, column=2)
     return
 
 def myfunction(event):
@@ -1336,7 +1352,7 @@ def showRecords():
     for record in recordsList:
         showRecordsListBox.insert(0, record)
     
-    myFrame.grid(row=11, column=0, columnspan=2)
+    myFrame.grid(row=13, column=0, columnspan=2)
     showRecordsListBox.grid(row=0, column=0, padx=10, sticky=NSEW)
     xscrollbar.grid(row=1, column=0, columnspan=2, sticky=EW)
     xscrollbar.config(command = showRecordsListBox.xview)
@@ -1590,6 +1606,9 @@ def submit():
     c.execute(searchQuery)
     
     records = c.fetchall()
+    for record in records:
+        print("record: ", record)
+    
     numRecords = len(records)
     
     proceed = True
@@ -1614,6 +1633,8 @@ def submit():
         showRecordsListBox = Listbox(searchResultsFrame, width=50, xscrollcommand=xscrollbar.set, yscrollcommand=yscrollbar.set, bg="black", fg="white")
         for record in recordsList:
             showRecordsListBox.insert(0, record)
+            
+        exportSearchButton = Button(topSearch, text="Export to csv", command=lambda: exportSearchGetFileName(records))
         
         searchResultsFrame.grid(row=11, column=0, columnspan=2)
         showRecordsListBox.grid(row=0, column=0, padx=10, sticky=NSEW)
@@ -1621,6 +1642,8 @@ def submit():
         xscrollbar.config(command = showRecordsListBox.xview)
         yscrollbar.grid(row=0, column=1, sticky=NS)
         yscrollbar.config(command = showRecordsListBox.yview)
+        
+        exportSearchButton.grid(row=12, column=0, columnspan=2)
         
         topSearch.geometry("400x400")
         
