@@ -812,6 +812,13 @@ def equilibriaOutputStyleClicked(value):
     eqOutput.set(value)
     
 def export(fileName, records):
+    # input validation
+    if ".csv" not in fileName and "." in fileName:
+        wrongExtensionError = messagebox.showerror("Error", f"The file name \"{fileName}\" contains the wrong file extension. The extension should be \".csv\".")
+        return
+    elif ".csv" not in fileName and "." not in fileName:
+        fileName = fileName + ".csv"
+    
     with open(fileName, 'w') as file:
         for i, record in enumerate(records):
             print(record)
@@ -1741,6 +1748,7 @@ def writeToFile(fileName, groupedPayoffs):
     """
         Writes the data of the current game into the fileName file
     """
+    # input validation
     if ".txt" not in fileName and "." in fileName:
         wrongExtensionError = messagebox.showerror("Error", f"The file name \"{fileName}\" contains the wrong file extension. The extension should be \".txt\".")
         return
