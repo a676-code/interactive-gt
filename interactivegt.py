@@ -557,6 +557,7 @@ def db():
     addRecordButton = Button(dbWindow, text="Add Record", command=addRecord)
     addAllPairsButton = Button(dbWindow, text="Add All Pairs for a Given Number of Turns", command=addAllPairs)
     showRecordsButton = Button(dbWindow, text="Show Records", command=showRecords)
+    exportButton = Button(dbWindow, text="Export to csv", command=exportGetFileName)
     searchRecordsButton = Button(dbWindow, text="Search Records", command=searchRecords)
     selectIDLabel = Label(dbWindow, text="Select ID: ")
     selectIDEntry = Entry(dbWindow, width=20)
@@ -575,13 +576,14 @@ def db():
     addRecordButton.grid(row=3, column=0, columnspan=2, padx=5, pady=(0, 5), ipadx=141)
     addAllPairsButton.grid(row=4, column=0, columnspan=2, padx=5, pady=(0, 5), ipadx=62)
     showRecordsButton.grid(row=5, column=0, columnspan=2, padx=5, pady=(0, 5), ipadx=135)
-    searchRecordsButton.grid(row=6, column=0, columnspan=2, padx=5, pady=(0, 5), ipadx=132)
-    selectIDLabel.grid(row=7, column=0, pady=(0, 5), sticky=E)
-    selectIDEntry.grid(row=7, column=1, pady=(0, 5), sticky=W)
-    deleteRecordButton.grid(row=8, column=0, columnspan=2, padx=5, pady=(0, 5), ipadx=135)
-    updateRecordButton.grid(row=9, column=0, columnspan=2, padx=5, pady=(0, 5), ipadx=132)
-    resetRecordButton.grid(row=10, column=0, columnspan=2, padx=5, pady=(0, 5), ipadx=136)
-    clearDBButton.grid(row=11, column=0, columnspan=2, padx=5, pady=(0, 5), ipadx=148)
+    exportButton.grid(row=6, column=0, columnspan=2, padx=5, pady=(0, 5), ipadx=137)
+    searchRecordsButton.grid(row=7, column=0, columnspan=2, padx=5, pady=(0, 5), ipadx=132)
+    selectIDLabel.grid(row=8, column=0, pady=(0, 5), sticky=E)
+    selectIDEntry.grid(row=8, column=1, pady=(0, 5), sticky=W)
+    deleteRecordButton.grid(row=9, column=0, columnspan=2, padx=5, pady=(0, 5), ipadx=135)
+    updateRecordButton.grid(row=10, column=0, columnspan=2, padx=5, pady=(0, 5), ipadx=132)
+    resetRecordButton.grid(row=11, column=0, columnspan=2, padx=5, pady=(0, 5), ipadx=136)
+    clearDBButton.grid(row=12, column=0, columnspan=2, padx=5, pady=(0, 5), ipadx=148)
     
     # Commit changes
     conn.commit()
@@ -668,22 +670,36 @@ def eliminateStrictlyDominatedStrategies():
     pairs1 = combinations(p1Strategies, r=2) # pairs of p1's strategies to compare; indices
     pairs2 = combinations(p2Strategies, r=2) # pairs of p2's strategies to compare
     
+    # Stop when there's not all < or all > for ether player
+    # Stop when there's at least one < and one > for both players
+    # Stop when lessThanFound1 and greaterThanFound1 or equalFound1, and lessThanFound2 and greaterThanFound2 or equalFound2
+    allLessThan1 = False
+    allGreaterThan2 =False
+    allLessThan2 = False
+    allGreaterThan2 = False
+    
+    greaterThanFound1 = False
+    lessThanFound1 = False
+    equalFound1 = False
+    greaterThanFound2 = False
+    lessThanFound2 = False
+    equalFound2 = False
     # eliminating strategies for player 1
     for pair in pairs1:
-        greaterThanFound = False
-        lessThanFound = False
-        equalFound = False
+        greaterThanFound1 = False
+        lessThanFound1 = False
+        equalFound1 = False
         # searching for < or > among the payoffs
         for j in range(numStrats2):
             if int(outcomesListList[pair[0]][j].get().split(", ")[0]) < int(outcomesListList[pair[1]][j].get().split(", ")[0]):
-                lessThanFound = True
+                lessThanFound1 = True
             elif int(outcomesListList[pair[0]][j].get().split(", ")[0]) > int(outcomesListList[pair[1]][j].get().split(", ")[0]):
-                greaterThanFound = True
+                greaterThanFound1 = True
             else: # equal payoffs were found
                 break
-            if lessThanFound and greaterThanFound: # neither is strictly dominated
+            if lessThanFound1 and greaterThanFound1: # neither is strictly dominated
                 break
-        if lessThanFound and not greaterThanFound: # remove strategy pair[0]
+        if lessThanFound1 and not greaterThanFound1: # remove strategy pair[0]
             numStrats1 -= 1
             numStratsEntry1.delete(0, END)
             numStratsEntry1.insert(0, numStrats1)
@@ -691,7 +707,7 @@ def eliminateStrictlyDominatedStrategies():
             for j in range(numStrats2):
                 outcomesListList[pair[0]][j].grid_remove()
                 outcomesListList[pair[0]].pop(j)
-        if greaterThanFound and not lessThanFound: # remove strategy pair[1]
+        if greaterThanFound1 and not lessThanFound1: # remove strategy pair[1]
             numStrats1 -= 1
             numStratsEntry1.delete(0, END)
             numStratsEntry1.insert(0, numStrats1)
@@ -705,20 +721,20 @@ def eliminateStrictlyDominatedStrategies():
     
     # eliminating strategies for player 2
     for pair in pairs2:
-        greaterThanFound = False
-        lessThanFound = False
-        equalFound = False
+        greaterThanFound2 = False
+        lessThanFound2 = False
+        equalFound2 = False
         # searching for < or > among the payoffs
         for i in range(numStrats1):
             if int(outcomesListList[i][pair[0]].get().split(", ")[1]) < int(outcomesListList[i][pair[1]].get().split(", ")[1]):
-                lessThanFound = True
+                lessThanFound2 = True
             elif int(outcomesListList[i][pair[0]].get().split(", ")[1]) > int(outcomesListList[i][pair[1]].get().split(", ")[1]):
-                greaterThanFound = True
+                greaterThanFound2 = True
             else: # equal payoffs were found
                 break
-            if lessThanFound and greaterThanFound: # neither is strictly dominated
+            if lessThanFound2 and greaterThanFound2: # neither is strictly dominated
                 break
-        if lessThanFound and not greaterThanFound: # remove strategy pair[0]
+        if lessThanFound2 and not greaterThanFound2: # remove strategy pair[0]
             numStrats2 -= 1
             numStratsEntry2.delete(0, END)
             numStratsEntry2.insert(0, numStrats2)
@@ -726,7 +742,7 @@ def eliminateStrictlyDominatedStrategies():
             for i in range(numStrats1):
                 outcomesListList[i][pair[0]].grid_remove()
                 outcomesListList[i].pop(pair[0])
-        if greaterThanFound and not lessThanFound: # remove strategy pair[1]
+        if greaterThanFound2 and not lessThanFound2: # remove strategy pair[1]
             numStrats2 -= 1
             numStratsEntry2.delete(0, END)
             numStratsEntry2.insert(0, numStrats2)
@@ -792,8 +808,53 @@ def enterPayoffs():
     G = nash.Game(p1Matrix, p2Matrix)
     return True
 
-def equilibriaOutputStyleclicked(value):
+def equilibriaOutputStyleClicked(value):
     eqOutput.set(value)
+    
+def export(fileName, records):
+    with open(fileName, 'w') as file:
+        for i, record in enumerate(records):
+            print(record)
+            file.write(
+                "\"" + str(record[0]) + "\",\"" + 
+                str(record[1])+ "\",\"" + 
+                str(records[2]) + "\",\"" + 
+                str(record[3]) + "\",\"" + 
+                str(record[4]) + "\",\"" + 
+                str(record[5]) + "\",\"" + 
+                str(record[6]) + "\"")
+            if i < len(records) - 1:
+                file.write("\n")
+        
+    
+def exportGetFileName():
+     # Create a database or connect to one
+    conn = sqlite3.connect('match.db')
+    # Create cursor
+    c = conn.cursor()
+    
+    c.execute("""SELECT *, oid FROM matches""")
+    records = c.fetchall()
+    
+    top = Toplevel()
+    top.title("Export to csv")
+    top.iconbitmap("knight.ico")
+    top.geometry("250x30")
+    
+    fileNameLabel = Label(top, text="Enter a File Name: ")
+    fileNameEntry = Entry(top, width=15)
+    fileNameButton = Button(top, text="Enter", command=lambda: export(fileNameEntry.get(), records))
+    
+    # Putting everything in the top window
+    fileNameLabel.grid(row=0, column=0)
+    fileNameEntry.grid(row=0, column=1)
+    fileNameButton.grid(row=0, column=2)
+    
+    # Commit changes
+    conn.commit()
+    # Close Connection
+    conn.close()
+    return
 
 def myfunction(event):
     rootCanvas.configure(scrollregion=rootCanvas.bbox("all"), width=root.winfo_width() - 25, height=root.winfo_height() - 25)
