@@ -685,12 +685,16 @@ def eliminateStrictlyDominatedStrategies():
                 break
         if lessThanFound and not greaterThanFound: # remove strategy pair[0]
             numStrats1 -= 1
+            numStratsEntry1.delete(0, END)
+            numStratsEntry1.insert(0, numStrats1)
             p1StrategyNameEntries[pair[0]].grid_remove()
             for j in range(numStrats2):
                 outcomesListList[pair[0]][j].grid_remove()
                 outcomesListList[pair[0]].pop(j)
         if greaterThanFound and not lessThanFound: # remove strategy pair[1]
             numStrats1 -= 1
+            numStratsEntry1.delete(0, END)
+            numStratsEntry1.insert(0, numStrats1)
             p1StrategyNameEntries[pair[1]].grid_remove()
             numDeleted = 0
             for j in range(numStrats2):
@@ -716,12 +720,16 @@ def eliminateStrictlyDominatedStrategies():
                 break
         if lessThanFound and not greaterThanFound: # remove strategy pair[0]
             numStrats2 -= 1
+            numStratsEntry2.delete(0, END)
+            numStratsEntry2.insert(0, numStrats2)
             p2StrategyNameEntries[pair[0]].grid_remove()
             for i in range(numStrats1):
                 outcomesListList[i][pair[0]].grid_remove()
                 outcomesListList[i].pop(pair[0])
         if greaterThanFound and not lessThanFound: # remove strategy pair[1]
             numStrats2 -= 1
+            numStratsEntry2.delete(0, END)
+            numStratsEntry2.insert(0, numStrats2)
             p2StrategyNameEntries[pair[1]].grid_remove()
             for i in range(numStrats1):
                 outcomesListList[i][pair[1]].grid_remove()
@@ -800,16 +808,16 @@ def numStratsClick():
     zeroStratsError = -1
     oneByOneError = -1
     if numStrats1 == 0 or numStrats2 == 0:
-        zeroStratsError = messagebox.showerror("Error", "A player may not have zero strategies.")
+        zeroStratsError = messagebox.showerror("Error", "numStratsClick: A player may not have zero strategies.")
     
     if zeroStratsError == -1:
         if numStrats1 == 1 or numStrats2 == 1:
-            oneByOneError = messagebox.showerror("Error", "A player may not have only one strategy.")
+            oneByOneError = messagebox.showerror("Error", "numStratsClick: A player may not have only one strategy.")
             return
         
         if oneByOneError == -1:
             if numStrats1 < 0 or numStrats2 < 0:
-                negativeStratsError = messagebox.showerror("Error", "A player may not have a negative number of strategies.")
+                negativeStratsError = messagebox.showerror("Error", "numStratsClick: A player may not have a negative number of strategies.")
                 return
             if negativeStratsError == -1:
                 proceed = messagebox.askokcancel("Clear Payoffs?", "This will reset the payoff matrix. Do you want to proceed?")
@@ -956,7 +964,7 @@ def openFile():
         with open(root.filename, 'r') as file:
             # Entering the numbers of strategies
             numStrats = file.readline().rstrip().split(" ")
-            proceed = numStratsClick() # resizing the payoff matrix
+            proceed = messagebox.askokcancel("Clear Payoffs?", "This will reset the payoff matrix. Do you want to proceed?")
             if proceed == True:
                 numStratsEntry1.delete(0, 'end')
                 numStratsEntry2.delete(0, 'end')
