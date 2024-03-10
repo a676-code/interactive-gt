@@ -1,0 +1,6 @@
+3 3
+delta mu phi
+alpha beta gamma
+0 0 0 0 0 0
+0 0 0 0 0 0
+0 0 0 0 0 0

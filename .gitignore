@@ -1,15 +1,11 @@
-bos.txt
 errors.txt
 error.png
 file.*
-greek.txt
-something.txt
-test.txt
-test2.txt
+match.db
+payoffMatrixScrollbars.py
+scrollbar.py
 testnash.py
 testaxelrod.py
-
-match.db
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
