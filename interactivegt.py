@@ -1,6 +1,6 @@
 # interactivegt.py
 # Author: Andrew W. Lounsbury
-# Date: 3/7/24
+# Date: 3/9/24
 # Description: Creates a GUI for analyzing 2-player games as well as a database of axelrod matches
 from tkinter import *
 from tkinter import ttk
@@ -677,7 +677,9 @@ def eliminateStrictlyDominatedStrategies(steps):
     continue1 = True
     continue2 = True
     if steps == 0: # perform full iesds computation with one click
+        k = 0
         while (numCombos1 != 0 or numCombos2 != 0) and continue1 or continue2:
+            print("k: ", k)
             pairs1 = combinations(p1Strategies, r=2) # pairs of p1's strategies to compare; indices
             pairs2 = combinations(p2Strategies, r=2) # pairs of p2's strategies to compare; indices
             numCombos1 = sum(1 for ignore in pairs1)
@@ -686,11 +688,21 @@ def eliminateStrictlyDominatedStrategies(steps):
             pairs2 = combinations(p2Strategies, r=2) # pairs of p2's strategies to compare; indices
             # eliminating strategies for player 1
             for pair in pairs1:
+                print("pair: ", pair)
                 greaterThanFound1 = False
                 lessThanFound1 = False
                 equalFound1 = False
                 # searching for < or > among the payoffs
                 for j in range(numStrats2):
+                    print("j: ", j)
+                    print("\tsplit1: ", outcomesListList[pair[0]][j].get().split(", "))
+                    # print("split2: ", outcomesListList[pair[1]][j].get().split(", "))
+                    print("\t\tlen1: ", len(outcomesListList))
+                    print("\t\tlen2: ", len(outcomesListList[pair[1]]))
+                    print("oLL[pair[1]]: ", outcomesListList[pair[1]])
+                    # print("\t\tGETTING: ", outcomesListList[pair[1]][j].get())
+                    # print("checking " + outcomesListList[pair[0]][j].get().split(", ")[0] + " < " + outcomesListList[pair[1]][j].get().split(", ")[0])
+                    ##### PROBLEM: at for pair = (0, 2), j = 0, outcomesListList[pair[1]] = outcomesListList[2] is empty #####
                     if int(outcomesListList[pair[0]][j].get().split(", ")[0]) < int(outcomesListList[pair[1]][j].get().split(", ")[0]):
                         lessThanFound1 = True
                     elif int(outcomesListList[pair[0]][j].get().split(", ")[0]) > int(outcomesListList[pair[1]][j].get().split(", ")[0]):
@@ -699,6 +711,7 @@ def eliminateStrictlyDominatedStrategies(steps):
                         continue1 = False
                         break
                     if lessThanFound1 and greaterThanFound1: # neither is strictly dominated
+                        print("HERE")
                         continue1 = False
                         break
                 if lessThanFound1 and not greaterThanFound1: # remove strategy pair[0]
@@ -722,6 +735,11 @@ def eliminateStrictlyDominatedStrategies(steps):
                         outcomesListList[pair[1]][j].grid_remove()
                         outcomesListList[pair[1]].pop(j)
                         numDeleted += 1
+                      
+                print("AFTER 1")  
+                for i in range(len(outcomesListList)):
+                    for j in range(len(outcomesListList[0])):
+                        print(outcomesListList[i][j].get() + " ")
             
                 # eliminating strategies for player 2
                 for pair in pairs2:
@@ -762,7 +780,22 @@ def eliminateStrictlyDominatedStrategies(steps):
                             outcomesListList[i][pair[1]].grid_remove()
                             outcomesListList[i].pop(pair[1])
                         continue1 = True # after removing a strategy for p2, we want to check p1's strategies again
-                        continue2 = False # we don't want to continue checking p2 until we've checked p1 again
+                        continue2 = False # we don't want to continue checking p2 until we've checked p1
+                        
+                print("AFTER 2")  
+                for i in range(len(outcomesListList)):
+                    for j in range(len(outcomesListList[0])):
+                        print(outcomesListList[i][j].get() + " ")
+                         
+            if numCombos1 == 0:
+                print("numCombos1 = 0")
+            if numCombos2 == 0:
+                print("numCombos2 = 0")
+            if not continue1:
+                print("not continue1")
+            if not continue2:
+                print("not continue2")
+            k += 1
     elif steps == 1: # perform iesds computation step by step
         pairs1 = combinations(p1Strategies, r=2) # pairs of p1's strategies to compare; indices
         pairs2 = combinations(p2Strategies, r=2) # pairs of p2's strategies to compare; indices
@@ -1314,20 +1347,38 @@ def saveAs():
     
     groupedPayoffs = [payoffs[i:i + numStrats2] for i in range(0, len(payoffs), numStrats2)]
     
-    # Prompting the user for a file name
-    top = Toplevel()
-    top.title("Save As")
-    top.iconbitmap("knight.ico")
-    top.geometry("250x30")
-
-    fileNameLabel = Label(top, text="Enter a File Name: ")
-    fileNameEntry = Entry(top, width=15)
-    fileNameButton = Button(top, text="Enter", command=lambda: [writeToFile(fileNameEntry.get(), groupedPayoffs), top.destroy()])
-    
-    # Putting everything in the top window
-    fileNameLabel.grid(row=0, column=0)
-    fileNameEntry.grid(row=0, column=1)
-    fileNameButton.grid(row=0, column=2)
+    # Prompting the user for a file name    
+    file = filedialog.asksaveasfile(defaultextension = ".txt", mode='w', initialdir=".", title="Save As", filetypes=(("Text files", "*.txt"),))
+    if file:
+        numStrats1 = int(numStratsEntry1.get())
+        numStrats2 = int(numStratsEntry2.get())
+        
+        # Getting list of the strategy names
+        payoffMatrixSlaves = payoffsFrame.grid_slaves()
+        strategyNames = payoffMatrixSlaves[numStrats1 * numStrats2:]
+        
+        p1StrategyNames = strategyNames[:numStrats1]
+        p1StrategyNames = [name.get() for name in p1StrategyNames]
+        p1StrategyNames.reverse()
+        p1StrategyNamesString = " ".join(p1StrategyNames)
+        p1StrategyNamesString = p1StrategyNamesString + "\n"
+        p2StrategyNames = strategyNames[numStrats2:]
+        p2StrategyNames = [name.get() for name in p2StrategyNames]
+        p2StrategyNames.reverse()
+        p2StrategyNamesString = " ".join(p2StrategyNames)
+        p2StrategyNamesString = p2StrategyNamesString + "\n"
+        
+        file.write(str(numStrats1) + " " + str(numStrats2) + "\n")
+        file.write(p1StrategyNamesString)
+        file.write(p2StrategyNamesString)
+        for i, group in enumerate(groupedPayoffs):
+            for j, payoff in enumerate(group):
+                if j < numStrats2 - 1:
+                    file.write(str(payoff[0]) + " " + str(payoff[1]) + " ")
+                else:
+                    file.write(str(payoff[0]) + " " + str(payoff[1]))
+            if i < len(groupedPayoffs) - 1:
+                file.write("\n")
     return
 
 def saveAsLatex():
@@ -1877,11 +1928,6 @@ def writeToFile(fileName, groupedPayoffs):
     p2StrategyNamesString = " ".join(p2StrategyNames)
     p2StrategyNamesString = p2StrategyNamesString + "\n"
     
-    print("groupedPayoffs:")
-    for group in groupedPayoffs:
-        for payoff in group:
-            print(str(payoff) + " ")
-    
     # writing to file
     with open(fileName, 'w') as file:
         file.write(str(numStrats1) + " " + str(numStrats2) + "\n")
@@ -1890,10 +1936,8 @@ def writeToFile(fileName, groupedPayoffs):
         for i, group in enumerate(groupedPayoffs):
             for j, payoff in enumerate(group):
                 if j < numStrats2 - 1:
-                    print("writing: ", str(payoff[0]) + " " + str(payoff[1]) + " ")
                     file.write(str(payoff[0]) + " " + str(payoff[1]) + " ")
                 else:
-                    print("writing: ", str(payoff[0]) + " " + str(payoff[1]))
                     file.write(str(payoff[0]) + " " + str(payoff[1]))
             if i < len(groupedPayoffs) - 1:
                 file.write("\n")
