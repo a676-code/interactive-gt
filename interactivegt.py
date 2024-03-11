@@ -668,7 +668,6 @@ def eliminateStrictlyDominatedStrategies(steps):
     p2Strategies = [i for i in range(numStrats2)] # = [0, 1, 2,...]
     
     if steps == 0: # perform full IESDS computation with one click
-        continueChecking = True
         pairs1 = combinations(p1Strategies, r=2) # pairs of p1's strategies to compare; indices
         pairs2 = combinations(p2Strategies, r=2) # pairs of p2's strategies to compare; indices
         numCombos1 = sum(1 for ignore in pairs1)
@@ -682,9 +681,12 @@ def eliminateStrictlyDominatedStrategies(steps):
         greaterThanFound2 = False
         lessThanFound2 = False
         equalFound2 = False
-        while (not lessThanFound1 or not greaterThanFound1 or not lessThanFound2 or not greaterThanFound2) and not equalFound1 and not equalFound2 and continueChecking:
+        multipleStrats1 = True
+        multipleStrats2 = True
+        bothSignsBothPlayers = False
+        while (not lessThanFound1 or not greaterThanFound1 or not lessThanFound2 or not greaterThanFound2) and multipleStrats1 and multipleStrats2 and not bothSignsBothPlayers:
             # print("k: ", k)
-            # eliminating strategies for player 1
+            # eliminating strategies for player 1 #####################################################################
             for pair in pairs1:
                 greaterThanFound1 = False
                 lessThanFound1 = False
@@ -692,18 +694,19 @@ def eliminateStrictlyDominatedStrategies(steps):
                 # searching for < or > among the payoffs
                 for j in range(numStrats2):
                     if len(outcomesListList) == 1: # if p1 has only one strategy left
-                        continueChecking = False
+                        multipleStrats1 = False
                         break
                     if int(outcomesListList[pair[0]][j].get().split(", ")[0]) < int(outcomesListList[pair[1]][j].get().split(", ")[0]):
-                        print("HERE 1")
+                        print(outcomesListList[pair[0]][j].get().split(", ")[0] + " < " + outcomesListList[pair[1]][j].get().split(", ")[0])
+                        # print("< 1")
                         lessThanFound1 = True
                     elif int(outcomesListList[pair[0]][j].get().split(", ")[0]) > int(outcomesListList[pair[1]][j].get().split(", ")[0]):
-                        print("HERE 2")
+                        outcomesListList[pair[0]][j].get().split(", ")[0] + " > " + outcomesListList[pair[1]][j].get().split(", ")[0]
+                        # print("> 1")
                         greaterThanFound1 = True
                     else: # equal payoffs found
-                        print("HERE 3")
+                        print("= 1")
                         equalFound1 = True
-                        continueChecking = False
                         break
                 
                 # Removing strategies based on the results
@@ -729,12 +732,10 @@ def eliminateStrictlyDominatedStrategies(steps):
                         numDeleted += 1
                     p1Strategies.pop()
                 if lessThanFound1 and greaterThanFound1 and lessThanFound2 and greaterThanFound2: # neither is strictly dominated
-                    continueChecking = False
-                else:
-                    continueChecking = True
+                    bothSignsBothPlayers = True
                     break
             
-            # eliminating strategies for player 2
+            # eliminating strategies for player 2 ######################################################################
             for pair in pairs2:
                 greaterThanFound2 = False
                 lessThanFound2 = False
@@ -742,18 +743,19 @@ def eliminateStrictlyDominatedStrategies(steps):
                 # searching for < or > among the payoffs
                 for i in range(numStrats1):
                     if len(outcomesListList[pair[0]]) == 1: # if p2 only has one strategy left
-                        continueChecking = False
+                        multipleStrats2 = False
                         break
                     if int(outcomesListList[i][pair[0]].get().split(", ")[1]) < int(outcomesListList[i][pair[1]].get().split(", ")[1]):
-                        print("HERE 4")
+                        print(outcomesListList[i][pair[0]].get().split(", ")[1] + " < " + outcomesListList[i][pair[1]].get().split(", ")[1])
+                        # print("< 2")
                         lessThanFound2 = True
                     elif int(outcomesListList[i][pair[0]].get().split(", ")[1]) > int(outcomesListList[i][pair[1]].get().split(", ")[1]):
-                        print("HERE 5")
+                        print(outcomesListList[i][pair[0]].get().split(", ")[1] + " > " + outcomesListList[i][pair[1]].get().split(", ")[1])
+                        # print("> 2")
                         greaterThanFound2 = True
                     else: # equal payoffs were found
-                        print("HERE 6")
+                        print("= 2")
                         equalFound2 = True
-                        continueChecking = False
                         break
                 
                 # Removing strategies based on the results
@@ -776,12 +778,12 @@ def eliminateStrictlyDominatedStrategies(steps):
                         outcomesListList[i].pop(pair[1])
                     p2Strategies.pop()
                 if lessThanFound1 and greaterThanFound1 and lessThanFound2 and greaterThanFound2: # neither is strictly dominated for either player
-                    print("HERE 7")
-                    continueChecking = False
-                else:
-                    continueChecking = True
+                    print(">1, <1, <2, >2")
+                    bothSignsBothPlayers = True
                     break
-            print((lessThanFound1, greaterThanFound1, lessThanFound2, greaterThanFound2, continueChecking))
+            print((lessThanFound1, greaterThanFound1, lessThanFound2, greaterThanFound2))
+            print((multipleStrats1, multipleStrats2))
+            print(bothSignsBothPlayers)
             k += 1
     elif steps == 1: # perform IESDS computation step by step
         global numIESDSClicks
@@ -888,7 +890,6 @@ def eliminateStrictlyDominatedStrategies(steps):
                         if lessThanFound1 and greaterThanFound1: # neither is strictly dominated
                             break
                     if lessThanFound1 and not greaterThanFound1: # remove strategy pair[0]
-                        continue2 = True # after removing a strategy for p1, we want to ensure we check p2's strategies again
                         numStrats1 -= 1
                         numStratsEntry1.delete(0, END)
                         numStratsEntry1.insert(0, numStrats1)
@@ -897,7 +898,6 @@ def eliminateStrictlyDominatedStrategies(steps):
                             outcomesListList[pair[0]][j].grid_remove()
                             outcomesListList[pair[0]].pop(j)
                     if greaterThanFound1 and not lessThanFound1: # remove strategy pair[1]
-                        continue2 = True # after removing a strategy for p1, we want to ensure we check p2's strategies again
                         numStrats1 -= 1
                         numStratsEntry1.delete(0, END)
                         numStratsEntry1.insert(0, numStrats1)
