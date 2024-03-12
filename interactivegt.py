@@ -636,9 +636,18 @@ def deleteRecord():
 
 def eliminateStrictlyDominatedStrategies(steps):
     """
-    UNFINISHED
     Compares all payoffs of all pairs of strategies for both players and eliminates strategies that are strictly dominated.    
     """
+    # saving the original game in case the user wants to revert back to it
+    global numIESDSClicks
+    global originalGame
+    global originalNumStrats1
+    global originalNumStrats2
+    if steps == 0 or numIESDSClicks == 0:
+        originalGame = payoffsFrame.grid_slaves()
+        originalNumStrats1 = int(numStratsEntry1.get())
+        originalNumStrats2 = int(numStratsEntry2.get())
+    
     numStrats1 = int(numStratsEntry1.get())
     numStrats2 = int(numStratsEntry2.get())
     payoffMatrixSlaves = payoffsFrame.grid_slaves()
@@ -791,7 +800,7 @@ def eliminateStrictlyDominatedStrategies(steps):
             if not stratRemoved1 and not stratRemoved2:
                 break
     elif steps == 1: # perform IESDS computation step by step
-        global numIESDSClicks
+        # global numIESDSClicks
         numIESDSClicks += 1
         pairs1 = combinations(p1Strategies, r=2) # pairs of p1's strategies to compare; indices
         pairs2 = combinations(p2Strategies, r=2) # pairs of p2's strategies to compare; indices
@@ -1415,6 +1424,103 @@ def resetStrategies():
             e.grid(row=j + 1, column=0, padx=5)
     else:
         return
+    
+def revert():
+    """
+        Reverts back to the original game after computing IESDS
+    """
+    numStrats1 = int(numStratsEntry1.get())
+    numStrats2 = int(numStratsEntry2.get())
+    
+    outcomes = originalGame[:originalNumStrats1 * originalNumStrats2]
+    outcomes.reverse()
+    strategyNames = originalGame[originalNumStrats1 * originalNumStrats2:]
+    p1StrategyNameEntries = strategyNames[:originalNumStrats1]
+    p1StrategyNameEntries.reverse()
+    p1StrategyNames = [entry.get() for entry in p1StrategyNameEntries]
+    p2StrategyNameEntries = strategyNames[originalNumStrats2:]
+    p2StrategyNameEntries.reverse()
+    p2StrategyNames = [entry.get() for entry in p2StrategyNameEntries]
+    groupedOutcomes = [outcomes[i:i + originalNumStrats2] for i in range(0, len(outcomes), originalNumStrats2)]
+    
+    newGroupedOutcomes = []
+    for outcome in groupedOutcomes:
+        row = []
+        for i in range(originalNumStrats2):
+            row.append(outcome[i])
+        newGroupedOutcomes.append(row)
+    
+    outcomesListList= []
+    for outcome in newGroupedOutcomes:
+        outcomesListList.append(outcome)
+        
+    newOutcomesListList = []
+    for row in outcomesListList:
+        newRow = []
+        for outcome in row:
+            newRow.append(outcome.get().split(", "))
+        newOutcomesListList.append(newRow)
+        
+    curGame = payoffsFrame.grid_slaves()
+    curOutcomes = curGame[:numStrats1 * numStrats2]
+    curOutcomes.reverse()
+    curStrategyNames = curGame[numStrats1 * numStrats2:]
+    curP1StrategyNameEntries = curStrategyNames[:numStrats1]
+    curP1StrategyNameEntries.reverse()
+    curP1StrategyNames = [entry.get() for entry in curP1StrategyNameEntries]
+    curP2StrategyNameEntries = strategyNames[numStrats2:]
+    curP2StrategyNameEntries.reverse()
+    curP2StrategyNames = [entry.get() for entry in curP2StrategyNameEntries]
+    curGroupedOutcomes = [curOutcomes[i:i + numStrats2] for i in range(0, len(curOutcomes), numStrats2)]
+    
+    # print("oLL:")
+    # for outcome in outcomesListList:
+    #     for payoff in outcome:
+    #         print(payoff.get() + " ", end="")
+    #     print()
+    
+    # clearing the current payoff matrix
+    for slave in curGame:
+        slave.delete(0, 'end')
+        slave.grid_remove()
+        
+    print("oLL:")
+    for outcome in outcomesListList:
+        for payoff in outcome:
+            print(payoff.get() + " ", end="")
+        print()
+        
+    print("newOLL:")
+    for row in newOutcomesListList:
+        for outcome in row:
+            print(outcome[0] + ", " + outcome[1] + " ", end="")
+        print()
+    
+    # refilling the table
+    for i in range(originalNumStrats2):
+        e = Entry(payoffsFrame, width=10)
+        e.insert(0, p1StrategyNames[i])
+        e.grid(row=0, column=i + 1, pady=5)
+        
+    for j in range(originalNumStrats1):
+        e = Entry(payoffsFrame, width=10)
+        e.insert(0, p2StrategyNames[j])
+        e.grid(row=j + 1, column=0, padx=5)
+    
+    # inserting the original payoffs
+    rows = []
+    for i in range(originalNumStrats1):
+        cols = []
+        for j in range(originalNumStrats2):
+            e = Entry(payoffsFrame, width=5)
+            e.grid(row=i + 1, column=j + 1, sticky=NSEW)
+            e.insert(END, '%d, %d' % (int(newOutcomesListList[i][j][0]), int(newOutcomesListList[i][j][1])))
+            cols.append(e)
+        rows.append(cols)
+
+    # entering the "new" payoffs into the system
+    enterPayoffs()
+    return
 
 def saveAs():
     """
@@ -2436,8 +2542,8 @@ iesdsSteps = IntVar()
 iesdsSteps.set("0")
 
 Radiobutton(iesdsFrame, text="Full Computation", variable=iesdsSteps, value=0, command=lambda: iesdsStepsClicked(iesdsSteps.get())).grid(row=0, column=0, sticky=W)
-Radiobutton(iesdsFrame, text="Computation in Steps", variable=iesdsSteps, value=1, command=lambda: iesdsStepsClicked(iesdsSteps.get())).grid(row=1, column=0, sticky=W)
-    
+revertButton = Button(iesdsFrame, text="Revert", command=revert)
+Radiobutton(iesdsFrame, text="Computation in Steps", variable=iesdsSteps, value=1, command=lambda: iesdsStepsClicked(iesdsSteps.get())).grid(row=1, column=0, sticky=W)    
 iesdsButton = Button(iesdsFrame, text="Eliminate Strictly Dominated Strategies", command=lambda: eliminateStrictlyDominatedStrategies(iesdsSteps.get()))
 
 # Equilibria Frame
@@ -2506,7 +2612,8 @@ numStratsButton.grid(row=1, column=2, padx=5, pady=5)
 payoffsFrame.grid(row=0, column=1, padx=10, pady=10)
 
 iesdsFrame.grid(row=1, column=1, padx=10, pady=10)
-iesdsButton.grid(row=2, column=0)
+revertButton.grid(row=0, column=1)
+iesdsButton.grid(row=2, column=0, columnspan=2)
 
 equilibriaFrame.grid(row=1, column=0, rowspan=2, padx=10, pady=10)
 equilibriaButton.grid(row=1, column=1, padx=10, pady=10)
