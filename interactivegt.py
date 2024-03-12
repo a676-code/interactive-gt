@@ -809,7 +809,6 @@ def eliminateStrictlyDominatedStrategies(steps):
         pairs2 = combinations(p2Strategies, r=2) # pairs of p2's strategies to compare; indices
         oneStratEliminated = False
         
-        print("numIESDSClicks:", numIESDSClicks)
         if numIESDSClicks == 1:
             # eliminating strategies for player 1
             for pair in pairs1:
