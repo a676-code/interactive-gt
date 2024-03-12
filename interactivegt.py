@@ -1,6 +1,6 @@
 # interactivegt.py
 # Author: Andrew W. Lounsbury
-# Date: 3/9/24
+# Date: 3/11/24
 # Description: Creates a GUI for analyzing 2-player games as well as a database of axelrod matches
 from tkinter import *
 from tkinter import ttk
