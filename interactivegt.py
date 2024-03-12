@@ -702,9 +702,7 @@ def eliminateStrictlyDominatedStrategies(steps):
                 lessThanFound1 = False
                 equalFound1 = False
                 # searching for < or > among the payoffs
-                print("\tnumStrats2:",numStrats2)
                 for j in range(numStrats2):
-                    print("\t\tj:", j)
                     if len(outcomesListList) == 1: # if p1 has only one strategy left
                         multipleStrats1 = False
                         break
@@ -717,7 +715,7 @@ def eliminateStrictlyDominatedStrategies(steps):
                         break
                 
                 # Removing strategies based on the results
-                if lessThanFound1 and not greaterThanFound1: # remove strategy pair[0]
+                if lessThanFound1 and not greaterThanFound1 and not equalFound1: # remove strategy pair[0]
                     numStrats1 -= 1
                     numStratsEntry1.delete(0, END)
                     numStratsEntry1.insert(0, numStrats1)
@@ -727,7 +725,7 @@ def eliminateStrictlyDominatedStrategies(steps):
                         outcomesListList[pair[0]].pop(j)
                     p1Strategies.pop()
                     stratRemoved1 = True
-                elif greaterThanFound1 and not lessThanFound1: # remove strategy pair[1]
+                elif greaterThanFound1 and not lessThanFound1 and not equalFound1: # remove strategy pair[1]
                     numStrats1 -= 1
                     numStratsEntry1.delete(0, END)
                     numStratsEntry1.insert(0, numStrats1)
@@ -765,7 +763,7 @@ def eliminateStrictlyDominatedStrategies(steps):
                         break
                 
                 # Removing strategies based on the results
-                if lessThanFound2 and not greaterThanFound2: # remove strategy pair[0]
+                if lessThanFound2 and not greaterThanFound2 and not equalFound2: # remove strategy pair[0]
                     numStrats2 -= 1
                     numStratsEntry2.delete(0, END)
                     numStratsEntry2.insert(0, numStrats2)
@@ -775,7 +773,7 @@ def eliminateStrictlyDominatedStrategies(steps):
                         outcomesListList[i].pop(pair[0])
                     p2Strategies.pop()
                     stratRemoved2 = True
-                elif greaterThanFound2 and not lessThanFound2: # remove strategy pair[1]
+                elif greaterThanFound2 and not lessThanFound2 and not equalFound2: # remove strategy pair[1]
                     numStrats2 -= 1
                     numStratsEntry2.delete(0, END)
                     numStratsEntry2.insert(0, numStrats2)
@@ -816,10 +814,11 @@ def eliminateStrictlyDominatedStrategies(steps):
                     elif int(outcomesListList[pair[0]][j].get().split(", ")[0]) > int(outcomesListList[pair[1]][j].get().split(", ")[0]):
                         greaterThanFound1 = True
                     else: # equal payoffs were found
+                        equalFound1 = True
                         break
                     if lessThanFound1 and greaterThanFound1: # neither is strictly dominated
                         break
-                if lessThanFound1 and not greaterThanFound1: # remove strategy pair[0]
+                if lessThanFound1 and not greaterThanFound1 and not equalFound1: # remove strategy pair[0]
                     oneStratEliminated = True
                     numStrats1 -= 1
                     numStratsEntry1.delete(0, END)
@@ -828,7 +827,7 @@ def eliminateStrictlyDominatedStrategies(steps):
                     for j in range(numStrats2):
                         outcomesListList[pair[0]][j].grid_remove()
                         outcomesListList[pair[0]].pop(j)
-                if greaterThanFound1 and not lessThanFound1: # remove strategy pair[1]
+                if greaterThanFound1 and not lessThanFound1 and not equalFound1: # remove strategy pair[1]
                     # one strat found
                     oneStratEliminated = True
                     numStrats1 -= 1
@@ -856,10 +855,11 @@ def eliminateStrictlyDominatedStrategies(steps):
                         elif int(outcomesListList[i][pair[0]].get().split(", ")[1]) > int(outcomesListList[i][pair[1]].get().split(", ")[1]):
                             greaterThanFound2 = True
                         else: # equal payoffs were found
+                            equalFound2 = True
                             break
                         if lessThanFound2 and greaterThanFound2: # neither is strictly dominated
                             break
-                    if lessThanFound2 and not greaterThanFound2: # remove strategy pair[0]
+                    if lessThanFound2 and not greaterThanFound2 and not equalFound2: # remove strategy pair[0]
                         oneStratEliminated = True
                         numIESDSClicks = 3 # if we start by eliminating a strat for p2, check p1 next
                         numStrats2 -= 1
@@ -869,7 +869,7 @@ def eliminateStrictlyDominatedStrategies(steps):
                         for i in range(numStrats1):
                             outcomesListList[i][pair[0]].grid_remove()
                             outcomesListList[i].pop(pair[0])
-                    if greaterThanFound2 and not lessThanFound2: # remove strategy pair[1]
+                    if greaterThanFound2 and not lessThanFound2 and not equalFound2: # remove strategy pair[1]
                         oneStratEliminated = True
                         numIESDSClicks = 2 # if we start by eliminating a strat for p2, check p1 next (numIESDSClicks will be incremented to 3 \cong 1 mod 2)
                         numStrats2 -= 1
@@ -893,10 +893,11 @@ def eliminateStrictlyDominatedStrategies(steps):
                         elif int(outcomesListList[pair[0]][j].get().split(", ")[0]) > int(outcomesListList[pair[1]][j].get().split(", ")[0]):
                             greaterThanFound1 = True
                         else: # equal payoffs were found
+                            equalFound1 = True
                             break
                         if lessThanFound1 and greaterThanFound1: # neither is strictly dominated
                             break
-                    if lessThanFound1 and not greaterThanFound1: # remove strategy pair[0]
+                    if lessThanFound1 and not greaterThanFound1 and not equalFound1: # remove strategy pair[0]
                         numStrats1 -= 1
                         numStratsEntry1.delete(0, END)
                         numStratsEntry1.insert(0, numStrats1)
@@ -904,7 +905,7 @@ def eliminateStrictlyDominatedStrategies(steps):
                         for j in range(numStrats2):
                             outcomesListList[pair[0]][j].grid_remove()
                             outcomesListList[pair[0]].pop(j)
-                    if greaterThanFound1 and not lessThanFound1: # remove strategy pair[1]
+                    if greaterThanFound1 and not lessThanFound1 and not equalFound1: # remove strategy pair[1]
                         numStrats1 -= 1
                         numStratsEntry1.delete(0, END)
                         numStratsEntry1.insert(0, numStrats1)
@@ -930,10 +931,11 @@ def eliminateStrictlyDominatedStrategies(steps):
                         elif int(outcomesListList[i][pair[0]].get().split(", ")[1]) > int(outcomesListList[i][pair[1]].get().split(", ")[1]):
                             greaterThanFound2 = True
                         else: # equal payoffs were found
+                            equalFound2 = True
                             break
                         if lessThanFound2 and greaterThanFound2: # neither is strictly dominated
                             break
-                    if lessThanFound2 and not greaterThanFound2: # remove strategy pair[0]
+                    if lessThanFound2 and not greaterThanFound2 and not equalFound2: # remove strategy pair[0]
                         numStrats2 -= 1
                         numStratsEntry2.delete(0, END)
                         numStratsEntry2.insert(0, numStrats2)
@@ -941,7 +943,7 @@ def eliminateStrictlyDominatedStrategies(steps):
                         for i in range(numStrats1):
                             outcomesListList[i][pair[0]].grid_remove()
                             outcomesListList[i].pop(pair[0])
-                    if greaterThanFound2 and not lessThanFound2: # remove strategy pair[1]
+                    if greaterThanFound2 and not lessThanFound2 and not equalFound2: # remove strategy pair[1]
                         numStrats2 -= 1
                         numStratsEntry2.delete(0, END)
                         numStratsEntry2.insert(0, numStrats2)
