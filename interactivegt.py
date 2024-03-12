@@ -1,6 +1,6 @@
 # interactivegt.py
 # Author: Andrew W. Lounsbury
-# Date: 3/11/24
+# Date: 3/12/24
 # Description: Creates a GUI for analyzing 2-player games as well as a database of axelrod matches
 from tkinter import *
 from tkinter import ttk
@@ -1440,84 +1440,87 @@ def revert():
     """
     numStrats1 = int(numStratsEntry1.get())
     numStrats2 = int(numStratsEntry2.get())
-    
-    outcomes = originalGame[:originalNumStrats1 * originalNumStrats2]
-    outcomes.reverse()
-    strategyNames = originalGame[originalNumStrats1 * originalNumStrats2:]
-    p1StrategyNameEntries = strategyNames[:originalNumStrats1]
-    p1StrategyNameEntries.reverse()
-    p1StrategyNames = [entry.get() for entry in p1StrategyNameEntries]
-    p2StrategyNameEntries = strategyNames[originalNumStrats2:]
-    p2StrategyNameEntries.reverse()
-    p2StrategyNames = [entry.get() for entry in p2StrategyNameEntries]
-    groupedOutcomes = [outcomes[i:i + originalNumStrats2] for i in range(0, len(outcomes), originalNumStrats2)]
-    
-    newGroupedOutcomes = []
-    for outcome in groupedOutcomes:
-        row = []
+    try:
+        outcomes = originalGame[:originalNumStrats1 * originalNumStrats2]
+    except NameError:
+        notYetIESDSError = messagebox.showerror("Error", "The IESDS algorithm has not run yet. There's nothing to revert back to.")
+    else:
+        outcomes.reverse()
+        strategyNames = originalGame[originalNumStrats1 * originalNumStrats2:]
+        p1StrategyNameEntries = strategyNames[:originalNumStrats1]
+        p1StrategyNameEntries.reverse()
+        p1StrategyNames = [entry.get() for entry in p1StrategyNameEntries]
+        p2StrategyNameEntries = strategyNames[originalNumStrats2:]
+        p2StrategyNameEntries.reverse()
+        p2StrategyNames = [entry.get() for entry in p2StrategyNameEntries]
+        groupedOutcomes = [outcomes[i:i + originalNumStrats2] for i in range(0, len(outcomes), originalNumStrats2)]
+        
+        newGroupedOutcomes = []
+        for outcome in groupedOutcomes:
+            row = []
+            for i in range(originalNumStrats2):
+                row.append(outcome[i])
+            newGroupedOutcomes.append(row)
+        
+        outcomesListList= []
+        for outcome in newGroupedOutcomes:
+            outcomesListList.append(outcome)
+            
+        newOutcomesListList = []
+        for row in outcomesListList:
+            newRow = []
+            for outcome in row:
+                newRow.append(outcome.get().split(", "))
+            newOutcomesListList.append(newRow)
+            
+        curGame = payoffsFrame.grid_slaves()
+        curOutcomes = curGame[:numStrats1 * numStrats2]
+        curOutcomes.reverse()
+        curStrategyNames = curGame[numStrats1 * numStrats2:]
+        curP1StrategyNameEntries = curStrategyNames[:numStrats1]
+        curP1StrategyNameEntries.reverse()
+        curP1StrategyNames = [entry.get() for entry in curP1StrategyNameEntries]
+        curP2StrategyNameEntries = strategyNames[numStrats2:]
+        curP2StrategyNameEntries.reverse()
+        curP2StrategyNames = [entry.get() for entry in curP2StrategyNameEntries]
+        curGroupedOutcomes = [curOutcomes[i:i + numStrats2] for i in range(0, len(curOutcomes), numStrats2)]
+        
+        # clearing the current payoff matrix
+        for slave in curGame:
+            slave.delete(0, 'end')
+            slave.grid_remove()
+        
+        # refilling the table
         for i in range(originalNumStrats2):
-            row.append(outcome[i])
-        newGroupedOutcomes.append(row)
-    
-    outcomesListList= []
-    for outcome in newGroupedOutcomes:
-        outcomesListList.append(outcome)
+            e = Entry(payoffsFrame, width=10)
+            e.insert(0, p1StrategyNames[i])
+            e.grid(row=0, column=i + 1, pady=5)
+        for j in range(originalNumStrats1):
+            e = Entry(payoffsFrame, width=10)
+            e.insert(0, p2StrategyNames[j])
+            e.grid(row=j + 1, column=0, padx=5)
         
-    newOutcomesListList = []
-    for row in outcomesListList:
-        newRow = []
-        for outcome in row:
-            newRow.append(outcome.get().split(", "))
-        newOutcomesListList.append(newRow)
+        # inserting the original payoffs
+        rows = []
+        for i in range(originalNumStrats1):
+            cols = []
+            for j in range(originalNumStrats2):
+                e = Entry(payoffsFrame, width=5)
+                e.grid(row=i + 1, column=j + 1, sticky=NSEW)
+                e.insert(END, '%d, %d' % (int(newOutcomesListList[i][j][0]), int(newOutcomesListList[i][j][1])))
+                cols.append(e)
+            rows.append(cols)
         
-    curGame = payoffsFrame.grid_slaves()
-    curOutcomes = curGame[:numStrats1 * numStrats2]
-    curOutcomes.reverse()
-    curStrategyNames = curGame[numStrats1 * numStrats2:]
-    curP1StrategyNameEntries = curStrategyNames[:numStrats1]
-    curP1StrategyNameEntries.reverse()
-    curP1StrategyNames = [entry.get() for entry in curP1StrategyNameEntries]
-    curP2StrategyNameEntries = strategyNames[numStrats2:]
-    curP2StrategyNameEntries.reverse()
-    curP2StrategyNames = [entry.get() for entry in curP2StrategyNameEntries]
-    curGroupedOutcomes = [curOutcomes[i:i + numStrats2] for i in range(0, len(curOutcomes), numStrats2)]
-    
-    # clearing the current payoff matrix
-    for slave in curGame:
-        slave.delete(0, 'end')
-        slave.grid_remove()
-    
-    # refilling the table
-    for i in range(originalNumStrats2):
-        e = Entry(payoffsFrame, width=10)
-        e.insert(0, p1StrategyNames[i])
-        e.grid(row=0, column=i + 1, pady=5)
-    for j in range(originalNumStrats1):
-        e = Entry(payoffsFrame, width=10)
-        e.insert(0, p2StrategyNames[j])
-        e.grid(row=j + 1, column=0, padx=5)
-    
-    # inserting the original payoffs
-    rows = []
-    for i in range(originalNumStrats1):
-        cols = []
-        for j in range(originalNumStrats2):
-            e = Entry(payoffsFrame, width=5)
-            e.grid(row=i + 1, column=j + 1, sticky=NSEW)
-            e.insert(END, '%d, %d' % (int(newOutcomesListList[i][j][0]), int(newOutcomesListList[i][j][1])))
-            cols.append(e)
-        rows.append(cols)
-    
-    # setting the numbers of strategies back to the originals
-    numStratsFrameSlaves = numStratsFrame.grid_slaves()
-    numStratsFrameSlaves[2].delete(0, END)
-    numStratsFrameSlaves[2].insert(0, originalNumStrats1)
-    numStratsFrameSlaves[1].delete(0, END)
-    numStratsFrameSlaves[1].insert(0, originalNumStrats2)
+        # setting the numbers of strategies back to the originals
+        numStratsFrameSlaves = numStratsFrame.grid_slaves()
+        numStratsFrameSlaves[2].delete(0, END)
+        numStratsFrameSlaves[2].insert(0, originalNumStrats1)
+        numStratsFrameSlaves[1].delete(0, END)
+        numStratsFrameSlaves[1].insert(0, originalNumStrats2)
 
-    # entering the "new" payoffs into the system
-    enterPayoffs()
-    return
+        # entering the "new" payoffs into the system
+        enterPayoffs()
+        return
 
 def saveAs():
     """
