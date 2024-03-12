@@ -703,7 +703,6 @@ def eliminateStrictlyDominatedStrategies(steps):
         stratRemoved2 = True  
         # stop when you can't eliminate a strategy for either player or when only one strategy is left for each player
         while (multipleStrats1 and multipleStrats2) and (stratRemoved1 or stratRemoved2):
-            print("WHILE")
             stratRemoved1 = False
             stratRemoved2 = False
             
@@ -809,7 +808,6 @@ def eliminateStrictlyDominatedStrategies(steps):
             if not stratRemoved1 and not stratRemoved2:
                 break
     elif steps == 1: # perform IESDS computation step by step
-        # global numIESDSClicks
         numIESDSClicks += 1
         pairs1 = combinations(p1Strategies, r=2) # pairs of p1's strategies to compare; indices
         pairs2 = combinations(p2Strategies, r=2) # pairs of p2's strategies to compare; indices
@@ -817,8 +815,9 @@ def eliminateStrictlyDominatedStrategies(steps):
         numCombos2 = sum(1 for pair in pairs2)
         pairs1 = combinations(p1Strategies, r=2) # pairs of p1's strategies to compare; indices
         pairs2 = combinations(p2Strategies, r=2) # pairs of p2's strategies to compare; indices
-        
         oneStratEliminated = False
+        
+        print("numIESDSClicks:", numIESDSClicks)
         if numIESDSClicks == 1:
             # eliminating strategies for player 1
             for pair in pairs1:
@@ -1438,6 +1437,8 @@ def revert():
     """
         Reverts back to the original game after computing IESDS
     """
+    global numIESDSClicks
+    numIESDSClicks = 0
     numStrats1 = int(numStratsEntry1.get())
     numStrats2 = int(numStratsEntry2.get())
     try:
