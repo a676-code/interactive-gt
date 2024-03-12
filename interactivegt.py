@@ -638,6 +638,9 @@ def eliminateStrictlyDominatedStrategies(steps):
     """
     Compares all payoffs of all pairs of strategies for both players and eliminates strategies that are strictly dominated.    
     """
+    print("IESDS")
+    print("steps:", steps)
+    
     # saving the original game in case the user wants to revert back to it
     global numIESDSClicks
     global originalGame
@@ -670,6 +673,11 @@ def eliminateStrictlyDominatedStrategies(steps):
     outcomesListList= []
     for outcome in newGroupedOutcomes:
         outcomesListList.append(outcome)
+        
+    for row in outcomesListList:
+        for outcome in row:
+            print(outcome.get(), end=" ")
+        print()
 
     strategies = payoffMatrixSlaves[numStrats1 * numStrats2:]
     strategies.reverse()
@@ -695,6 +703,7 @@ def eliminateStrictlyDominatedStrategies(steps):
         stratRemoved2 = True  
         # stop when you can't eliminate a strategy for either player or when only one strategy is left for each player
         while (multipleStrats1 and multipleStrats2) and (stratRemoved1 or stratRemoved2):
+            print("WHILE")
             stratRemoved1 = False
             stratRemoved2 = False
             
@@ -1473,35 +1482,16 @@ def revert():
     curP2StrategyNames = [entry.get() for entry in curP2StrategyNameEntries]
     curGroupedOutcomes = [curOutcomes[i:i + numStrats2] for i in range(0, len(curOutcomes), numStrats2)]
     
-    # print("oLL:")
-    # for outcome in outcomesListList:
-    #     for payoff in outcome:
-    #         print(payoff.get() + " ", end="")
-    #     print()
-    
     # clearing the current payoff matrix
     for slave in curGame:
         slave.delete(0, 'end')
         slave.grid_remove()
-        
-    print("oLL:")
-    for outcome in outcomesListList:
-        for payoff in outcome:
-            print(payoff.get() + " ", end="")
-        print()
-        
-    print("newOLL:")
-    for row in newOutcomesListList:
-        for outcome in row:
-            print(outcome[0] + ", " + outcome[1] + " ", end="")
-        print()
     
     # refilling the table
     for i in range(originalNumStrats2):
         e = Entry(payoffsFrame, width=10)
         e.insert(0, p1StrategyNames[i])
         e.grid(row=0, column=i + 1, pady=5)
-        
     for j in range(originalNumStrats1):
         e = Entry(payoffsFrame, width=10)
         e.insert(0, p2StrategyNames[j])
@@ -1517,6 +1507,13 @@ def revert():
             e.insert(END, '%d, %d' % (int(newOutcomesListList[i][j][0]), int(newOutcomesListList[i][j][1])))
             cols.append(e)
         rows.append(cols)
+    
+    # setting the numbers of strategies back to the originals
+    numStratsFrameSlaves = numStratsFrame.grid_slaves()
+    numStratsFrameSlaves[2].delete(0, END)
+    numStratsFrameSlaves[2].insert(0, originalNumStrats1)
+    numStratsFrameSlaves[1].delete(0, END)
+    numStratsFrameSlaves[1].insert(0, originalNumStrats2)
 
     # entering the "new" payoffs into the system
     enterPayoffs()
