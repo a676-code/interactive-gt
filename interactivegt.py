@@ -637,10 +637,7 @@ def deleteRecord():
 def eliminateStrictlyDominatedStrategies(steps):
     """
     Compares all payoffs of all pairs of strategies for both players and eliminates strategies that are strictly dominated.    
-    """
-    print("IESDS")
-    print("steps:", steps)
-    
+    """    
     # saving the original game in case the user wants to revert back to it
     global numIESDSClicks
     global originalGame
@@ -673,11 +670,6 @@ def eliminateStrictlyDominatedStrategies(steps):
     outcomesListList= []
     for outcome in newGroupedOutcomes:
         outcomesListList.append(outcome)
-        
-    for row in outcomesListList:
-        for outcome in row:
-            print(outcome.get(), end=" ")
-        print()
 
     strategies = payoffMatrixSlaves[numStrats1 * numStrats2:]
     strategies.reverse()
@@ -1042,8 +1034,6 @@ def export(fileName, records):
     
     with open(fileName, 'w') as file:
         for i, record in enumerate(records):
-            print(record)
-            print("TWO: ", record[2])
             file.write(
                 "\"" + str(record[0]) + "\",\"" + 
                 str(record[1])+ "\",\"" + 
@@ -1442,7 +1432,7 @@ def revert():
     numStrats1 = int(numStratsEntry1.get())
     numStrats2 = int(numStratsEntry2.get())
     try:
-        outcomes = originalGame[:originalNumStrats1 * originalNumStrats2]
+        outcomes = originalGame[:originalNumStrats1 * originalNumStrats2] # entries
     except NameError:
         notYetIESDSError = messagebox.showerror("Error", "The IESDS algorithm has not run yet. There's nothing to revert back to.")
     else:
@@ -1454,16 +1444,16 @@ def revert():
         p2StrategyNameEntries = strategyNames[originalNumStrats2:]
         p2StrategyNameEntries.reverse()
         p2StrategyNames = [entry.get() for entry in p2StrategyNameEntries]
-        groupedOutcomes = [outcomes[i:i + originalNumStrats2] for i in range(0, len(outcomes), originalNumStrats2)]
+        groupedOutcomes = [outcomes[i:i + originalNumStrats2] for i in range(0, len(outcomes), originalNumStrats2)] # entries
         
-        newGroupedOutcomes = []
+        newGroupedOutcomes = [] # entries
         for outcome in groupedOutcomes:
             row = []
             for i in range(originalNumStrats2):
                 row.append(outcome[i])
             newGroupedOutcomes.append(row)
         
-        outcomesListList= []
+        outcomesListList= [] # entries
         for outcome in newGroupedOutcomes:
             outcomesListList.append(outcome)
             
@@ -1473,6 +1463,14 @@ def revert():
             for outcome in row:
                 newRow.append(outcome.get().split(", "))
             newOutcomesListList.append(newRow)
+        
+        for row in newOutcomesListList:
+            for outcome in row:
+                try:
+                    outcome[1]
+                except IndexError:
+                    missingOutcomeError = messagebox.showerror("Error", f"You cannot revert twice.")
+                    return
             
         curGame = payoffsFrame.grid_slaves()
         curOutcomes = curGame[:numStrats1 * numStrats2]
@@ -1492,11 +1490,11 @@ def revert():
             slave.grid_remove()
         
         # refilling the table
-        for i in range(originalNumStrats2):
+        for i in range(originalNumStrats1):
             e = Entry(payoffsFrame, width=10)
             e.insert(0, p1StrategyNames[i])
             e.grid(row=0, column=i + 1, pady=5)
-        for j in range(originalNumStrats1):
+        for j in range(originalNumStrats2):
             e = Entry(payoffsFrame, width=10)
             e.insert(0, p2StrategyNames[j])
             e.grid(row=j + 1, column=0, padx=5)
@@ -1952,8 +1950,6 @@ def submit():
     c.execute(searchQuery)
     
     records = c.fetchall()
-    for record in records:
-        print("record: ", record)
     
     numRecords = len(records)
     
