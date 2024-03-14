@@ -1429,10 +1429,11 @@ def removeStrategy():
     """
     # prompt the user for a player index and a strategy name
     topRemoveStrat = Toplevel()
-    playerLabel = Label(text="Enter a player (number):")
+    topRemoveStrat.geometry("220x80")
+    playerLabel = Label(topRemoveStrat, text="Enter a player (number):")
     playerEntry = Entry(topRemoveStrat, width=10)
-    stratLabel = Label(text="Enter a strategy name:")
-    playerEntry = Entry(topRemoveStrat, width=10)
+    stratLabel = Label(topRemoveStrat, text="Enter a strategy name:")
+    stratEntry = Entry(topRemoveStrat, width=10)
     submitButton = Button(topRemoveStrat, text="Submit", command=submitRemoveStrategy)
     
     # putting everything in the topRemoveStrat window
@@ -1440,9 +1441,7 @@ def removeStrategy():
     playerEntry.grid(row=0, column=1)
     stratLabel.grid(row=1, column=0)
     stratEntry.grid(row=1, column=1)
-    submitButton.grid(row=2, column=0, columnspan=2)
-    
-    # remove that strategy
+    submitButton.grid(row=2, column=1)
     
     return
 
@@ -1902,6 +1901,39 @@ def showRecords():
     axelrodOutput1.grid(row=5, column=0, columnspan=2, padx=10, pady=10, sticky=EW)
     axelrodOutput2.grid(row=6, column=0, columnspan=2, padx=10, pady=10, sticky=EW)
     return"""
+    
+def submitRemoveStrategy():
+    """Removes the strategy for the player entered in function removeStrategy
+    """
+    # remove that strategy
+    # get the index that corresponds to the given strategy name
+    player = int(playerEntry.get()) - 1
+    stratName = stratEntry.get()
+    
+    payoffMatrixSlaves = payoffsFrame.grid_slaves()
+    outcomes = payoffMatrixSlaves[:numStrats1 * numStrats2]
+    strategyNames = payoffMatrixSlaves[numStrats1 * numStrats2:]
+    
+    p1StrategyNames = strategyNames[:numStrats1]
+    p1StrategyNames = [name.get() for name in p1StrategyNames]
+    p1StrategyNames.reverse()
+    p2StrategyNames = strategyNames[numStrats2:]
+    p2StrategyNames = [name.get() for name in p2StrategyNames]
+    p2StrategyNames.reverse()
+    
+    stratIndex = -1
+    if player == 0:
+        for i, name in enumerate(p1StrategyNames):
+            if name == stratName:
+                stratIndex = i
+    elif player == 1:
+        for j, name in enumerate(p2StrategyNames):
+            if name == stratName:
+                stratIndex = j
+    else:
+        return
+    
+    return
     
 def submitQuery():
     """
