@@ -1321,6 +1321,131 @@ def openFile():
                         payoff.insert(0, stringPayoffs[i])
     return
 
+def playMatch(p1, p2, output, t = 6):
+    """
+    Runs an axelrod match between players of type p1 and p2 with t turns
+    """
+    if output == 0: # Add to Database    
+        p1 = ""
+        p2 = ""
+        clicked1NoSpaces = clicked1.get().replace(" ", "")
+        clicked2NoSpaces = clicked2.get().replace(" ", "")
+        counter = 0
+        while type(p1).__name__ == "str" and counter <= len(axl.strategies):
+            try:
+                if type(options[counter]).__name__ == clicked1NoSpaces:
+                    p1 = options[counter]
+            except IndexError:
+                stratNotFoundError = messagebox.showerror("Error", "The strategy you entered for player 1 was not in axelrod's list of strategies. Perhaps you meant to capitalize the individual words?")
+            counter += 1
+        counter = 0
+        while type(p2).__name__ == "str" and counter <= len(axl.strategies):
+            try:
+                if type(options[counter]).__name__ == clicked2NoSpaces:
+                    p2 = options[counter]
+                    
+                    match = axl.Match((p1, p2), turns = t)
+                    axelrodOutput1 = Label(axelrodFrame, text=str(match.play()), bg="black", fg="white", relief=SUNKEN, anchor=E)
+                    axelrodOutput2 = Label(axelrodFrame, text=str(match.final_score_per_turn()), bg="black", fg="white", relief=SUNKEN, anchor=E)
+                    axelrodOutput1.grid(row=5, column=0, columnspan=2, padx=10, pady=10, sticky=EW)
+                    axelrodOutput2.grid(row=6, column=0, columnspan=2, padx=10, pady=10, sticky=EW)
+            except IndexError:
+                stratNotFoundError = messagebox.showerror("Error", "The strategy you entered for player 2 was not in axelrod's list of strategies. Perhaps you meant to capitalize the individual words?")
+            counter += 1
+
+        if axelrodOutput1.winfo_reqwidth() > axelrodOutput2.winfo_reqwidth():
+            root.geometry(f"{axelrodOutput1.winfo_reqwidth() + 400}x495")
+        else:
+            root.geometry(f"700x{axelrodOutput2.winfo_reqwidth() + 200}")
+        
+        conn = sqlite3.connect('match.db')
+        c = conn.cursor()
+        
+        # Converting the string strategies from the dropdown menus into the actual strategy objects
+        p1 = ""
+        p2 = ""
+        clicked1NoSpaces = clicked1.get().replace(" ", "")
+        clicked2NoSpaces = clicked2.get().replace(" ", "")
+        counter = 0
+        while type(p1).__name__ == "str" and counter < len(axl.strategies):
+            if type(options[counter]).__name__ == clicked1NoSpaces:
+                p1 = options[counter]
+            counter += 1
+        counter = 0
+        while type(p2).__name__ == "str" and counter < len(axl.strategies):
+            if type(options[counter]).__name__ == clicked2NoSpaces:
+                p2 = options[counter]
+            counter += 1
+
+        c.execute("INSERT INTO matches VALUES (:strategy1, :strategy2, :numTurns, :output, :score1, :score2)",
+            {
+                'strategy1': clicked1.get(),
+                'strategy2': clicked2.get(),
+                'numTurns': turnsEntry.get(),
+                'output': str(dbPlayMatch(p1, p2, int(turnsEntry.get()))[0]),
+                'score1': dbPlayMatch(p1, p2, int(turnsEntry.get()))[1][0],
+                'score2': dbPlayMatch(p1, p2, int(turnsEntry.get()))[1][1]
+            }
+        )
+        
+        conn.commit()
+        conn.close()
+            
+    elif output == 1: # Don't Add to Database
+        p1 = ""
+        p2 = ""
+        clicked1NoSpaces = clicked1.get().replace(" ", "")
+        clicked2NoSpaces = clicked2.get().replace(" ", "")
+        counter = 0
+        while type(p1).__name__ == "str" and counter <= len(axl.strategies):
+            try:
+                if type(options[counter]).__name__ == clicked1NoSpaces:
+                    p1 = options[counter]
+            except IndexError:
+                stratNotFoundError = messagebox.showerror("Error", f"The strategy you entered for player 1 \"{clicked1.get()}\" was not in axelrod's list of strategies. Perhaps you meant to capitalize the individual words?")
+            counter += 1
+        counter = 0
+        while type(p2).__name__ == "str" and counter <= len(axl.strategies):
+            try:
+                if type(options[counter]).__name__ == clicked2NoSpaces:
+                    p2 = options[counter]
+                    
+                    match = axl.Match((p1, p2), turns = t)
+                    axelrodOutput1 = Label(axelrodFrame, text=str(match.play()), bg="black", fg="white", relief=SUNKEN, anchor=E, )
+                    axelrodOutput2 = Label(axelrodFrame, text=str(match.final_score_per_turn()), bg="black", fg="white", relief=SUNKEN, anchor=E, )
+                    axelrodOutput1.grid(row=5, column=0, columnspan=2, padx=10, pady=10, sticky=EW)
+                    axelrodOutput2.grid(row=6, column=0, columnspan=2, padx=10, pady=10, sticky=EW)
+                    if axelrodOutput1.winfo_reqwidth() > axelrodOutput2.winfo_reqwidth():
+                        root.geometry(f"{axelrodOutput1.winfo_reqwidth() + 400}x425")
+                    else:
+                        root.geometry(f"700x{axelrodOutput2.winfo_reqwidth() + 200}")
+            except IndexError:
+                stratNotFoundError = messagebox.showerror("Error", f"The strategy you entered for player 2 \"{clicked2.get()}\" was not in axelrod's list of strategies. Perhaps you meant to capitalize the individual words?")
+            counter += 1
+    return
+
+def removeStrategy():
+    """Removes a single strategy
+    """
+    # prompt the user for a player index and a strategy name
+    topRemoveStrat = Toplevel()
+    playerLabel = Label(text="Enter a player (number):")
+    playerEntry = Entry(topRemoveStrat, width=10)
+    stratLabel = Label(text="Enter a strategy name:")
+    playerEntry = Entry(topRemoveStrat, width=10)
+    submitButton = Button(topRemoveStrat, text="Submit", command=submitRemoveStrategy)
+    
+    # putting everything in the topRemoveStrat window
+    playerLabel.grid(row=0, column=0)
+    playerEntry.grid(row=0, column=1)
+    stratLabel.grid(row=1, column=0)
+    stratEntry.grid(row=1, column=1)
+    submitButton.grid(row=2, column=0, columnspan=2)
+    
+    # remove that strategy
+    
+    return
+
 def resetPayoffMatrix():
     """
         Fills the payoff matrix with zeros and default strategy names
@@ -1378,6 +1503,42 @@ def resetPayoffMatrix():
         
         root.geometry(f"{45 * numStrats2 + 700}x{25 * numStrats1 + 490}")
     return
+
+def resetRecord():
+    """
+    Resets or recomputes the values that should be in a record according to the given inputs. 
+    """
+    conn = sqlite3.connect('match.db')
+    c = conn.cursor()
+    
+    # Check if an ID was actually selected
+    recordID  = selectIDEntry.get()
+    if recordID == "":
+        emptyRecordIDError = messagebox.showerror("Error", "You must enter an ID to reset a record.")
+        conn.commit()
+        conn.close()
+        return
+    
+    c.execute("""UPDATE matches SET
+              strategy1 = :strategy1, 
+              strategy2 = :strategy2, 
+              numTurns = :numTurns, 
+              output = :output,
+              score1 = :score1,
+              score2 = :score2
+              WHERE oid = :oid""",
+              {
+                  'strategy1': dbClicked1.get(), 
+                  'strategy2': dbClicked2.get(), 
+                  'numTurns': dbTurnsEntry.get(),
+                  'output': dbPlayMatch(dbClicked1.get(), dbClicked2.get(), int(dbTurnsEntry.get()))[0],
+                  'score1': dbPlayMatch(dbClicked1.get(), dbClicked2.get(), int(dbTurnsEntry.get()))[1][0],
+                  'score2': dbPlayMatch(dbClicked1.get(), dbClicked2.get(), int(dbTurnsEntry.get()))[1][1],
+                  'oid': recordID
+              })    
+    
+    conn.commit()
+    conn.close()
 
 def resetStrategies():
     """
@@ -1600,42 +1761,6 @@ def saveAsLatex():
     fileNameButton.grid(row=0, column=2)
     return
 
-def resetRecord():
-    """
-    Resets or recomputes the values that should be in a record according to the given inputs. 
-    """
-    conn = sqlite3.connect('match.db')
-    c = conn.cursor()
-    
-    # Check if an ID was actually selected
-    recordID  = selectIDEntry.get()
-    if recordID == "":
-        emptyRecordIDError = messagebox.showerror("Error", "You must enter an ID to reset a record.")
-        conn.commit()
-        conn.close()
-        return
-    
-    c.execute("""UPDATE matches SET
-              strategy1 = :strategy1, 
-              strategy2 = :strategy2, 
-              numTurns = :numTurns, 
-              output = :output,
-              score1 = :score1,
-              score2 = :score2
-              WHERE oid = :oid""",
-              {
-                  'strategy1': dbClicked1.get(), 
-                  'strategy2': dbClicked2.get(), 
-                  'numTurns': dbTurnsEntry.get(),
-                  'output': dbPlayMatch(dbClicked1.get(), dbClicked2.get(), int(dbTurnsEntry.get()))[0],
-                  'score1': dbPlayMatch(dbClicked1.get(), dbClicked2.get(), int(dbTurnsEntry.get()))[1][0],
-                  'score2': dbPlayMatch(dbClicked1.get(), dbClicked2.get(), int(dbTurnsEntry.get()))[1][1],
-                  'oid': recordID
-              })    
-    
-    conn.commit()
-    conn.close()
-
 def saveRecord():
     """
     Saves an updated record into the database
@@ -1666,49 +1791,6 @@ def saveRecord():
     conn.close()
     topUpdate.destroy()
     
-
-def showRecords():
-    # Create a database or connect to one
-    conn = sqlite3.connect('match.db')
-    
-    # Create cursor
-    c = conn.cursor()
-    
-    c.execute("SELECT *, oid FROM matches")
-    records = c.fetchall()
-    numRecords = len(records)
-
-    recordsList = []
-    recordsList.append(f"{numRecords} records retrieved from the matches table\n")
-    for record in records:
-        recordsList.append(
-            str(record[0]) + " " + str(record[1]) + " " + str(record[2]) + " " + str(record[3]) + " " + str(record[4]) + " " + str(record[5]) + " " + str(record[6])
-        )
-    recordsList.reverse()
-    
-    myFrame = LabelFrame(dbWindow)
-    
-    xscrollbar = Scrollbar(myFrame, orient=HORIZONTAL)
-    yscrollbar = Scrollbar(myFrame, orient=VERTICAL)
-    
-    showRecordsListBox = Listbox(myFrame, width=50, xscrollcommand=xscrollbar.set, yscrollcommand=yscrollbar.set, bg="black", fg="white")
-    for record in recordsList:
-        showRecordsListBox.insert(0, record)
-    
-    myFrame.grid(row=13, column=0, columnspan=2)
-    showRecordsListBox.grid(row=0, column=0, padx=10, sticky=NSEW)
-    xscrollbar.grid(row=1, column=0, columnspan=2, sticky=EW)
-    xscrollbar.config(command = showRecordsListBox.xview)
-    yscrollbar.grid(row=0, column=1, sticky=NS)
-    yscrollbar.config(command = showRecordsListBox.yview)
-    
-    # Commit changes
-    conn.commit()
-    # Close Connection
-    conn.close()
-    
-    return
-
 def searchRecords():
     global topSearch
     
@@ -1761,112 +1843,51 @@ def searchRecords():
     IDLabel.grid(row=6, column=0, sticky=E)
     IDEntry.grid(row=6, column=1, sticky=W)
     
-    submitButton = Button(topSearch, text="Submit", command=submit)
+    submitButton = Button(topSearch, text="Submit", command=submitQuery)
     submitButton.grid(row=7, column=0, columnspan=2)
     
     return
 
-def playMatch(p1, p2, output, t = 6):
-    """
-    Runs an axelrod match between players of type p1 and p2 with t turns
-    """
-    if output == 0: # Add to Database    
-        p1 = ""
-        p2 = ""
-        clicked1NoSpaces = clicked1.get().replace(" ", "")
-        clicked2NoSpaces = clicked2.get().replace(" ", "")
-        counter = 0
-        while type(p1).__name__ == "str" and counter <= len(axl.strategies):
-            try:
-                if type(options[counter]).__name__ == clicked1NoSpaces:
-                    p1 = options[counter]
-            except IndexError:
-                stratNotFoundError = messagebox.showerror("Error", "The strategy you entered for player 1 was not in axelrod's list of strategies. Perhaps you meant to capitalize the individual words?")
-            counter += 1
-        counter = 0
-        while type(p2).__name__ == "str" and counter <= len(axl.strategies):
-            try:
-                if type(options[counter]).__name__ == clicked2NoSpaces:
-                    p2 = options[counter]
-                    
-                    match = axl.Match((p1, p2), turns = t)
-                    axelrodOutput1 = Label(axelrodFrame, text=str(match.play()), bg="black", fg="white", relief=SUNKEN, anchor=E)
-                    axelrodOutput2 = Label(axelrodFrame, text=str(match.final_score_per_turn()), bg="black", fg="white", relief=SUNKEN, anchor=E)
-                    axelrodOutput1.grid(row=5, column=0, columnspan=2, padx=10, pady=10, sticky=EW)
-                    axelrodOutput2.grid(row=6, column=0, columnspan=2, padx=10, pady=10, sticky=EW)
-            except IndexError:
-                stratNotFoundError = messagebox.showerror("Error", "The strategy you entered for player 2 was not in axelrod's list of strategies. Perhaps you meant to capitalize the individual words?")
-            counter += 1
+def showRecords():
+    # Create a database or connect to one
+    conn = sqlite3.connect('match.db')
+    
+    # Create cursor
+    c = conn.cursor()
+    
+    c.execute("SELECT *, oid FROM matches")
+    records = c.fetchall()
+    numRecords = len(records)
 
-        if axelrodOutput1.winfo_reqwidth() > axelrodOutput2.winfo_reqwidth():
-            root.geometry(f"{axelrodOutput1.winfo_reqwidth() + 400}x495")
-        else:
-            root.geometry(f"700x{axelrodOutput2.winfo_reqwidth() + 200}")
-        
-        conn = sqlite3.connect('match.db')
-        c = conn.cursor()
-        
-        # Converting the string strategies from the dropdown menus into the actual strategy objects
-        p1 = ""
-        p2 = ""
-        clicked1NoSpaces = clicked1.get().replace(" ", "")
-        clicked2NoSpaces = clicked2.get().replace(" ", "")
-        counter = 0
-        while type(p1).__name__ == "str" and counter < len(axl.strategies):
-            if type(options[counter]).__name__ == clicked1NoSpaces:
-                p1 = options[counter]
-            counter += 1
-        counter = 0
-        while type(p2).__name__ == "str" and counter < len(axl.strategies):
-            if type(options[counter]).__name__ == clicked2NoSpaces:
-                p2 = options[counter]
-            counter += 1
-
-        c.execute("INSERT INTO matches VALUES (:strategy1, :strategy2, :numTurns, :output, :score1, :score2)",
-            {
-                'strategy1': clicked1.get(),
-                'strategy2': clicked2.get(),
-                'numTurns': turnsEntry.get(),
-                'output': str(dbPlayMatch(p1, p2, int(turnsEntry.get()))[0]),
-                'score1': dbPlayMatch(p1, p2, int(turnsEntry.get()))[1][0],
-                'score2': dbPlayMatch(p1, p2, int(turnsEntry.get()))[1][1]
-            }
+    recordsList = []
+    recordsList.append(f"{numRecords} records retrieved from the matches table\n")
+    for record in records:
+        recordsList.append(
+            str(record[0]) + " " + str(record[1]) + " " + str(record[2]) + " " + str(record[3]) + " " + str(record[4]) + " " + str(record[5]) + " " + str(record[6])
         )
-        
-        conn.commit()
-        conn.close()
-            
-    elif output == 1: # Don't Add to Database
-        p1 = ""
-        p2 = ""
-        clicked1NoSpaces = clicked1.get().replace(" ", "")
-        clicked2NoSpaces = clicked2.get().replace(" ", "")
-        counter = 0
-        while type(p1).__name__ == "str" and counter <= len(axl.strategies):
-            try:
-                if type(options[counter]).__name__ == clicked1NoSpaces:
-                    p1 = options[counter]
-            except IndexError:
-                stratNotFoundError = messagebox.showerror("Error", f"The strategy you entered for player 1 \"{clicked1.get()}\" was not in axelrod's list of strategies. Perhaps you meant to capitalize the individual words?")
-            counter += 1
-        counter = 0
-        while type(p2).__name__ == "str" and counter <= len(axl.strategies):
-            try:
-                if type(options[counter]).__name__ == clicked2NoSpaces:
-                    p2 = options[counter]
-                    
-                    match = axl.Match((p1, p2), turns = t)
-                    axelrodOutput1 = Label(axelrodFrame, text=str(match.play()), bg="black", fg="white", relief=SUNKEN, anchor=E, )
-                    axelrodOutput2 = Label(axelrodFrame, text=str(match.final_score_per_turn()), bg="black", fg="white", relief=SUNKEN, anchor=E, )
-                    axelrodOutput1.grid(row=5, column=0, columnspan=2, padx=10, pady=10, sticky=EW)
-                    axelrodOutput2.grid(row=6, column=0, columnspan=2, padx=10, pady=10, sticky=EW)
-                    if axelrodOutput1.winfo_reqwidth() > axelrodOutput2.winfo_reqwidth():
-                        root.geometry(f"{axelrodOutput1.winfo_reqwidth() + 400}x425")
-                    else:
-                        root.geometry(f"700x{axelrodOutput2.winfo_reqwidth() + 200}")
-            except IndexError:
-                stratNotFoundError = messagebox.showerror("Error", f"The strategy you entered for player 2 \"{clicked2.get()}\" was not in axelrod's list of strategies. Perhaps you meant to capitalize the individual words?")
-            counter += 1
+    recordsList.reverse()
+    
+    myFrame = LabelFrame(dbWindow)
+    
+    xscrollbar = Scrollbar(myFrame, orient=HORIZONTAL)
+    yscrollbar = Scrollbar(myFrame, orient=VERTICAL)
+    
+    showRecordsListBox = Listbox(myFrame, width=50, xscrollcommand=xscrollbar.set, yscrollcommand=yscrollbar.set, bg="black", fg="white")
+    for record in recordsList:
+        showRecordsListBox.insert(0, record)
+    
+    myFrame.grid(row=13, column=0, columnspan=2)
+    showRecordsListBox.grid(row=0, column=0, padx=10, sticky=NSEW)
+    xscrollbar.grid(row=1, column=0, columnspan=2, sticky=EW)
+    xscrollbar.config(command = showRecordsListBox.xview)
+    yscrollbar.grid(row=0, column=1, sticky=NS)
+    yscrollbar.config(command = showRecordsListBox.yview)
+    
+    # Commit changes
+    conn.commit()
+    # Close Connection
+    conn.close()
+    
     return
 
 """def startTournament(t = 10, r = 5):
@@ -1882,7 +1903,7 @@ def playMatch(p1, p2, output, t = 6):
     axelrodOutput2.grid(row=6, column=0, columnspan=2, padx=10, pady=10, sticky=EW)
     return"""
     
-def submit():
+def submitQuery():
     """
     Submits the user's query when searching the match database
     """
@@ -2430,6 +2451,7 @@ file_menu.add_command(label="Save as LaTeX", command=saveAsLatex)
 
 edit_menu = Menu(menubar)
 menubar.add_cascade(label="Edit", menu=edit_menu)
+edit_menu.add_command(label="Remove a Strategy", command=removeStrategy)
 edit_menu.add_command(label="Clear Payoffs", command=clearPayoffs)
 edit_menu.add_command(label="Clear Payoff Matrix", command=clearPayoffMatrix)
 edit_menu.add_command(label="Clear Strategy Names", command=clearStrategies)
