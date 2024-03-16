@@ -1427,6 +1427,9 @@ def playMatch(p1, p2, output, t = 6):
 def removeStrategy():
     """Removes a single strategy
     """
+    global playerEntry
+    global stratEntry
+    
     # prompt the user for a player index and a strategy name
     topRemoveStrat = Toplevel()
     topRemoveStrat.geometry("220x80")
@@ -1905,13 +1908,16 @@ def showRecords():
 def submitRemoveStrategy():
     """Removes the strategy for the player entered in function removeStrategy
     """
-    # remove that strategy
+    numStrats1 = int(numStratsEntry1.get())
+    numStrats2 = int(numStratsEntry2.get())
+
     # get the index that corresponds to the given strategy name
     player = int(playerEntry.get()) - 1
     stratName = stratEntry.get()
     
     payoffMatrixSlaves = payoffsFrame.grid_slaves()
     outcomes = payoffMatrixSlaves[:numStrats1 * numStrats2]
+    groupedOutcomes = [outcomes[i:i + numStrats2] for i in range(0, len(outcomes), numStrats2)] # entries
     strategyNames = payoffMatrixSlaves[numStrats1 * numStrats2:]
     
     p1StrategyNames = strategyNames[:numStrats1]
@@ -1921,15 +1927,33 @@ def submitRemoveStrategy():
     p2StrategyNames = [name.get() for name in p2StrategyNames]
     p2StrategyNames.reverse()
     
+    newGroupedOutcomes = []
+    for outcome in groupedOutcomes:
+        row = []
+        for i in range(numStrats2):
+            row.append(outcome[i])
+        newGroupedOutcomes.append(row)
+    
+    outcomesListList= []
+    for outcome in newGroupedOutcomes:
+        outcomesListList.append(outcome)
+    
     stratIndex = -1
     if player == 0:
         for i, name in enumerate(p1StrategyNames):
             if name == stratName:
                 stratIndex = i
+    
+        for j in range(numStrats2):
+            outcomesListList[stratIndex][j].grid_remove()
+        
     elif player == 1:
         for j, name in enumerate(p2StrategyNames):
             if name == stratName:
                 stratIndex = j
+        
+        for i in range(numStrats1):
+            outcomesListList[i][stratIndex].grid_remove()
     else:
         return
     
