@@ -63,9 +63,22 @@ class PayoffsPanel(wx.Panel):
     def __init__(self, parent):
         super(PayoffsPanel, self).__init__(parent)
         
-        vbox = wx.BoxSizer(wx.VERTICAL)
-        vbox.Add(wx.StaticText(self, label="Payoffs"))
+        numStrats1 = 2
+        numStrats2 = 2
         
+        payoffsSizer = wx.GridBagSizer(2, 1)
+        payoffsSizer.Add(wx.StaticText(self, label="Payoffs"), pos=(0, 0))
+        for i in range(1, numStrats1 + 1):
+            for j in range(numStrats2):
+                payoffsSizer.Add(wx.TextCtrl(self), pos=(i, j))
+            
+        for i in range(numStrats1 + 1):
+            payoffsSizer.AddGrowableRow(i)
+        for j in range(numStrats2):
+            payoffsSizer.AddGrowableCol(j)
+        
+        self.SetSizer(payoffsSizer)
+    
 class EquilibriaPanel(wx.Panel):
     def __init__(self, parent):
         super(EquilibriaPanel, self).__init__(parent)
