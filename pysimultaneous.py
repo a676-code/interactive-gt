@@ -1,8 +1,7 @@
 # pysimultaneous.py
 # Author: Andrew Lounsbury
-# Date: 3/19/24
+# Date: 3/20/24
 # Description: a class for handling simultaneous games with n players, n >= 2
-import numpy as np
 
 class ListNode:
     head = None
@@ -17,6 +16,12 @@ class ListNode:
         self.next = None
 
     def append(self, payoff, bestResponse):
+        """Appends a new node to the end of the linked list
+
+        Args:
+            payoff (float): the payoff
+            bestResponse (bool): whether the payoff is a best response or not
+        """
         newNode = ListNode(payoff, bestResponse)
         if self.head is None:
             self.head = newNode
@@ -29,6 +34,14 @@ class ListNode:
         curNode.next = newNode
         
     def getListNode(self, index):
+        """Gets the index-th node in the linked list
+
+        Args:
+            index (int): the desired index
+
+        Returns:
+            ListNode: the desired node
+        """
         if self.head == None:
             return
  
@@ -45,9 +58,6 @@ class ListNode:
                 return curNode
             else:
                 print("Index not present")
-                
-    def getPayoff(self):
-        return self.payoff
 
     def insertAtBeginning(self, payoff, bestResponse):
         newNode = ListNode(payoff, bestResponse)
@@ -76,6 +86,8 @@ class ListNode:
                 print("Index not present")
         
     def pop(self):
+        """Removes the last node from the linked list
+        """
         if self.head is None:
             return
     
@@ -85,9 +97,9 @@ class ListNode:
     
         curNode.next = None
                 
-    def printLL(self):
+    def print(self):
         curNode = self.head
-        size = self.sizeOfLL()
+        size = self.size()
         x = 0
         while(curNode):
             if x < size - 1:
@@ -99,6 +111,7 @@ class ListNode:
             
     def printListNode(self, end=""):
         print(self.payoff, end="")
+        return
     
     def removeAtIndex(self, index):
         if self.head == None:
@@ -126,7 +139,7 @@ class ListNode:
         
         self.head = self.head.next
     
-    def sizeOfLL(self):
+    def size(self):
         size = 0
         if(self.head):
             current_node = self.head
@@ -302,7 +315,7 @@ class simGame:
         if self.numPlayers < 3:
             for i in range(self.players[0].numStrats):
                 for j in range(self.players[1].numStrats):
-                    self.payoffMatrix[0][i][j].printLL()
+                    self.payoffMatrix[0][i][j].print()
                     if j < self.players[1].numStrats - 1:
                             print("  ", end="")
                     else:
@@ -312,7 +325,7 @@ class simGame:
             for m in range(len(self.payoffMatrix)):
                 for i in range(self.players[0].numStrats):
                     for j in range(self.players[1].numStrats):
-                        self.payoffMatrix[m][i][j].printLL()
+                        self.payoffMatrix[m][i][j].print()
                         if j < self.players[1].numStrats - 1:
                             print("  ", end="")
                         else:
@@ -423,9 +436,9 @@ class simGame:
                             newList = ListNode(0, False)
                             self.payoffMatrix[m][i][j] = newList
                         curList = self.payoffMatrix[m][i][j]
-                        while curList.sizeOfLL() > self.numPlayers:
+                        while curList.size() > self.numPlayers:
                             # Deleting
-                            curList.removeAtIndex(curList.sizeOfLL() - 1)
+                            curList.removeAtIndex(curList.size() - 1)
                         
                         for x in range(self.numPlayers):
                             if m < oldSize and x < oldNumPlayers and i < oldNumStrats[0] and j < oldNumStrats[1]: # old matrix, old outcome, old payoff
@@ -783,11 +796,11 @@ arr_5players = [
     ]
 ]
 
-# G = simGame(2)
-# G.enterPayoffs(arr_2players, 2, [2, 2])
-# G.print()
-# G.removeStrategy(0, 0)
-# G.print()
+G = simGame(2)
+G.enterPayoffs(arr_2players, 2, [2, 2])
+G.print()
+G.removeStrategy(0, 0)
+G.print()
 
 # H = simGame(3)
 # H.enterPayoffs(arr_3players, 3, [2, 2, 2])
