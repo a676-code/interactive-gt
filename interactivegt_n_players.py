@@ -557,6 +557,7 @@ def db():
     dbTurnsEntry.insert(0, "6")
     addRecordButton = Button(dbWindow, text="Add Record", command=addRecord)
     addAllPairsButton = Button(dbWindow, text="Add All Pairs for a Given Number of Turns", command=addAllPairs)
+    numRecordsButton = Button(dbWindow, text="Get Total Number of Records", command=getNumRecords)
     showRecordsButton = Button(dbWindow, text="Show Records", command=showRecords)
     exportButton = Button(dbWindow, text="Export to csv", command=exportGetFileName)
     searchRecordsButton = Button(dbWindow, text="Search Records", command=searchRecords)
@@ -576,15 +577,16 @@ def db():
     dbTurnsEntry.grid(row=2, column=1, pady=(0, 5), sticky=W)
     addRecordButton.grid(row=3, column=0, columnspan=2, padx=5, pady=(0, 5), ipadx=141)
     addAllPairsButton.grid(row=4, column=0, columnspan=2, padx=5, pady=(0, 5), ipadx=62)
-    showRecordsButton.grid(row=5, column=0, columnspan=2, padx=5, pady=(0, 5), ipadx=135)
-    exportButton.grid(row=6, column=0, columnspan=2, padx=5, pady=(0, 5), ipadx=137)
-    searchRecordsButton.grid(row=7, column=0, columnspan=2, padx=5, pady=(0, 5), ipadx=132)
-    selectIDLabel.grid(row=8, column=0, pady=(0, 5), sticky=E)
-    selectIDEntry.grid(row=8, column=1, pady=(0, 5), sticky=W)
-    deleteRecordButton.grid(row=9, column=0, columnspan=2, padx=5, pady=(0, 5), ipadx=135)
-    updateRecordButton.grid(row=10, column=0, columnspan=2, padx=5, pady=(0, 5), ipadx=132)
-    resetRecordButton.grid(row=11, column=0, columnspan=2, padx=5, pady=(0, 5), ipadx=136)
-    clearDBButton.grid(row=12, column=0, columnspan=2, padx=5, pady=(0, 5), ipadx=148)
+    numRecordsButton.grid(row=5, column=0, columnspan=2, padx=5, pady=(0, 5), ipadx=96)
+    showRecordsButton.grid(row=6, column=0, columnspan=2, padx=5, pady=(0, 5), ipadx=135)
+    exportButton.grid(row=7, column=0, columnspan=2, padx=5, pady=(0, 5), ipadx=137)
+    searchRecordsButton.grid(row=8, column=0, columnspan=2, padx=5, pady=(0, 5), ipadx=132)
+    selectIDLabel.grid(row=9, column=0, pady=(0, 5), sticky=E)
+    selectIDEntry.grid(row=9, column=1, pady=(0, 5), sticky=W)
+    deleteRecordButton.grid(row=10, column=0, columnspan=2, padx=5, pady=(0, 5), ipadx=135)
+    updateRecordButton.grid(row=11, column=0, columnspan=2, padx=5, pady=(0, 5), ipadx=132)
+    resetRecordButton.grid(row=12, column=0, columnspan=2, padx=5, pady=(0, 5), ipadx=136)
+    clearDBButton.grid(row=13, column=0, columnspan=2, padx=5, pady=(0, 5), ipadx=148)
     
     # Commit changes
     conn.commit()
@@ -1088,6 +1090,36 @@ def exportSearchGetFileName(records):
     fileNameLabel.grid(row=0, column=0)
     fileNameEntry.grid(row=0, column=1)
     fileNameButton.grid(row=0, column=2)
+    return
+
+def getNumRecords():
+    # Create a database or connect to one
+    conn = sqlite3.connect('match.db')
+    # Create cursor
+    c = conn.cursor()
+    
+    c.execute("""SELECT COUNT(*) FROM matches""")
+    numRecords = c.fetchone()[0]
+    
+    myFrame = LabelFrame(dbWindow)
+    
+    xscrollbar = Scrollbar(myFrame, orient=HORIZONTAL)
+    yscrollbar = Scrollbar(myFrame, orient=VERTICAL)
+    
+    showRecordsListBox = Listbox(myFrame, width=50, xscrollcommand=xscrollbar.set, yscrollcommand=yscrollbar.set, bg="black", fg="white")
+    showRecordsListBox.insert(0, f"There are {numRecords} records in the matches table.")
+    
+    myFrame.grid(row=14, column=0, columnspan=2)
+    showRecordsListBox.grid(row=0, column=0, padx=10, sticky=NSEW)
+    xscrollbar.grid(row=1, column=0, columnspan=2, sticky=EW)
+    xscrollbar.config(command = showRecordsListBox.xview)
+    yscrollbar.grid(row=0, column=1, sticky=NS)
+    yscrollbar.config(command = showRecordsListBox.yview)
+    
+    # Commit changes
+    conn.commit()
+    # Close Connection
+    conn.close()
     return
 
 def iesdsStepsClicked(value):
@@ -1882,7 +1914,7 @@ def showRecords():
     for record in recordsList:
         showRecordsListBox.insert(0, record)
     
-    myFrame.grid(row=13, column=0, columnspan=2)
+    myFrame.grid(row=14, column=0, columnspan=2)
     showRecordsListBox.grid(row=0, column=0, padx=10, sticky=NSEW)
     xscrollbar.grid(row=1, column=0, columnspan=2, sticky=EW)
     xscrollbar.config(command = showRecordsListBox.xview)

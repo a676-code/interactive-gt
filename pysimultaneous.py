@@ -413,7 +413,6 @@ class simGame:
 
             # creating/deleting entries and reading values
             for m in range(len(self.payoffMatrix)):
-                # print("TYPE:", type(self.payoffMatrix[m]))
                 if self.players[0].numStrats > len(self.payoffMatrix[m]):
                     self.payoffMatrix[m] += [] * (self.players[0].numStrats - len(self.payoffMatrix[m]))
                 else:
@@ -470,12 +469,8 @@ class simGame:
             s (int): index of the strategy
         """
         if player == 0: # x is player 1
-            print("HERE")
             for m in range(len(self.payoffMatrix)):
-                print("m:", m)
-                print("row:", self.payoffMatrix[m][s])
                 del self.payoffMatrix[m][s]
-                print("LENGTH:", len(self.payoffMatrix))
         elif player == 1: # x is player 2
             for m in range(len(self.payoffMatrix)):
                 for i in range(len(self.payoffMatrix[m])):
@@ -796,11 +791,11 @@ arr_5players = [
     ]
 ]
 
-G = simGame(2)
-G.enterPayoffs(arr_2players, 2, [2, 2])
-G.print()
-G.removeStrategy(0, 0)
-G.print()
+# G = simGame(2)
+# G.enterPayoffs(arr_2players, 2, [2, 2])
+# G.print()
+# G.removeStrategy(0, 0)
+# G.print()
 
 # H = simGame(3)
 # H.enterPayoffs(arr_3players, 3, [2, 2, 2])
