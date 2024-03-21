@@ -13,6 +13,7 @@ import warnings
 import sqlite3
 from itertools import combinations
 import pysimultaneous
+from pysimultaneous import SimGame
 
 # Function definitions
 def addAllPairs():
@@ -981,6 +982,7 @@ def enterPayoffs():
     """
     Enters the payoffs from the Entries into a list
     """
+    numPlayers = int(numPlayersEntry.get())
     numStrats1 = int(numStratsEntry1.get())
     numStrats2 = int(numStratsEntry2.get())
     payoffMatrixSlaves = payoffsFrame.grid_slaves()
@@ -991,7 +993,7 @@ def enterPayoffs():
             invalidPayoffError = messagebox.showerror("Error", f"Invalid payoff \"{outcome.get()}\". Payoffs must be two numbers separated by commas.")
             return False
     
-    payoffs = [tuple(map(float, outcome.get().split(","))) for outcome in outcomes]
+    payoffs = [list(map(float, outcome.get().split(","))) for outcome in outcomes]
     payoffs.reverse()
     
     # converting the list of payoffs to a list of lists
@@ -1006,21 +1008,9 @@ def enterPayoffs():
                 newPayoffs.append(row)
                 numInRow = 0
                 row = []
-         
-    # separating p1 and p2's payoffs       
-    p1Matrix = []
-    p2Matrix = []
-    for i in range(numStrats1):
-        row1 = []
-        row2 = []
-        for j in range(numStrats2):
-            row1.append(newPayoffs[i][j][0])
-            row2.append(newPayoffs[i][j][1])
-        p1Matrix.append(row1)
-        p2Matrix.append(row2)
     
     global G
-    G = nash.Game(p1Matrix, p2Matrix)
+    G.enterPayoffs(newPayoffs, numPlayers, [numStrats1, numStrats2])
     return True
 
 def equilibriaOutputStyleClicked(value):
@@ -2622,7 +2612,7 @@ payoffMatrixSlaves.pop()
 payoffMatrixSlaves.pop()
 payoffMatrixSlaves.pop()
 payoffMatrixSlaves.pop()
-payoffs = [tuple(map(int, slave.get().split(", "))) for slave in payoffMatrixSlaves]
+payoffs = [list(map(int, slave.get().split(", "))) for slave in payoffMatrixSlaves]
 payoffs.reverse()
 numStrats1 = int(numStratsEntry1.get())
 numStrats2 = int(numStratsEntry2.get())
@@ -2639,21 +2629,13 @@ for p in payoffs:
             newPayoffs.append(row)
             numInRow = 0
             row = []
-
-# separating p1 and p2's payoffs to be entered into nashpy
-p1Matrix = []
-p2Matrix = []
-for i in range(numStrats1):
-    row1 = []
-    row2 = []
-    for j in range(numStrats2):
-        row1.append(newPayoffs[i][j][0])
-        row2.append(newPayoffs[i][j][1])
-    p1Matrix.append(row1)
-    p2Matrix.append(row2)
-    
+            
+print("PAYOFFS:", newPayoffs)
 global G
-G = nash.Game(p1Matrix, p2Matrix)
+G = SimGame(2)
+G.enterPayoffs(newPayoffs, 2, [2, 2])
+print("G:")
+G.print()
 
 # Eliminate Strictly Dominated Strategies Frame
 iesdsFrame = LabelFrame(rootFrame, text="IESDS", padx=10, pady=10)
