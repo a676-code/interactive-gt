@@ -231,7 +231,7 @@ def clearStrategies():
 
 def computeEquilibria(output):
     """
-    Computes the equilibria using nashpy of the current game and formats the output according to whether the output variable is 0 or 1, 
+    Computes the equilibria of the current game and formats the output according to whether the output variable is 0 or 1, 
     """
     proceed = enterPayoffs()
     if proceed == True:
@@ -2629,13 +2629,10 @@ for p in payoffs:
             newPayoffs.append(row)
             numInRow = 0
             row = []
-            
-print("PAYOFFS:", newPayoffs)
+
 global G
 G = SimGame(2)
 G.enterPayoffs(newPayoffs, 2, [2, 2])
-print("G:")
-G.print()
 
 # Eliminate Strictly Dominated Strategies Frame
 iesdsFrame = LabelFrame(rootFrame, text="IESDS", padx=10, pady=10)
