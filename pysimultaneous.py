@@ -234,16 +234,25 @@ class SimGame:
         if self.players[0].numStrats < 3:
             self.strategyNames.append(["U", "D"])
         else:
-            self.strategyNames.append(["U"] + ["M" + str(i) for i in range(1, self.players[0].numStrats)] + ["D"])
+            if self.players[0].numStrats == 3:
+                middle = ["M"]
+            else: # > 3
+                middle = ["M" + str(i) for i in range(1, self.players[0].numStrats - 1)]
+            self.strategyNames.append(["U"] + middle + ["D"])
         if self.players[1].numStrats < 3:
             self.strategyNames.append(["L", "R"])
         else:
-            self.strategyNames.append(["L"] + ["C" + str(i) for i in range(self.players[0].numStrats)] + ["R"])
-        for x in range(2, self.numPlayers):
-            if self.players[x].numStrats < 3:
-                self.strategyNames.append(["L(" + str(x) + ")", "R(" + str(x) + ")"])
-            else: 
-                self.strategyNames.append(["L(" + str(x) + ")"] + ["C(" + str(x) + ", " + str(i) + ")" for i in range(self.players[0].numStrats)] + ["R(" + str(x) + ")"])
+            if self.players[1].numStrats == 3:
+                center = ["C"]
+            else: # > 3
+                center = ["C" + str(j) for j in range(1, self.players[1].numStrats - 1)]
+            self.strategyNames.append(["L"] + center + ["R"])
+        if self.numPlayers > 2:
+            for x in range(2, self.numPlayers):
+                if self.players[x].numStrats < 3:
+                    self.strategyNames.append(["L(" + str(x) + ")", "R(" + str(x) + ")"])
+                else: 
+                    self.strategyNames.append(["L(" + str(x) + ")"] + ["C(" + str(x) + ", " + str(s) + ")" for s in range(self.players[x].numStrats)] + ["R(" + str(x) + ")"])
         
         self.numPlayers = numPlayers
         
@@ -498,6 +507,31 @@ class SimGame:
                     matrix.append(row)
                 self.payoffMatrix.append(matrix)
         
+        # updating strategy names
+        self.strategyNames = []
+        if self.players[0].numStrats < 3:
+            self.strategyNames.append(["U", "D"])
+        else:
+            if self.players[0].numStrats == 3:
+                middle = ["M"]
+            else: # > 3
+                middle = ["M" + str(i) for i in range(1, self.players[0].numStrats - 1)]
+            self.strategyNames.append(["U"] + middle + ["D"])
+        if self.players[1].numStrats < 3:
+            self.strategyNames.append(["L", "R"])
+        else:
+            if self.players[1].numStrats == 3:
+                center = ["C"]
+            else: # > 3
+                center = ["C" + str(j) for j in range(1, self.players[1].numStrats - 1)]
+            self.strategyNames.append(["L"] + center + ["R"])
+        if self.numPlayers > 2:
+            for x in range(2, self.numPlayers):
+                if self.players[x].numStrats < 3:
+                    self.strategyNames.append(["L(" + str(x) + ")", "R(" + str(x) + ")"])
+                else: 
+                    self.strategyNames.append(["L(" + str(x) + ")"] + ["C(" + str(x) + ", " + str(s) + ")" for s in range(self.players[x].numStrats)] + ["R(" + str(x) + ")"])
+        
     def isBestResponse(self, profile):
         """Checks whether p1Strat and p2Strat are best responses relative to each other
 
@@ -627,6 +661,11 @@ class SimGame:
                 nS = file.readline().split(" ")
                 for n in nS:
                     n = n.rstrip()
+                
+                # Getting strategy names
+                for x in range(self.numPlayers):
+                    self.strategyNames[x] = file.readLine().split(" ")
+                
                 # Getting rationalities
                 rats = file.readline().split(" ")
                 for rat in rats:
@@ -805,12 +844,13 @@ class SimGame:
             
             # write strategyNames to file
             for x in range(self.numPlayers):
-                for s in range(players[x].numStrats):
-                    file.write(str(self.strategyNames[s]))
+                for s in range(self.players[x].numStrats):
+                    file.write(str(self.strategyNames[x][s]))
                     if s < self.players[x].numStrats - 1:
                         file.write(" ")
                 if x < self.numPlayers - 1:
                     file.write("\n")
+            file.write("\n")
             
             # write rationalities to the file
             for x in range(self.numPlayers):
@@ -1090,7 +1130,8 @@ arr_5players = [
 ]
 
 # G = SimGame(2)
-# G.enterPayoffs(bos, 2, [2, 2])
+# G.enterPayoffs(rps, 2, [3, 3, 3])
+# G.saveToFile("text files/rps.txt")
 # G.print()
 # G.computeBestResponses()
 # eqs = G.computePureEquilibria()
