@@ -238,35 +238,22 @@ def computeEquilibria(output):
         numStrats1 = int(numStratsEntry1.get())
         numStrats2 = int(numStratsEntry2.get())
         if output == 0: # Standard nashpy Output
-            eqs = G.support_enumeration()
+            eqs = G.computeEquilibria()
             numEquilibria = len(list(eqs))
             if numEquilibria % 2 == 0:
                 warnings.warn(f"An even number ({numEquilibria}) of equilibria was returned. This indicates that the game is degenerate. Consider using another algorithm to investigate.", RuntimeWarning)
                 degenerateGameWarning = messagebox.showwarning(f"Even Number ({numEquilibria}) of Equilibria: Degenerate Game", f"An even number ({numEquilibria}) of equilibria was returned. This indicates that the game is degenerate. Consider using another algorithm to investigate.")
-                # resetting the generator
-                eqs = G.support_enumeration()
-            else:
-                # resetting the generator
-                eqs = G.support_enumeration()
-            eqList = list(eqs)
-            newEqList = []
-            for eq in eqList:
-                newEq = []
-                for strat in eq:
-                    newEq.append(strat.tolist())
-                newEqList.append(newEq)
 
-            eqs = G.support_enumeration()
             eqList = [str(len(list(eqs))) + " equilibria returned\n"]
-            for i, eq in enumerate(newEqList):
+            for i, eq in enumerate(eqs):
                 eqList.append(str(eq[0]) + ", " + str(eq[1]))
             eqList.reverse()
             
-            eqs = G.support_enumeration()
             pureEquilibria = []
             mixedEquilibria = []
             for e in eqs:
-                if e[0][0] == 0.0 or e[0][0] == 1.0:
+                print(e)
+                if e[0] == 0.0 or e[0] == 1.0:
                     pureEquilibria.append(e)
                 else:
                     mixedEquilibria.append(e)
@@ -288,28 +275,10 @@ def computeEquilibria(output):
                         numInRow = 0
                         row = []
             
-            # converting nashpy equilibria output to indices
-            eqIndices = []
-            for pe in pureEquilibria:
-                # getting index of the 1's
-                index1 = -1
-                k = 0
-                while index1 < 0:
-                    if pe[0][k] == 1:
-                        index1 = k
-                    k += 1
-                index2 = -1
-                k = 0
-                while index2 < 0:
-                    if pe[1][k] == 1:
-                        index2 = k
-                    k += 1
-                eqIndices.append([index1, index2])
-            
             # matching the indices to those of the payoff matrix and changing the color
             for i in range(numStrats1):
                 for j in range(numStrats2):
-                    if [i, j] in eqIndices:
+                    if [i, j] in pureEquilibria:
                         newOutcomes[i][j].configure(bg="yellow")
                     else:
                         newOutcomes[i][j].configure(bg="white")

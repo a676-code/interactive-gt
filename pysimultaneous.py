@@ -8,6 +8,7 @@ from numpy.polynomial import Polynomial
 import sympy
 from sympy import solve
 from sympy.solvers.solveset import linsolve
+from sympy import srepr
 
 class ListNode:
     head = None
@@ -442,16 +443,27 @@ class SimGame:
                     equations2.append(sympy.Eq(polynomials2[j], polynomials2[j + 1]))
                     # adding an equation that contains the last polynomial
                     equations2.append(sympy.Eq(polynomials2[0], polynomials2[-1]))
-                
+            
             # solving the equations
-            L1 = [float(value) for key, value in sympy.solve(tuple(equations1), tuple(qVars)).items()]
-            L2 = [float(value) for key, value in sympy.solve(tuple(equations2), tuple(pVars)).items()]
+            dict1 = sympy.solve(tuple(equations1), tuple(qVars), set=True)
+            dict2 = sympy.solve(tuple(equations2), tuple(pVars), set=True)
+            if dict1[1] == set() or dict2 == set():
+                return []
+            L1 = []
+            L2 = []
+            for j in range(1, len(dict1), 2):
+                L1.append(float(list(list(dict1[j])[0])[0]))
+            for i in range(1, len(dict2), 2):
+                L2.append(float(list(list(dict2[i])[0])[0]))
+            
             sum1 = sum(L1)
             sum2 = sum(L2)
-            L1.append(1 - sum1)
-            L2.append(1 - sum2)
-            
-            return [[L1] + [L2]]
+            if sum1 == 0 or sum2 == 0:
+                return []
+            else:
+                L1.append(1 - sum1)
+                L2.append(1 - sum2)
+                return [[L1] + [L2]]
         else:
             return []
         return []
@@ -1130,7 +1142,7 @@ arr_5players = [
 ]
 
 # G = SimGame(2)
-# G.enterPayoffs(rps, 2, [3, 3, 3])
+# G.enterPayoffs(bos, 2, [2, 2])
 # G.saveToFile("text files/rps.txt")
 # G.print()
 # G.computeBestResponses()
