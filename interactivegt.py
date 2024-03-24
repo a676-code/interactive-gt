@@ -2521,11 +2521,12 @@ option_menu = Menu(menubar)
 menubar.add_cascade(label="Options", menu=option_menu)
 option_menu.add_command(label="Change Background Color", command=changeBackgroundColor)
 
-# rootFrame < rootCanvas < root
-rootCanvas = Canvas(root) # canvas in root
+# rootFrame < rootCanvas < mainFrame root
+mainFrame = Frame(root)
+rootCanvas = Canvas(mainFrame) # canvas in root
 rootFrame = Frame(rootCanvas) # frame in canvas
-xRootScrollbar = Scrollbar(root, orient="horizontal", command=rootCanvas.xview) # scrollbar in root
-yRootScrollbar = Scrollbar(root, orient="vertical", command=rootCanvas.yview)   # scrollbar in root
+xRootScrollbar = Scrollbar(mainFrame, orient="horizontal", command=rootCanvas.xview) # scrollbar in root
+yRootScrollbar = Scrollbar(mainFrame, orient="vertical", command=rootCanvas.yview)   # scrollbar in root
 rootCanvas.configure(xscrollcommand = xRootScrollbar.set, yscrollcommand = yRootScrollbar.set)
 xRootScrollbar.pack(side=BOTTOM, fill=X)
 yRootScrollbar.pack(side=RIGHT, fill=Y)
@@ -2679,6 +2680,8 @@ matchButton = Button(axelrodFrame, text="Play Match", command=lambda: playMatch(
 dbButton = Button(axelrodFrame, text="View Database", command=db)
 
 # Putting everything in the root window
+mainFrame.pack(fill=BOTH, expand=1)
+
 numStratsFrame.grid(row=0, column=0, padx=10, pady=10)
 numStratsLabel1.grid(row=0, column=0)
 numStratsLabel2.grid(row=1, column=0)
