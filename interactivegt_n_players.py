@@ -513,8 +513,8 @@ def db():
     global dbDropdown1
     global selectIDEntry
     
-    dbStrategyLabel1 = Label(dbWindow, text="Enter a strategy for player 1: ")
-    dbStrategyLabel2 = Label(dbWindow, text="Enter a strategy for player 2: ")
+    dbStrategyLabel1 = Label(dbWindow, text="Choose a strategy for player 1: ")
+    dbStrategyLabel2 = Label(dbWindow, text="Choose a strategy for player 2: ")
     options = [s() for s in axl.strategies]
     dbClicked1 = StringVar()
     dbClicked1.set(options[0])
@@ -522,7 +522,7 @@ def db():
     dbClicked2.set(options[0])
     dbDropdown1 = ttk.Combobox(dbWindow, textvariable=dbClicked1, values=options)
     dbDropdown2 = ttk.Combobox(dbWindow, textvariable=dbClicked2, values=options)
-    dbTurnsLabel = Label(dbWindow, text="Enter the number of turns: ")
+    dbTurnsLabel = Label(dbWindow, text="Number of turns: ")
     dbTurnsEntry = Entry(dbWindow, width=5)
     dbTurnsEntry.insert(0, "6")
     addRecordButton = Button(dbWindow, text="Add Record", command=addRecord)
@@ -1107,7 +1107,7 @@ def enterColor(color):
         colorNotFound = messagebox.showerror(f"Error", f"Unknown color name \"{color}\". Try entering in a different color.")
     return
 
-def enterGame():
+def entriesToSimGame():
     """Enters the information in the text entries into the SimGame object
     """
     # Getting the number of players
@@ -1115,10 +1115,10 @@ def enterGame():
     
     # Getting the numbers of strategies
     numStrats = []
-    numStratsSlaves = numStratsFrame.grid_slaves()
-    for slave in numStratsSlaves:
+    dimensionsSlaves = dimensionsFrame.grid_slaves()
+    for slave in dimensionsSlaves:
         if type(slave).__name__ == "Entry":
-            numStrats.append(slave.get())
+            numStrats.append(int(slave.get()))
     numStrats.reverse()
     
     # Getting the entries from the payoffs frame
@@ -1151,7 +1151,7 @@ def enterGame():
             newRow.append(item.get().split(", "))
             for l in newRow:
                 for el in l:
-                    el = int(el)
+                    el = float(el)
         newListList.append(newRow)
     # Entering the payoffs
     G.enterPayoffs(newListList, numPlayers, numStrats)
@@ -1159,7 +1159,6 @@ def enterGame():
     # Entering the strategy names
     G.strategyNames[0] = [entry.get() for entry in p1StrategyNameEntries]
     G.strategyNames[1] = [entry.get() for entry in p2StrategyNameEntries]
-    
     return
 
 def enterPayoffs():
@@ -1939,6 +1938,79 @@ def showRecords():
     
     return
 
+def simGameToEntries():
+    """Loads the data from the SimGame object into the entries.
+    """
+    oldNumStrats1 = int(numStratsEntry1.get())
+    oldNumStrats2 = int(numStratsEntry2.get())
+    
+    # Getting G.numPlayers
+    oldNumPlayers = numPlayersEntry.get()
+    numPlayersEntry.delete(0, END)
+    numPlayersEntry.insert(G.numPlayers)
+    
+    # Handle cases where G.numPlayers is different from what's on the screen
+    if oldNumPlayers <= G.numPlayers:
+        # Need to add more numStrat labels and entries
+        for x in range(oldNumPlayers, G.numPlayers):
+            l = Label(dimensionsFrame, text=f"Number of strategies for player {x}: ")
+            l.grid(row=x, column=0)
+            e = Entry(dimensionsFrame, width=5)
+            e.grid(row=x, column=1)
+    else:
+        # FIXME: Removing the extra numStrats labels and entries
+        # FIXME: Can't test this without being able to load a 3-player game into interactiveGT! 
+        dimensionsSlaves = dimensionsFrame.grid_slaves()
+        slavesToDelete = []
+        for slave in dimensionsSlaves:
+            if type(slave).__name__ == "Label" or type(slave).__name__ == "Entry":
+                slavesToDelete.append(slave)
+        if type(slavestoDelete[-2]).__name__ == "Label":
+            print("-2:", slavestoDelete[-2]["text"])
+        if type(slavestoDelete[-1]).__name__ == "Label":
+            print("-1:", slavestoDelete[-1]["text"])
+    
+    # Getting numStrats
+    dimensionsSlaves = dimensionsFrame.grid_slaves()
+    numStratsEntries = []
+    for slave in dimensionsSlaves:
+        if type(slave).__name__ == "Entry":
+            numStratsEntries.append(slave)
+    numStratsEntries.pop() # last one will be the numPlayers entry
+    numStratsEntries.reverse()
+    
+    for x in range(G.numPlayers):
+        numStratsEntries[x].delete(0, END)
+        numStratsEntries[x].insert(G.players[x].numStrats)
+        
+    # FIXME: handle cases where entries need to be added or deleted
+    # Getting payoffs
+    payoffMatrixSlaves = payoffsFrame.grid_slaves()
+    outcomes = payoffMatrixSlaves[:oldNumStrats1 * oldNumStrats2]
+    groupedOutcomes = [outcomes[i:i + numStrats2] for i in range(0, len(outcomes), numStrats2)] # entries
+    strategyNames = payoffMatrixSlaves[oldNumStrats1 * oldNumStrats2:]
+    
+    newGroupedOutcomes = []
+    for outcome in groupedOutcomes:
+        row = []
+        for i in range(oldNumStrats2):
+            row.append(outcome[i])
+        newGroupedOutcomes.append(row)
+    
+    outcomesListList= []
+    for outcome in newGroupedOutcomes:
+        outcomesListList.append(outcome)
+    
+    # FIXME: handle cases where entries need to be added or deleted
+    # Getting strategy names
+    p1StrategyNames = strategyNames[:oldNumStrats1]
+    p1StrategyNames = [name.get() for name in p1StrategyNames]
+    p1StrategyNames.reverse()
+    p2StrategyNames = strategyNames[oldNumStrats2:]
+    p2StrategyNames = [name.get() for name in p2StrategyNames]
+    p2StrategyNames.reverse()
+    return
+
 """def startTournament(t = 10, r = 5):
     players = [s() for s in axl.demo_strategies]
     tournament = axl.Tournament(players=players, turns=t, repetitions=r)
@@ -1955,6 +2027,7 @@ def showRecords():
 def submitRemoveStrategy():
     """Removes the strategy for the player entered in function removeStrategy
     """
+    
     numStrats1 = int(numStratsEntries[0].get())
     numStrats2 = int(numStratsEntries[1].get())
 
@@ -1993,6 +2066,8 @@ def submitRemoveStrategy():
     
         for j in range(numStrats2):
             outcomesListList[stratIndex][j].grid_remove()
+            
+        G.removeStrategy(player, stratIndex)
         
     elif player == 1:
         for j, name in enumerate(p2StrategyNames):
@@ -2001,7 +2076,10 @@ def submitRemoveStrategy():
         
         for i in range(numStrats1):
             outcomesListList[i][stratIndex].grid_remove()
+            
+        G.removeStrategy(player, stratIndex)
     else:
+        # FIXME
         return
     
     return
@@ -2559,7 +2637,9 @@ file_menu.add_command(label="Save as LaTeX", command=saveAsLatex)
 
 edit_menu = Menu(menubar)
 menubar.add_cascade(label="Edit", menu=edit_menu)
-edit_menu.add_command(label="Enter Values into SimGame Object", command=enterGame)
+edit_menu.add_command(label="Enter Values into SimGame Object", command=entriesToSimGame)
+edit_menu.add_command(label="Load Values from SimGame Object", command=simGameToEntries)
+edit_menu.add_separator()
 edit_menu.add_command(label="Remove a Strategy", command=removeStrategy)
 edit_menu.add_separator()
 edit_menu.add_command(label="Clear Payoffs", command=clearPayoffs)
@@ -2589,7 +2669,7 @@ rootFrame.bind("<Configure>", onClick)
 # Dimensions Frame
 dimensionsFrame = LabelFrame(rootFrame, text="Dimensions")
 # numPlayers
-numPlayersLabel = Label(dimensionsFrame, text="Enter the number of players: ")
+numPlayersLabel = Label(dimensionsFrame, text="Number of players: ")
 numPlayersEntry = Entry(dimensionsFrame, width=5)
 numPlayersEntry.insert(0, "2")
 # numStrats
@@ -2678,8 +2758,8 @@ equilibriaButton = Button(equilibriaFrame, text="Compute Equilibria", command=la
 
 # Axelrod Frame
 axelrodFrame = LabelFrame(rootFrame, text="axelrod" , padx=10, pady=10)
-strategyLabel1 = Label(axelrodFrame, text="Enter a strategy for player 1: ")
-strategyLabel2 = Label(axelrodFrame, text="Enter a strategy for player 2: ")
+strategyLabel1 = Label(axelrodFrame, text="Choose a strategy for player 1: ")
+strategyLabel2 = Label(axelrodFrame, text="Choose a strategy for player 2: ")
 options = [s() for s in axl.strategies]
 clicked1 = StringVar()
 clicked1.set(options[0])
@@ -2687,7 +2767,7 @@ clicked2 = StringVar()
 clicked2.set(options[0])
 dropdown1 = ttk.Combobox(axelrodFrame, textvariable=clicked1, values=options)
 dropdown2 = ttk.Combobox(axelrodFrame, textvariable=clicked2, values=options)
-turnsLabel = Label(axelrodFrame, text="Enter the number of turns: ")
+turnsLabel = Label(axelrodFrame, text="Number of turns: ")
 turnsEntry = Entry(axelrodFrame, width=5)
 turnsEntry.insert(0, "6")
 # repetitionsLabel = Label(axelrodFrame, text="Enter the number of repetitions: ")
