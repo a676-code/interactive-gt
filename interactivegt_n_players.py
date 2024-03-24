@@ -133,8 +133,8 @@ def clearPayoffs():
     """
     proceed = messagebox.askokcancel("Clear Payoffs?", "Are you sure you want to clear the payoffs?")
     if (proceed == True):
-        numStrats1 = int(numStratsEntry1.get())
-        numStrats2 = int(numStratsEntry2.get())
+        numStrats1 = int(numStratsEntries[0].get())
+        numStrats2 = int(numStratsEntries[1].get())
         
         # clearing the table
         payoffMatrixSlaves = payoffsFrame.grid_slaves()
@@ -167,8 +167,8 @@ def clearPayoffMatrix():
     """
     proceed = messagebox.askokcancel("Clear Payoffs?", "Are you sure you want to clear the payoff matrix?")
     if (proceed == True):
-        numStrats1 = int(numStratsEntry1.get())
-        numStrats2 = int(numStratsEntry2.get())
+        numStrats1 = int(numStratsEntries[0].get())
+        numStrats2 = int(numStratsEntries[1].get())
         
         # clearing the table
         payoffMatrixSlaves = payoffsFrame.grid_slaves()
@@ -209,8 +209,8 @@ def clearStrategies():
     resetStrategiesWarning = messagebox.askokcancel("Clear Strategy Names", "Are you sure you want to clear the strategy names?") 
     
     if resetStrategiesWarning == True:
-        numStrats1 = int(numStratsEntry1.get())
-        numStrats2 = int(numStratsEntry2.get())
+        numStrats1 = int(numStratsEntries[0].get())
+        numStrats2 = int(numStratsEntries[1].get())
         
         # clearing the strategies
         payoffMatrixSlaves = payoffsFrame.grid_slaves()
@@ -235,8 +235,8 @@ def computeEquilibria(output):
     """
     proceed = enterPayoffs()
     if proceed == True:
-        numStrats1 = int(numStratsEntry1.get())
-        numStrats2 = int(numStratsEntry2.get())
+        numStrats1 = int(numStratsEntries[0].get())
+        numStrats2 = int(numStratsEntries[1].get())
         if output == 0: # Standard nashpy Output
             eqs = G.computeEquilibria()
             numEquilibria = len(list(eqs))
@@ -618,11 +618,11 @@ def eliminateStrictlyDominatedStrategies(steps):
     global originalNumStrats2
     if steps == 0 or numIESDSClicks == 0:
         originalGame = payoffsFrame.grid_slaves()
-        originalNumStrats1 = int(numStratsEntry1.get())
-        originalNumStrats2 = int(numStratsEntry2.get())
+        originalNumStrats1 = int(numStratsEntries[0].get())
+        originalNumStrats2 = int(numStratsEntries[1].get())
     
-    numStrats1 = int(numStratsEntry1.get())
-    numStrats2 = int(numStratsEntry2.get())
+    numStrats1 = int(numStratsEntries[0].get())
+    numStrats2 = int(numStratsEntries[1].get())
     payoffMatrixSlaves = payoffsFrame.grid_slaves()
     outcomes = payoffMatrixSlaves[:numStrats1 * numStrats2]
     outcomes.reverse()
@@ -699,8 +699,8 @@ def eliminateStrictlyDominatedStrategies(steps):
                 # Removing strategies based on the results
                 if lessThanFound1 and not greaterThanFound1 and not equalFound1: # remove strategy pair[0]
                     numStrats1 -= 1
-                    numStratsEntry1.delete(0, END)
-                    numStratsEntry1.insert(0, numStrats1)
+                    numStratsEntries[0].delete(0, END)
+                    numStratsEntries[0].insert(0, numStrats1)
                     p1StrategyNameEntries[pair[0]].grid_remove()
                     for j in range(numStrats2):
                         outcomesListList[pair[0]][j].grid_remove()
@@ -709,8 +709,8 @@ def eliminateStrictlyDominatedStrategies(steps):
                     stratRemoved1 = True
                 elif greaterThanFound1 and not lessThanFound1 and not equalFound1: # remove strategy pair[1]
                     numStrats1 -= 1
-                    numStratsEntry1.delete(0, END)
-                    numStratsEntry1.insert(0, numStrats1)
+                    numStratsEntries[0].delete(0, END)
+                    numStratsEntries[0].insert(0, numStrats1)
                     p1StrategyNameEntries[pair[1]].grid_remove()
                     numDeleted = 0
                     for j in range(numStrats2):
@@ -747,8 +747,8 @@ def eliminateStrictlyDominatedStrategies(steps):
                 # Removing strategies based on the results
                 if lessThanFound2 and not greaterThanFound2 and not equalFound2: # remove strategy pair[0]
                     numStrats2 -= 1
-                    numStratsEntry2.delete(0, END)
-                    numStratsEntry2.insert(0, numStrats2)
+                    numStratsEntries[1].delete(0, END)
+                    numStratsEntries[1].insert(0, numStrats2)
                     p2StrategyNameEntries[pair[0]].grid_remove()
                     for i in range(numStrats1):
                         outcomesListList[i][pair[0]].grid_remove()
@@ -757,8 +757,8 @@ def eliminateStrictlyDominatedStrategies(steps):
                     stratRemoved2 = True
                 elif greaterThanFound2 and not lessThanFound2 and not equalFound2: # remove strategy pair[1]
                     numStrats2 -= 1
-                    numStratsEntry2.delete(0, END)
-                    numStratsEntry2.insert(0, numStrats2)
+                    numStratsEntries[1].delete(0, END)
+                    numStratsEntries[1].insert(0, numStrats2)
                     p2StrategyNameEntries[pair[1]].grid_remove()
                     for i in range(numStrats1):
                         outcomesListList[i][pair[1]].grid_remove()
@@ -802,8 +802,8 @@ def eliminateStrictlyDominatedStrategies(steps):
                 if lessThanFound1 and not greaterThanFound1 and not equalFound1: # remove strategy pair[0]
                     oneStratEliminated = True
                     numStrats1 -= 1
-                    numStratsEntry1.delete(0, END)
-                    numStratsEntry1.insert(0, numStrats1)
+                    numStratsEntries[0].delete(0, END)
+                    numStratsEntries[0].insert(0, numStrats1)
                     p1StrategyNameEntries[pair[0]].grid_remove()
                     for j in range(numStrats2):
                         outcomesListList[pair[0]][j].grid_remove()
@@ -812,8 +812,8 @@ def eliminateStrictlyDominatedStrategies(steps):
                     # one strat found
                     oneStratEliminated = True
                     numStrats1 -= 1
-                    numStratsEntry1.delete(0, END)
-                    numStratsEntry1.insert(0, numStrats1)
+                    numStratsEntries[0].delete(0, END)
+                    numStratsEntries[0].insert(0, numStrats1)
                     p1StrategyNameEntries[pair[1]].grid_remove()
                     numDeleted = 0
                     for j in range(numStrats2):
@@ -844,8 +844,8 @@ def eliminateStrictlyDominatedStrategies(steps):
                         oneStratEliminated = True
                         numIESDSClicks = 3 # if we start by eliminating a strat for p2, check p1 next
                         numStrats2 -= 1
-                        numStratsEntry2.delete(0, END)
-                        numStratsEntry2.insert(0, numStrats2)
+                        numStratsEntries[1].delete(0, END)
+                        numStratsEntries[1].insert(0, numStrats2)
                         p2StrategyNameEntries[pair[0]].grid_remove()
                         for i in range(numStrats1):
                             outcomesListList[i][pair[0]].grid_remove()
@@ -854,8 +854,8 @@ def eliminateStrictlyDominatedStrategies(steps):
                         oneStratEliminated = True
                         numIESDSClicks = 2 # if we start by eliminating a strat for p2, check p1 next (numIESDSClicks will be incremented to 3 \cong 1 mod 2)
                         numStrats2 -= 1
-                        numStratsEntry2.delete(0, END)
-                        numStratsEntry2.insert(0, numStrats2)
+                        numStratsEntries[1].delete(0, END)
+                        numStratsEntries[1].insert(0, numStrats2)
                         p2StrategyNameEntries[pair[1]].grid_remove()
                         for i in range(numStrats1):
                             outcomesListList[i][pair[1]].grid_remove()
@@ -880,16 +880,16 @@ def eliminateStrictlyDominatedStrategies(steps):
                             break
                     if lessThanFound1 and not greaterThanFound1 and not equalFound1: # remove strategy pair[0]
                         numStrats1 -= 1
-                        numStratsEntry1.delete(0, END)
-                        numStratsEntry1.insert(0, numStrats1)
+                        numStratsEntries[0].delete(0, END)
+                        numStratsEntries[0].insert(0, numStrats1)
                         p1StrategyNameEntries[pair[0]].grid_remove()
                         for j in range(numStrats2):
                             outcomesListList[pair[0]][j].grid_remove()
                             outcomesListList[pair[0]].pop(j)
                     if greaterThanFound1 and not lessThanFound1 and not equalFound1: # remove strategy pair[1]
                         numStrats1 -= 1
-                        numStratsEntry1.delete(0, END)
-                        numStratsEntry1.insert(0, numStrats1)
+                        numStratsEntries[0].delete(0, END)
+                        numStratsEntries[0].insert(0, numStrats1)
                         p1StrategyNameEntries[pair[1]].grid_remove()
                         numDeleted = 0
                         for j in range(numStrats2):
@@ -918,16 +918,16 @@ def eliminateStrictlyDominatedStrategies(steps):
                             break
                     if lessThanFound2 and not greaterThanFound2 and not equalFound2: # remove strategy pair[0]
                         numStrats2 -= 1
-                        numStratsEntry2.delete(0, END)
-                        numStratsEntry2.insert(0, numStrats2)
+                        numStratsEntries[1].delete(0, END)
+                        numStratsEntries[1].insert(0, numStrats2)
                         p2StrategyNameEntries[pair[0]].grid_remove()
                         for i in range(numStrats1):
                             outcomesListList[i][pair[0]].grid_remove()
                             outcomesListList[i].pop(pair[0])
                     if greaterThanFound2 and not lessThanFound2 and not equalFound2: # remove strategy pair[1]
                         numStrats2 -= 1
-                        numStratsEntry2.delete(0, END)
-                        numStratsEntry2.insert(0, numStrats2)
+                        numStratsEntries[1].delete(0, END)
+                        numStratsEntries[1].insert(0, numStrats2)
                         p2StrategyNameEntries[pair[1]].grid_remove()
                         for i in range(numStrats1):
                             outcomesListList[i][pair[1]].grid_remove()
@@ -950,9 +950,16 @@ def enterColor(color):
 def enterGame():
     """Enters the information in the text entries into the SimGame object
     """
+    # Getting the number of players
+    numPlayers = int(numPlayersEntry.get())
+    
     # Getting the numbers of strategies
-    numStrats1 = int(numStratsEntry1.get())
-    numStrats2 = int(numStratsEntry2.get())
+    numStrats = []
+    numStratsSlaves = numStratsFrame.grid_slaves()
+    for slave in numStratsSlaves:
+        if type(slave).__name__ == "Entry":
+            numStrats.append(slave.get())
+    numStrats.reverse()
     
     # Getting the entries from the payoffs frame
     payoffMatrixSlaves = payoffsFrame.grid_slaves()
@@ -987,7 +994,7 @@ def enterGame():
                     el = int(el)
         newListList.append(newRow)
     # Entering the payoffs
-    G.enterPayoffs(newListList, 2, [numStrats1, numStrats2])
+    G.enterPayoffs(newListList, numPlayers, numStrats)
     
     # Entering the strategy names
     G.strategyNames[0] = [entry.get() for entry in p1StrategyNameEntries]
@@ -1000,8 +1007,8 @@ def enterPayoffs():
     Enters the payoffs from the Entries into a list
     """
     numPlayers = int(numPlayersEntry.get())
-    numStrats1 = int(numStratsEntry1.get())
-    numStrats2 = int(numStratsEntry2.get())
+    numStrats1 = int(numStratsEntries[0].get())
+    numStrats2 = int(numStratsEntries[1].get())
     payoffMatrixSlaves = payoffsFrame.grid_slaves()
     outcomes = payoffMatrixSlaves[:numStrats1 * numStrats2]
     # input validation
@@ -1138,26 +1145,26 @@ def myfunction(event):
 def numPlayersClick():
     return
 
-def numStratsClick():
+def dimensionsClick():
     """
     Resizes the payoff matrix according to the numbers of strategies entered in by the user
     """
-    numStrats1 = int(numStratsEntry1.get())
-    numStrats2 = int(numStratsEntry2.get())
+    numStrats1 = int(numStratsEntries[0].get())
+    numStrats2 = int(numStratsEntries[1].get())
     negativeStratsError = -1
     zeroStratsError = -1
     oneByOneError = -1
     if numStrats1 == 0 or numStrats2 == 0:
-        zeroStratsError = messagebox.showerror("Error", "numStratsClick: A player may not have zero strategies.")
+        zeroStratsError = messagebox.showerror("Error", "dimensionsClick: A player may not have zero strategies.")
     
     if zeroStratsError == -1:
         if numStrats1 == 1 or numStrats2 == 1:
-            oneByOneError = messagebox.showerror("Error", "numStratsClick: A player may not have only one strategy.")
+            oneByOneError = messagebox.showerror("Error", "dimensionsClick: A player may not have only one strategy.")
             return
         
         if oneByOneError == -1:
             if numStrats1 < 0 or numStrats2 < 0:
-                negativeStratsError = messagebox.showerror("Error", "numStratsClick: A player may not have a negative number of strategies.")
+                negativeStratsError = messagebox.showerror("Error", "dimensionsClick: A player may not have a negative number of strategies.")
                 return
             if negativeStratsError == -1:
                 proceed = messagebox.askokcancel("Clear Payoffs?", "This will reset the payoff matrix. Do you want to proceed?")
@@ -1220,12 +1227,12 @@ def numStratsClick():
             return
     return
 
-def numStratsClickNoWarning():
+def dimensionsClickNoWarning():
     """
     Resizes the payoff matrix according to the numbers of strategies entered in by the user without prompting the user
     """
-    numStrats1 = int(numStratsEntry1.get())
-    numStrats2 = int(numStratsEntry2.get())
+    numStrats1 = int(numStratsEntries[0].get())
+    numStrats2 = int(numStratsEntries[1].get())
     negativeStratsError = -1
     zeroStratsError = -1
     oneByOneError = -1
@@ -1313,13 +1320,13 @@ def openFile():
                 # Resetting the number of IESDS steps that have been computed
                 numIESDSClicks = 0
                 
-                numStratsEntry1.delete(0, 'end')
-                numStratsEntry2.delete(0, 'end')
-                numStratsEntry1.insert(0, numStrats[0])
-                numStratsEntry2.insert(0, numStrats[1])
-                numStratsClickNoWarning()
-                numStrats1 = int(numStratsEntry1.get())
-                numStrats2 = int(numStratsEntry2.get())
+                numStratsEntries[0].delete(0, 'end')
+                numStratsEntries[1].delete(0, 'end')
+                numStratsEntries[0].insert(0, numStrats[0])
+                numStratsEntries[1].insert(0, numStrats[1])
+                dimensionsClickNoWarning()
+                numStrats1 = int(numStratsEntries[0].get())
+                numStrats2 = int(numStratsEntries[1].get())
                 
                 # Entering the strategy names
                 p1StrategyNames = file.readline().rstrip().split(" ")
@@ -1497,8 +1504,8 @@ def resetPayoffMatrix():
     """
     proceed = messagebox.askokcancel("Clear Payoffs?", "Are you sure you want to reset the payoff matrix?")
     if (proceed == True):
-        numStrats1 = int(numStratsEntry1.get())
-        numStrats2 = int(numStratsEntry2.get())
+        numStrats1 = int(numStratsEntries[0].get())
+        numStrats2 = int(numStratsEntries[1].get())
         
         # clearing the table
         payoffMatrixSlaves = payoffsFrame.grid_slaves()
@@ -1592,8 +1599,8 @@ def resetStrategies():
     resetStrategiesWarning = messagebox.askokcancel("Clear Strategy Names", "Are you sure you want to reset the strategy names?") 
     
     if resetStrategiesWarning == True:
-        numStrats1 = int(numStratsEntry1.get())
-        numStrats2 = int(numStratsEntry2.get())
+        numStrats1 = int(numStratsEntries[0].get())
+        numStrats2 = int(numStratsEntries[1].get())
         
         # clearing the strategies
         payoffMatrixSlaves = payoffsFrame.grid_slaves()
@@ -1634,8 +1641,8 @@ def revert():
     """
     global numIESDSClicks
     numIESDSClicks = 0
-    numStrats1 = int(numStratsEntry1.get())
-    numStrats2 = int(numStratsEntry2.get())
+    numStrats1 = int(numStratsEntries[0].get())
+    numStrats2 = int(numStratsEntries[1].get())
     try:
         outcomes = originalGame[:originalNumStrats1 * originalNumStrats2] # entries
     except NameError:
@@ -1730,8 +1737,8 @@ def saveAs():
     """
     Save the data of the current payoff matrix in a txt file
     """
-    numStrats1 = int(numStratsEntry1.get())
-    numStrats2 = int(numStratsEntry2.get())
+    numStrats1 = int(numStratsEntries[0].get())
+    numStrats2 = int(numStratsEntries[1].get())
     
     payoffMatrixSlaves = payoffsFrame.grid_slaves()
     outcomeEntries = payoffMatrixSlaves[:numStrats1 * numStrats2]
@@ -1745,8 +1752,8 @@ def saveAs():
     # Prompting the user for a file name    
     file = filedialog.asksaveasfile(defaultextension = ".txt", mode='w', initialdir=".", title="Save As", filetypes=(("Text files", "*.txt"),))
     if file:
-        numStrats1 = int(numStratsEntry1.get())
-        numStrats2 = int(numStratsEntry2.get())
+        numStrats1 = int(numStratsEntries[0].get())
+        numStrats2 = int(numStratsEntries[1].get())
         
         # Getting list of the strategy names
         payoffMatrixSlaves = payoffsFrame.grid_slaves()
@@ -1780,8 +1787,8 @@ def saveAsLatex():
     """
         Saves the current payoff matrix in the format of a buildable LaTeX array
     """
-    numStrats1 = int(numStratsEntry1.get())
-    numStrats2 = int(numStratsEntry2.get())
+    numStrats1 = int(numStratsEntries[0].get())
+    numStrats2 = int(numStratsEntries[1].get())
     
     payoffMatrixSlaves = payoffsFrame.grid_slaves()
     outcomes = payoffMatrixSlaves[:numStrats1 * numStrats2]
@@ -1951,8 +1958,8 @@ def showRecords():
 def submitRemoveStrategy():
     """Removes the strategy for the player entered in function removeStrategy
     """
-    numStrats1 = int(numStratsEntry1.get())
-    numStrats2 = int(numStratsEntry2.get())
+    numStrats1 = int(numStratsEntries[0].get())
+    numStrats2 = int(numStratsEntries[1].get())
 
     # get the index that corresponds to the given strategy name
     player = int(playerEntry.get()) - 1
@@ -2217,8 +2224,8 @@ def writeToFile(fileName, groupedPayoffs):
         multiplePeriodsError = messagebox.showerror("Error", f"The file name \"{fileName}\" contains multiple periods.")
         return
     
-    numStrats1 = int(numStratsEntry1.get())
-    numStrats2 = int(numStratsEntry2.get())
+    numStrats1 = int(numStratsEntries[0].get())
+    numStrats2 = int(numStratsEntries[1].get())
     
     # Getting list of the strategy names
     payoffMatrixSlaves = payoffsFrame.grid_slaves()
@@ -2308,8 +2315,8 @@ def writeToFileLatex(fileName, groupedPayoffs):
         "Omega"
     ]
     
-    numStrats1 = int(numStratsEntry1.get())
-    numStrats2 = int(numStratsEntry2.get())
+    numStrats1 = int(numStratsEntries[0].get())
+    numStrats2 = int(numStratsEntries[1].get())
     
     # Getting list of the strategy names
     """
@@ -2461,8 +2468,8 @@ def writeToFileLatex(fileName, groupedPayoffs):
             payoffMatrixSlaves.pop()
         payoffs = [tuple(map(int, slave.get().split(", "))) for slave in payoffMatrixSlaves]
         payoffs.reverse()
-        numStrats1 = int(numStratsEntry1.get())
-        numStrats2 = int(numStratsEntry2.get())
+        numStrats1 = int(numStratsEntries[0].get())
+        numStrats2 = int(numStratsEntries[1].get())
 
         # converting the list of payoffs to a list of lists
         newPayoffs = []
@@ -2529,6 +2536,10 @@ def writeToFileLatex(fileName, groupedPayoffs):
     return
 
 ###################################################################
+# Creating our SimGame object
+global G
+G = SimGame(2)
+
 # Defining the root window
 root = Tk()
 root.title("Interactive GT")
@@ -2577,23 +2588,18 @@ rootCanvas.pack(side=TOP)
 rootCanvas.create_window((0, 0), window=rootFrame, anchor = "nw")
 rootFrame.bind("<Configure>", myfunction)
 
-# numPlayers Frame
-numPlayersFrame = LabelFrame(rootFrame, text="Number of Players")
-numPlayersLabel = Label(numPlayersFrame, text="Enter the number of players: ")
-numPlayersEntry = Entry(numPlayersFrame, width=5)
+# Dimensions Frame
+dimensionsFrame = LabelFrame(rootFrame, text="Dimensions")
+# numPlayers
+numPlayersLabel = Label(dimensionsFrame, text="Enter the number of players: ")
+numPlayersEntry = Entry(dimensionsFrame, width=5)
 numPlayersEntry.insert(0, "2")
-numPlayersEnterButton = Button(numPlayersFrame, text="Enter", command=numPlayersClick)
-
-# numStrats Frame
-numStratsFrame = LabelFrame(rootFrame, text="Numbers of Strategies", padx=10, pady=10)
-
-numStratsLabel1 = Label(numStratsFrame, text="Number of strategies for player 1: ")
-numStratsLabel2 = Label(numStratsFrame, text="Number of strategies for player 2: ")
-numStratsEntry1 = Entry(numStratsFrame, width=5)
-numStratsEntry2 = Entry(numStratsFrame, width=5)
-numStratsEntry1.insert(0, "2")
-numStratsEntry2.insert(0, "2")
-numStratsButton = Button(numStratsFrame, text="Enter", command=numStratsClick)
+# numStrats
+numStratsLabels = [Label(dimensionsFrame, text=f"Number of strategies for player {x + 1}:") for x in range(G.numPlayers)]
+numStratsEntries = [Entry(dimensionsFrame, width=5) for x in range(G.numPlayers)]
+for x in range(G.numPlayers):
+    numStratsEntries[x].insert(0, "2")
+dimensionsButton = Button(dimensionsFrame, text="Enter", command=dimensionsClick)
 
 # Payoffs Frame
 payoffsFrame = LabelFrame(rootFrame, text="Payoffs", padx=10, pady=10)
@@ -2615,9 +2621,9 @@ p1strat2Name.grid(row=2, column=0, padx=5)
 # Putting the payoffs in the frame
 # https://www.activestate.com/resources/quick-reads/how-to-display-data-in-a-table-using-tkinter/
 rows = []
-for i in range(int(numStratsEntry1.get())):
+for i in range(int(numStratsEntries[0].get())):
     cols = []
-    for j in range(int(numStratsEntry2.get())):
+    for j in range(int(numStratsEntries[1].get())):
         e = Entry(payoffsFrame, width=5)
         e.grid(row=i + 1, column=j + 1, sticky=NSEW)
         e.insert(END, '%d, %d' % (0, 0))
@@ -2632,8 +2638,8 @@ payoffMatrixSlaves.pop()
 payoffMatrixSlaves.pop()
 payoffs = [list(map(int, slave.get().split(", "))) for slave in payoffMatrixSlaves]
 payoffs.reverse()
-numStrats1 = int(numStratsEntry1.get())
-numStrats2 = int(numStratsEntry2.get())
+numStrats1 = int(numStratsEntries[0].get())
+numStrats2 = int(numStratsEntries[1].get())
 
 # converting the list of payoffs to a list of lists
 newPayoffs = []
@@ -2648,8 +2654,6 @@ for p in payoffs:
             numInRow = 0
             row = []
 
-global G
-G = SimGame(2)
 G.enterPayoffs(newPayoffs, 2, [2, 2])
 
 # Eliminate Strictly Dominated Strategies Frame
@@ -2719,25 +2723,28 @@ matchButton = Button(axelrodFrame, text="Play Match", command=lambda: playMatch(
 dbButton = Button(axelrodFrame, text="View Database", command=db)
 
 # Putting everything in the root window
-numPlayersFrame.grid(row=0, column=0, padx=10, pady=10)
+dimensionsFrame.grid(row=0, column=0, padx=10, pady=10)
 numPlayersLabel.grid(row=0, column=0, padx=(10, 0), pady=10)
 numPlayersEntry.grid(row=0, column=1, padx=(0, 5), pady=10)
-numPlayersEnterButton.grid(row=0, column=2, padx=(0, 10), pady=10)
+
+row = 1
+col = -1
+for x in range(G.numPlayers):
+    col = 0
+    numStratsLabels[x].grid(row=row, column=col)
+    col = 1
+    numStratsEntries[x].grid(row=row, column=col)
+    row += 1
+
+dimensionsButton.grid(row=3, column=1, padx=5, pady=5)
 
 payoffsFrame.grid(row=0, column=1, padx=10, pady=10)
-
-numStratsFrame.grid(row=1, column=0, padx=10, pady=10)
-numStratsLabel1.grid(row=0, column=0)
-numStratsLabel2.grid(row=1, column=0)
-numStratsEntry1.grid(row=0, column=1)
-numStratsEntry2.grid(row=1, column=1)
-numStratsButton.grid(row=1, column=2, padx=5, pady=5)
 
 iesdsFrame.grid(row=1, column=1, padx=10, pady=10)
 revertButton.grid(row=0, column=1)
 iesdsButton.grid(row=2, column=0, columnspan=2)
 
-equilibriaFrame.grid(row=2, column=0, padx=10, pady=10)
+equilibriaFrame.grid(row=1, column=0, padx=10, pady=10)
 equilibriaButton.grid(row=1, column=1, padx=10, pady=10)
 
 axelrodFrame.grid(row=2, column=1, padx=10, pady=10)
