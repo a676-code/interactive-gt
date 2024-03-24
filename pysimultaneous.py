@@ -466,9 +466,8 @@ class SimGame:
                 L2.append(1 - sum2)
                 return [[L1] + [L2]]
         else: # numPLayers >= 3
-            # FIXME: finish for n >= 3 players
-            if self.numPlayers < 26: # assuming numPlayers <= 26.
-                alphabet = "abcdefghijklmnopqrstuvwxyz"
+            if self.numPlayers < 53: # assuming numPlayers <= 26.
+                alphabet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
                 alphabetVars = [[] for x in range(self.numPlayers)]
                 for x in range(self.numPlayers):
                     for k in range(self.players[x].numStrats - 1):
@@ -600,12 +599,10 @@ class SimGame:
                         print("Empty set found. No mixed strategy equilibrium.")
                         return []
                 
-                print("EU_sets:")
-                for player in EU_sets:
-                    print(player)
+                # FIXME: finish for n >= 3 players when there actually is a MSE
                 
             else: # numPlayers >= 26
-                print("Error: not enough letters to have variables for all players")
+                print(f"Error: not enough letters to have variables for all {self.numPlayers} players")
             return []
         return []
  
@@ -1142,6 +1139,17 @@ brTest2_3players = [
     ]
 ]
 
+twoEq_3players = [
+    [
+        [[-3, -3, 2],[0, -5, 4]],
+        [[-5, 0, 1],[-1, -1, 1]]
+    ],
+    [
+        [[0, 0, 1], [5, 1, 3]],
+        [[1, 5, 0], [6, 6, 2]]
+    ]
+]
+
 arr_4players = [
     [
         [[0, 1, 1, 1], [1, 1, 1, 1]],
@@ -1304,15 +1312,15 @@ arr_5players = [
 # for eq in eqs:
 #     print(eq)
 
-H = SimGame(3)
+# H = SimGame(3)
 # H.print()
-H.enterPayoffs(brTest2_3players, 3, [2, 2, 2])
+# H.enterPayoffs(twoEq_3players, 3, [2, 2, 2])
 # print("br test:")
 # H.print()
 # H.computeBestResponses()
 # H.printBestResponses()
 # print(H.computePureEquilibria())
-print(H.computeEquilibria())
+# print(H.computeEquilibria())
 
 # I = SimGame(4)
 # I.enterPayoffs(arr_4players, 4, [2, 2, 3, 3])
