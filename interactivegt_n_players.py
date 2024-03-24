@@ -947,6 +947,54 @@ def enterColor(color):
         colorNotFound = messagebox.showerror(f"Error", f"Unknown color name \"{color}\". Try entering in a different color.")
     return
 
+def enterGame():
+    """Enters the information in the text entries into the SimGame object
+    """
+    # Getting the numbers of strategies
+    numStrats1 = int(numStratsEntry1.get())
+    numStrats2 = int(numStratsEntry2.get())
+    
+    # Getting the entries from the payoffs frame
+    payoffMatrixSlaves = payoffsFrame.grid_slaves()
+    outcomes = payoffMatrixSlaves[:numStrats1 * numStrats2]
+    outcomes.reverse()
+    strategyNames = payoffMatrixSlaves[numStrats1 * numStrats2:]
+    p1StrategyNameEntries = strategyNames[:numStrats1]
+    p1StrategyNameEntries.reverse()
+    p2StrategyNameEntries = strategyNames[numStrats2:]
+    p2StrategyNameEntries.reverse()
+    
+    # Grouping the outcomes
+    groupedOutcomes = [outcomes[i:i + numStrats2] for i in range(0, len(outcomes), numStrats2)]
+    newGroupedOutcomes = []
+    for outcome in groupedOutcomes:
+        row = []
+        for i in range(numStrats2):
+            row.append(outcome[i])
+        newGroupedOutcomes.append(row)
+    outcomesListList= []
+    for outcome in newGroupedOutcomes:
+        outcomesListList.append(outcome)
+    
+    # Converting from a list of list of entries to a list of list of integers
+    newListList = []
+    for row in outcomesListList:
+        newRow = []
+        for item in row:
+            newRow.append(item.get().split(", "))
+            for l in newRow:
+                for el in l:
+                    el = int(el)
+        newListList.append(newRow)
+    # Entering the payoffs
+    G.enterPayoffs(newListList, 2, [numStrats1, numStrats2])
+    
+    # Entering the strategy names
+    G.strategyNames[0] = [entry.get() for entry in p1StrategyNameEntries]
+    G.strategyNames[1] = [entry.get() for entry in p2StrategyNameEntries]
+    
+    return
+
 def enterPayoffs():
     """
     Enters the payoffs from the Entries into a list
@@ -2503,6 +2551,7 @@ file_menu.add_command(label="Save as LaTeX", command=saveAsLatex)
 
 edit_menu = Menu(menubar)
 menubar.add_cascade(label="Edit", menu=edit_menu)
+edit_menu.add_command(label="Enter Values into SimGame Object", command=enterGame)
 edit_menu.add_command(label="Remove a Strategy", command=removeStrategy)
 edit_menu.add_separator()
 edit_menu.add_command(label="Clear Payoffs", command=clearPayoffs)
