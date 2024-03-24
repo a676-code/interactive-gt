@@ -9,6 +9,7 @@ import sympy
 from sympy import solve
 from sympy.solvers.solveset import linsolve
 from sympy import srepr
+from sympy import simplify
 
 class ListNode:
     head = None
@@ -271,8 +272,8 @@ class SimGame:
             self.payoffMatrix.append(matrix)
         else:
             numMatrices = 1
-            for i in range(3, self.numPlayers):
-                numMatrices *= self.players[i].numStrats
+            for x in range(2, self.numPlayers):
+                numMatrices *= self.players[x].numStrats
             for m in range(numMatrices):
                 matrix = []
                 for i in range(self.players[0].numStrats):
@@ -332,9 +333,10 @@ class SimGame:
                             
                             # Comparing player x's strategies with each other, keeping player x's strategy the same, so we vary over player x's strategies (?)
                             
+                            # FIXME?
                             # finding maxValue
                             profile[x] = 0
-                            while (profile[x] < self.players[x].numStrats):
+                            while profile[x] < self.players[x].numStrats:
                                 curList = self.payoffMatrix[self.toIndex(profile)][i][j]
                                 if curList.getListNode(x).payoff > maxValue:
                                     maxValue = curList.getListNode(x).payoff
@@ -376,16 +378,15 @@ class SimGame:
     def computeEquilibria(self):
         return self.computePureEquilibria() + self.computeMixedEquilibria()
 
-    def computeMixedEquilibria(self):
-        pVars = []
-        for n in range(self.players[0].numStrats - 1):
-            pVars.append(sympy.symbols('p_' + str(n)))
-        qVars = []
-        for n in range(self.players[1].numStrats - 1):
-            qVars.append(sympy.symbols('q_' + str(n)))      
-        
+    def computeMixedEquilibria(self):       
         if self.numPlayers < 3:
-            # getting the coefficients for the polynomials, EU_1_coefs[n] is the set of coefficients for the n-th polynomial
+            pVars = []
+            for i in range(self.players[0].numStrats - 1):
+                pVars.append(sympy.symbols('p_' + str(i)))
+            qVars = []
+            for j in range(self.players[1].numStrats - 1):
+                qVars.append(sympy.symbols('q_' + str(j)))
+            # Getting the coefficients for the polynomials, EU_1_coefs[n] is the set of coefficients for the n-th polynomial
             EU_1_coefs = []
             EU_2_coefs = []
             for i in range(self.players[0].numStrats):
@@ -393,7 +394,7 @@ class SimGame:
             for j in range(self.players[0].numStrats):
                 EU_2_coefs.append([self.payoffMatrix[0][i][j].getListNode(1).payoff for i in range(self.players[0].numStrats)])
             
-            # building polynomials for player 1
+            # Building polynomials for player 1
             polynomials1 = []
             for i in range(self.players[0].numStrats):
                 poly = 0
@@ -401,14 +402,14 @@ class SimGame:
                 # it's range(nS1 - 1) because there are that many variables for all but he last term
                 for j in range(self.players[1].numStrats - 1):
                     poly += EU_1_coefs[i][j] * qVars[j]
-                # builidng the last 1 - q0 - q1 - ... - qnS1 term
+                # building the last 1 - q0 - q1 - ... - qnS1 term
                 lastTerm = 1
                 for j in range(self.players[1].numStrats - 1):
                     lastTerm -= qVars[j]
                 poly += EU_1_coefs[i][self.players[1].numStrats - 1] * lastTerm
                 polynomials1.append(poly)
                 
-            # building polynomials for player 2
+            # Building polynomials for player 2
             polynomials2 = []
             for j in range(self.players[1].numStrats):
                 poly = 0
@@ -464,13 +465,152 @@ class SimGame:
                 L1.append(1 - sum1)
                 L2.append(1 - sum2)
                 return [[L1] + [L2]]
-        else:
+        else: # numPLayers >= 3
+            # FIXME: finish for n >= 3 players
+            if self.numPlayers < 26: # assuming numPlayers <= 26.
+                alphabet = "abcdefghijklmnopqrstuvwxyz"
+                alphabetVars = [[] for x in range(self.numPlayers)]
+                for x in range(self.numPlayers):
+                    for k in range(self.players[x].numStrats - 1):
+                        alphabetVars[x].append(sympy.symbols(alphabet[x] + "_" + str(k)))
+                
+                # polynomials that are multiplied by the coefficients
+                polysToMultiply = [[] for x in range(self.numPlayers)]
+                for x in range(self.numPlayers):
+                    for k in range(self.players[x].numStrats - 1):
+                        polysToMultiply[x].append(alphabetVars[x][k])
+                    lastPoly = 1
+                    for k in range(self.players[x].numStrats - 1):
+                        lastPoly -= polysToMultiply[x][k]
+                    polysToMultiply[x].append(lastPoly)
+
+                # Getting the coefficients for the polynomials, EU_coefs[x][k] is the set of coefficients for the k-th polynomial for player x + 1, EU_polynomials[x][k] is the k-th polynomial for player x + 1
+                EU_coefs = [[] for x in range(self.numPlayers)]
+                EU_polynomials = [[] for x in range(self.numPlayers)]
+                # getting for player 1
+                for i in range(self.players[0].numStrats):
+                    poly_coefs = []
+                    poly = 0
+                    for m in range(len(self.payoffMatrix)):
+                        for j in range(self.players[1].numStrats):
+                            coef = self.payoffMatrix[m][i][j].getListNode(0).payoff
+                            poly_coefs.append(coef)
+                            term = coef
+                            for x in range(1, self.numPlayers):
+                                if x == 1:
+                                    term *= polysToMultiply[x][j]
+                                else: # x > 1
+                                    term *= polysToMultiply[x][self.toProfile(m)[x]]
+                            poly += term
+                    EU_coefs[0].append(poly_coefs)
+                    EU_polynomials[0].append(poly)
+                # getting for player 2
+                for j in range(self.players[1].numStrats):
+                    poly_coefs = []
+                    poly = 0
+                    for m in range(len(self.payoffMatrix)):
+                        for i in range(self.players[0].numStrats):
+                            coef = self.payoffMatrix[m][i][j].getListNode(1).payoff
+                            poly_coefs.append(coef)
+                            term = coef
+                            for x in range(self.numPlayers):
+                                if x != 1:
+                                    if x == 0:
+                                        term *= polysToMultiply[x][i]
+                                    else: # x > 1
+                                        term *= polysToMultiply[x][self.toProfile(m)[x]]
+                            poly += term
+                    EU_coefs[1].append(poly_coefs)
+                    EU_polynomials[1].append(poly)
+                    
+                for x in range(2, self.numPlayers):
+                    poly_coefs = []
+                    for k in range(self.players[x].numStrats - 1):
+                        m = 0
+                        product = 1
+                        firstProfile = [0 for y in range(self.numPlayers)]
+                        firstProfile[x] = k
+                        
+                        numToAdd = 1
+                        for y in range(2, self.numPlayers):
+                            numToAdd *= self.players[y].numStrats
+                                
+                        numAdded = 0
+                        while numAdded < numToAdd:
+                            term = 0
+                            poly_coefs = []
+                            poly = 0
+                            # Add all values in the current matrix
+                            for i in range(self.players[0].numStrats):
+                                for j in range(self.players[1].numStrats):
+                                    coef = self.payoffMatrix[m][i][j].getListNode(x).payoff
+                                    poly_coefs.append(coef)
+                                    term = coef
+                                    for y in range(self.numPlayers):
+                                        if y != x:
+                                            if y == 0:
+                                                term *= polysToMultiply[y][i]
+                                            elif y == 1:
+                                                term *= polysToMultiply[y][j]
+                                            else: # y > 1
+                                                term *= polysToMultiply[y][self.toProfile(m)[y]]
+                                    poly += term
+                            numAdded += 1
+                    
+                            # obtaining the next profile in the sequence
+                            if x == self.numPlayers - 1:
+                                product = 1
+                            else:
+                                if x == 2 and self.numPlayers > 3:
+                                    product = self.players[x].numStrats
+                                else:
+                                    allBelowPlayerAtMaxStrat = True
+                                    mProfile = self.toProfile(m)
+                                    for y in range(2, x):
+                                        if mProfile[y] != self.players[y].numStrats - 1:
+                                            allBelowPlayerAtMaxStrat = False
+                                    if mProfile[x] == k and allBelowPlayerAtMaxStrat:
+                                        productBelowPlayer = 1
+                                        for y in range(2, x):
+                                            productBelowPlayer *= self.players[y].numStrats
+                                        product += productBelowPlayer * (self.players[x].numStrats - 1)
+                                    else:
+                                        product = 1
+                            m += product
+                            EU_coefs[x].append(poly_coefs)
+                            EU_polynomials[x].append(poly)
+                
+                # Collecting the equations to be solved
+                EU_equations = [[] for x in range(self.numPlayers)]
+                for x in range(self.numPlayers):
+                    if self.players[x].numStrats % 2 == 0:
+                        for k in range(0, self.players[x].numStrats, 2):
+                            EU_equations[x].append(sympy.Eq(EU_polynomials[x][k], EU_polynomials[x][k + 1]))
+                    else:
+                        for k in range(0, self.players[x].numStrats - 1, 2):
+                            EU_equations[x].append(sympy.Eq(EU_polynomials[x][k], EU_polynomials[x][k + 1]))       
+                            # adding an equation that contains the last polynomial
+                            EU_equations[x].append(sympy.Eq(EU_polynomials[x][0], EU_polynomials[x][-1]))
+                            
+                # Solving the equations
+                EU_sets = [sympy.solve(tuple(EU_equations[x]), tuple(alphabetVars[x]), set=True) for x in range(self.numPlayers)]
+                
+                for x in range(self.numPlayers):
+                    if EU_sets[x][1] == set():
+                        print("Empty set found. No mixed strategy equilibrium.")
+                        return []
+                
+                print("EU_sets:")
+                for player in EU_sets:
+                    print(player)
+                
+            else: # numPlayers >= 26
+                print("Error: not enough letters to have variables for all players")
             return []
         return []
  
     def computePureEquilibria(self):
         self.computeBestResponses()
-        
         br = []
         for m in range(len(self.payoffMatrix)):
             for i in range(self.players[0].numStrats):
@@ -991,6 +1131,17 @@ brTest_3players = [
     ]
 ]
 
+brTest2_3players = [
+    [
+        [[1, 2, 1], [3, 4, 2]],
+        [[5, 6, 3], [7, 8, 1]]
+    ],
+    [
+        [[2, 4, 0], [6, 8, 1]],
+        [[10, 12, 3], [14, 16, 4]]
+    ]
+]
+
 arr_4players = [
     [
         [[0, 1, 1, 1], [1, 1, 1, 1]],
@@ -1153,11 +1304,15 @@ arr_5players = [
 # for eq in eqs:
 #     print(eq)
 
-# H = SimGame(3)
-# H.enterPayoffs(rps, 3, [3, 3, 3])
+H = SimGame(3)
+# H.print()
+H.enterPayoffs(brTest2_3players, 3, [2, 2, 2])
+# print("br test:")
+# H.print()
 # H.computeBestResponses()
 # H.printBestResponses()
-# print(H.computEquilibria())
+# print(H.computePureEquilibria())
+print(H.computeEquilibria())
 
 # I = SimGame(4)
 # I.enterPayoffs(arr_4players, 4, [2, 2, 3, 3])
