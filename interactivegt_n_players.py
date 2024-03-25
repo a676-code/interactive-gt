@@ -245,7 +245,6 @@ def computeEquilibria(output):
             eqs = G.computeEquilibria()
             numEquilibria = len(list(eqs))
             if numEquilibria % 2 == 0:
-                warnings.warn(f"An even number ({numEquilibria}) of equilibria was returned. This indicates that the game is degenerate. Consider using another algorithm to investigate.", RuntimeWarning)
                 degenerateGameWarning = messagebox.showwarning(f"Even Number ({numEquilibria}) of Equilibria: Degenerate Game", f"An even number ({numEquilibria}) of equilibria was returned. This indicates that the game is degenerate. Consider using another algorithm to investigate.")
 
             eqList = [str(len(list(eqs))) + " equilibria returned\n"]

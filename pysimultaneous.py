@@ -1,6 +1,6 @@
 # pysimultaneous.py
-# Author: Andrew Lounsbury
-# Date: 3/21/24
+# Author: Andrew W. Lounsbury
+# Date: 3/24/24
 # Description: a class for handling simultaneous games with n players, n >= 2
 from itertools import chain
 import numpy as np
@@ -363,7 +363,6 @@ class SimGame:
             for i in range(self.players[0].numStrats):
                 for j in range(self.players[1].numStrats):
                     br = self.isBestResponse([i, j])
-                    print("HERE br: ", br)
                     for x in range(self.numPlayers):
                         self.payoffMatrix[0][i][j].getListNode(x).bestResponse = br[x]
         else: 
@@ -371,12 +370,15 @@ class SimGame:
                 for i in range(self.players[0].numStrats):
                     for j in range(self.players[1].numStrats):
                         br = self.isBestResponse([i, j] + self.toProfile(m)[2:])
-                        print("THERE br: ", br)
                         for x in range(self.numPlayers):
                             self.payoffMatrix[m][i][j].getListNode(x).bestResponse = br[x]
 
     def computeEquilibria(self):
-        return self.computePureEquilibria() + self.computeMixedEquilibria()
+        equilibria = self.computePureEquilibria() + self.computeMixedEquilibria()
+        numEquilibria = len(equilibria)
+        if numEquilibria % 2 == 0:
+            warnings.warn(f"An even number ({numEquilibria}) of equilibria was returned. This indicates that the game is degenerate. Consider using another algorithm to investigate.", RuntimeWarning)
+        return equilibria
 
     def computeMixedEquilibria(self):       
         if self.numPlayers < 3:
@@ -695,7 +697,6 @@ class SimGame:
                     br[0] = False
             
             for j in chain(range(profile[1]), range(profile[1] + 1, self.players[1].numStrats)):
-                print("Comparing: " + str(self.payoffMatrix[0][profile[0]][profile[1]].getListNode(1).payoff) + " < " + str(self.payoffMatrix[0][profile[1]][j].getListNode(1).payoff))
                 if self.payoffMatrix[0][profile[0]][profile[1]].getListNode(1).payoff < self.payoffMatrix[0][profile[1]][j].getListNode(1).payoff:
                     br[1] = False
         else:
