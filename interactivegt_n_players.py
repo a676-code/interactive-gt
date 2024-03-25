@@ -663,8 +663,13 @@ def dimensionsClick():
                     numMatrices = 1
                     for x in range(2, int(numPlayersEntry.get())):
                         numMatrices *= numStrats[x]
-                    
-                    defaultPayoffs = [0 for x in range(G.numPlayers)]
+
+                    defaultPayoffs = [0 for x in range(int(numPlayersEntry.get()))]
+                    stringFormatter = ''
+                    for x in range(int(numPlayersEntry.get())):
+                        stringFormatter += '%d'
+                        if x < int(numPlayersEntry.get()) - 1:
+                            stringFormatter += ', '
                     
                     matrices = []
                     for m in range(numMatrices):
@@ -672,10 +677,12 @@ def dimensionsClick():
                         for i in range(numStrats[0]):
                             cols = []
                             for j in range(numStrats[1]):
-                                print("(m, i, j):", (m, i, j))
-                                e = Entry(payoffsFrame, width=5)
-                                e.grid(row=i + 1, column=j + 1 + (m * numStrats[1]), sticky=NSEW)
-                                e.insert(END, '%d, %d' % tuple(defaultPayoffs))
+                                e = Entry(payoffsFrame, width=10)
+                                if j < numStrats[1] - 1:
+                                    e.grid(row=i + 1, column=j + 1 + (m * numStrats[1]), sticky=NSEW)
+                                else:
+                                    e.grid(row=i + 1, column=j + 1 + (m * numStrats[1]), sticky=NSEW, padx=(0, 10))
+                                e.insert(END, stringFormatter % tuple(defaultPayoffs))
                                 cols.append(e)
                             rows.append(cols)
                         matrices.append(rows)
@@ -2649,6 +2656,16 @@ def writeToFileLatex(fileName, groupedPayoffs):
         file.write("\end{document}")
     return
 
+###################################################################
+###################################################################
+###################################################################
+###################################################################
+###################################################################
+###################################################################
+###################################################################
+###################################################################
+###################################################################
+###################################################################
 ###################################################################
 # Creating our SimGame object
 global G
