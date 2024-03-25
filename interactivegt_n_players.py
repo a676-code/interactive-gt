@@ -599,9 +599,16 @@ def dimensionsClick():
     """
     Resizes the payoff matrix according to the numbers of strategies entered in by the user
     """
-    entriesToSimGame()
+    dimensionsSlaves = dimensionsFrame.grid_slaves()
+    numStratsEntries = []
+    for slave in dimensionsSlaves:
+        if type(slave).__name__ == "Entry":
+            numStratsEntries.append(slave)
+    numStratsEntries.pop() # last one will be the numPlayers entry
+    numStratsEntries.reverse()
+    
     numStrats = []
-    for x in range(G.numPlayers):
+    for x in range(int(numPlayersEntry.get())):
         numStrats.append(int(numStratsEntries[x].get()))
     negativeStratsError = -1
     zeroStratsError = -1
@@ -652,26 +659,43 @@ def dimensionsClick():
                         else:
                             e.insert(0, "D")
                         e.grid(row=i + 1, column=0, padx=5)
-
-                    rows = []
-                    for i in range(numStrats[0]):
-                        cols = []
-                        for j in range(numStrats[1]):
-                            e = Entry(payoffsFrame, width=5)
-                            e.grid(row=i + 1, column=j + 1, sticky=NSEW)
-                            e.insert(END, '%d, %d' % (0, 0))
-                            cols.append(e)
-                        rows.append(cols)
+                    
+                    numMatrices = 1
+                    for x in range(2, int(numPlayersEntry.get())):
+                        numMatrices *= numStrats[x]
+                    
+                    defaultPayoffs = [0 for x in range(G.numPlayers)]
+                    
+                    matrices = []
+                    for m in range(numMatrices):
+                        rows = []
+                        for i in range(numStrats[0]):
+                            cols = []
+                            for j in range(numStrats[1]):
+                                print("(m, i, j):", (m, i, j))
+                                e = Entry(payoffsFrame, width=5)
+                                e.grid(row=i + 1, column=j + 1 + (m * numStrats[1]), sticky=NSEW)
+                                e.insert(END, '%d, %d' % tuple(defaultPayoffs))
+                                cols.append(e)
+                            rows.append(cols)
+                        matrices.append(rows)
                         
                     # Clearing the equilibria
-                    eqOutputSlaves = eqOutputFrame.grid_slaves()
-                    scrollbar1 = eqOutputSlaves[0]
-                    scrollbar2 = eqOutputSlaves[1]
-                    eqListBox = eqOutputSlaves[2]
-                    scrollbar1.grid_remove()
-                    scrollbar2.grid_remove()
-                    eqListBox.grid_remove()
-                    eqOutputFrame.grid_remove()
+                    try:
+                        eqOutputFrame
+                    except NameError:
+                        print("eqOutputFrame not defined yet.")
+                    else:
+                        eqOutputSlaves = eqOutputFrame.grid_slaves()
+                        scrollbar1 = eqOutputSlaves[0]
+                        scrollbar2 = eqOutputSlaves[1]
+                        eqListBox = eqOutputSlaves[2]
+                        scrollbar1.grid_remove()
+                        scrollbar2.grid_remove()
+                        eqListBox.grid_remove()
+                        eqOutputFrame.grid_remove()
+                    
+                    entriesToSimGame()
                     
                     root.geometry(f"{45 * numStrats[1] + 700}x{25 * numStrats[0] + 490}")
                     return proceed
@@ -753,6 +777,7 @@ def dimensionsClickNoWarning():
                 if type(eqLabel).__name__ == "Label":
                     eqLabel.grid_remove()
                 
+                entriesToSimGame()
                 root.geometry(f"{45 * numStrats2 + 700}x{25 * numStrats1 + 490}")
                 return
             else:
@@ -1294,6 +1319,22 @@ def getNumRecords():
 
 def iesdsStepsClicked(value):
     iesdsSteps.set(value)
+
+def numPlayersClick():
+    print("HERE")
+    # FIXME: clear the frame and regrid everything so that the buttons will always be in the right place
+    oldNumPlayers = G.numPlayers
+    numPlayers = int(numPlayersEntry.get())
+    for x in range(numPlayers - oldNumPlayers):
+        print("x:", x)
+        l = Label(dimensionsFrame, text=f"Number of strategies for player {oldNumPlayers + x + 1}: ")
+        l.grid(row=oldNumPlayers + x + 1, column=0, sticky=E)
+        e = Entry(dimensionsFrame, width=5)
+        e.grid(row=oldNumPlayers + x + 1, column=1, sticky=W)
+        e.insert(0, 2)
+    numPlayersButton.grid(row=numPlayers + 2, column=0)
+    dimensionsButton.grid(row=numPlayers + 2, column=1)
+    return
 
 def openFile():
     """
@@ -2675,7 +2716,8 @@ numStratsLabels = [Label(dimensionsFrame, text=f"Number of strategies for player
 numStratsEntries = [Entry(dimensionsFrame, width=5) for x in range(G.numPlayers)]
 for x in range(G.numPlayers):
     numStratsEntries[x].insert(0, "2")
-dimensionsButton = Button(dimensionsFrame, text="Enter", command=dimensionsClick)
+numPlayersButton = Button(dimensionsFrame, text="Enter numPlayers", command=numPlayersClick)
+dimensionsButton = Button(dimensionsFrame, text="Enter Dimensions", command=dimensionsClick)
 
 # Payoffs Frame
 payoffsFrame = LabelFrame(rootFrame, text="Payoffs", padx=10, pady=10)
@@ -2814,6 +2856,7 @@ for x in range(G.numPlayers):
     numStratsEntries[x].grid(row=row, column=col, sticky=W)
     row += 1
 
+numPlayersButton.grid(row=3, column=0, padx=(0, 5), pady=5)
 dimensionsButton.grid(row=3, column=1, padx=(0, 5), pady=5, sticky=W)
 
 payoffsFrame.grid(row=0, column=1, padx=10, pady=10)

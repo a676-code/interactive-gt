@@ -628,9 +628,20 @@ class SimGame:
         [[1, 5], [2, 6]],
         [[3, 7], [4, 8]]
     ], numPlayers = 2, numStrats = [2, 2]):
+        oldNumPlayers = self.numPlayers
         self.numPlayers = numPlayers
-        for x in range(self.numPlayers):
-            self.players[x].numStrats = numStrats[x]
+        
+        if self.numPlayers <= oldNumPlayers:
+            for x in range(self.numPlayers):
+                self.players[x].numStrats = numStrats[x]
+        else: # self.numPlayers > oldNumPlayers:
+            print(">>>")
+            for x in range(oldNumPlayers):
+                self.players[x].numStrats = numStrats[x]
+            for x in range(self.numPlayers - oldNumPlayers):
+                self.players.append(Player(numStrats[oldNumPlayers + x]))
+        
+        print("PAYOFFS:", payoffs)
         
         self.payoffMatrix = []
         if self.numPlayers < 3:
@@ -653,7 +664,9 @@ class SimGame:
                     row = []
                     for j in range(self.players[1].numStrats):
                         outcome = ListNode(payoffs[m][i][j][0], False)
+                        print("LENGTH:", len(payoffs[m][i][j]))
                         for x in range(1, self.numPlayers):
+                            print("x:", x)
                             outcome.append(payoffs[m][i][j][x], False)
                         row.append(outcome)                 
                     matrix.append(row)
