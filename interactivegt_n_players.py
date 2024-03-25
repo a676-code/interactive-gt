@@ -1110,6 +1110,7 @@ def entriesToSimGame():
     for slave in dimensionsSlaves:
         if type(slave).__name__ == "Entry":
             numStrats.append(int(slave.get()))
+    numStrats.pop() # last one will be the entry for numPlayers
     numStrats.reverse()
     
     # Getting the entries from the payoffs frame
@@ -1147,6 +1148,7 @@ def entriesToSimGame():
     # Entering the payoffs
     G.enterPayoffs(newListList, numPlayers, numStrats)
     
+    # FIXME: Finish for games with >= 3 players
     # Entering the strategy names
     G.strategyNames[0] = [entry.get() for entry in p1StrategyNameEntries]
     G.strategyNames[1] = [entry.get() for entry in p2StrategyNameEntries]
