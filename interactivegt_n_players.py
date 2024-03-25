@@ -24,8 +24,8 @@ def addAllPairs():
     c = conn.cursor()
 
     options = [s() for s in axl.strategies]
-    C = combinations(options, r=2)
-    for i, pair in enumerate(C):
+    Combos = combinations(options, r=2)
+    for i, pair in enumerate(Combos):
         print("Inserting pair " + str(i))
         c.execute("INSERT INTO matches VALUES (:strategy1, :strategy2, :numTurns, :output, :score1, :score2)",
             {
@@ -52,7 +52,6 @@ def addAllPairs():
         )
         print("Inserting output " + str(dbPlayMatch(strategy, strategy, int(dbTurnsEntry.get()))[0]))
     
-
     conn.commit()
     conn.close()
     return
@@ -158,6 +157,7 @@ def clearPayoffs():
         if type(eqLabel).__name__ == "Label":
             eqLabel.grid_remove()
         
+        entriesToSimGame()
         root.geometry(f"{45 * numStrats2 + 700}x{25 * numStrats1 + 490}")
     return
     
@@ -199,6 +199,7 @@ def clearPayoffMatrix():
         if type(eqLabel).__name__ == "Label":
             eqLabel.grid_remove()
         
+        entriesToSimGame()
         root.geometry(f"{45 * numStrats2 + 700}x{25 * numStrats1 + 490}")
     return
 
@@ -226,6 +227,8 @@ def clearStrategies():
         for j in range(numStrats1):
             e = Entry(payoffsFrame, width=10)
             e.grid(row=j + 1, column=0, padx=5)
+            
+        entriesToSimGame()
     else:
         return
 
@@ -233,6 +236,7 @@ def computeEquilibria(output):
     """
     Computes the equilibria of the current game and formats the output according to whether the output variable is 0 or 1, 
     """
+    entriesToSimGame()
     proceed = enterPayoffs()
     if proceed == True:
         numStrats1 = int(numStratsEntries[0].get())
@@ -307,29 +311,24 @@ def computeEquilibria(output):
             root.geometry("750x490")
             
         elif output == 1: # Named Strategies
-            eqs = G.support_enumeration()
+            numPlayers = int(numPlayersEntry.get())
+            eqs = G.computeEquilibria()
             numEquilibria = len(list(eqs))
             if numEquilibria % 2 == 0:
                 warnings.warn(f"An even number ({numEquilibria}) of equilibria was returned. This indicates that the game is degenerate. Consider using another algorithm to investigate.", RuntimeWarning)
                 degenerateGameWarning = messagebox.showwarning(f"Even Number ({numEquilibria}) of Equilibria: Degenerate Game", f"An even number ({numEquilibria}) of equilibria was returned. This indicates that the game is degenerate. Consider using another algorithm to investigate.")
                 # resetting the generator
-                eqs = G.support_enumeration()
-            else:
-                # resetting the generator
-                eqs = G.support_enumeration()
-            eqList = list(eqs)
             newEqList = []
-            for eq in eqList:
+            for eq in eqs:
                 newEq = []
                 for strat in eq:
-                    newEq.append(strat.tolist())
+                    newEq.append(strat)
                 newEqList.append(newEq)
             
             pureEquilibria = []
             mixedEquilibria = []
-            eqs = G.support_enumeration()
             for e in eqs:
-                if e[0][0] == 0.0 or e[0][0] == 1.0:
+                if e[0] == 0.0 or e[0] == 1.0:
                     pureEquilibria.append(e)
                 else:
                     mixedEquilibria.append(e)
@@ -342,15 +341,16 @@ def computeEquilibria(output):
             newOutcomes = []
             row = []
             numInRow = 0
-            for o in outcomes:
+            for outcome in outcomes:
                 if numInRow < numStrats2:
-                    row.append(o)
+                    row.append(outcome)
                     numInRow += 1
                     if numInRow == numStrats2:
                         newOutcomes.append(row)
                         numInRow = 0
                         row = []
             
+            # FIXME: Can't finish this until we've implemented strategy names for players past player 2! 
             # Getting list of the strategy names
             payoffMatrixSlaves = payoffsFrame.grid_slaves()
             strategyNames = payoffMatrixSlaves[numStrats1 * numStrats2:]
@@ -360,33 +360,23 @@ def computeEquilibria(output):
             p2StrategyNames = strategyNames[numStrats1:]
             p2StrategyNames.reverse()
             
-            eqs = G.support_enumeration()
+            print("eqs:")
+            for e in eqs:
+                print(e)
+            
+            inp = input("Press Enter")
+            
+            # Collecting the named equilibria
             namedEquilibria = []
+            stratIndices = []
+            eqStratNames = []
             for eq in eqs:
-                mixed = False
-                if eq[0][0] != 1.0 and eq[0][0] != 0.0:
-                    mixed = True
-                if not mixed:
+                if type(eq[0]) != list():
                     oneFound = False
-                    i = 0
-                    while not oneFound:
-                        if eq[0][i] == 1.0:
-                            oneFound = True
-                            p1Strat = i
-                        i += 1
-                    if not oneFound:
-                        mixed = True
-                    oneFound = False
-                    i = 0
-                    while not oneFound:
-                        if eq[1][i] == 1.0:
-                            oneFound = True
-                            p2Strat = i
-                        i += 1
-                    namedEquilibria.append((p1StrategyNames[p1Strat].get(), p2StrategyNames[p2Strat].get()))
-                else:
-                    namedEquilibria.append(list(eq))
-                    
+                    for x in range(numPlayers):
+                        if eq[x] == 1.0:
+                            stratIndices.append(x)
+                namedEquilibria.append(tuple(...))               
             eqs = G.support_enumeration()
             eqList = [str(len(list(eqs))) + " equilibria returned\n"]
             for i, eq in enumerate(namedEquilibria):
@@ -394,7 +384,6 @@ def computeEquilibria(output):
             eqList.reverse()
             
             # Creating the string to go in the label
-            eqs = G.support_enumeration()
             eqString = str(len(list(eqs))) + " equilibria returned\n"
             for i, eq in enumerate(namedEquilibria):
                 for j, strat in enumerate(eq):
@@ -611,6 +600,7 @@ def dimensionsClick():
     """
     Resizes the payoff matrix according to the numbers of strategies entered in by the user
     """
+    entriesToSimGame()
     numStrats1 = int(numStratsEntries[0].get())
     numStrats2 = int(numStratsEntries[1].get())
     negativeStratsError = -1
@@ -770,7 +760,8 @@ def dimensionsClickNoWarning():
 def eliminateStrictlyDominatedStrategies(steps):
     """
     Compares all payoffs of all pairs of strategies for both players and eliminates strategies that are strictly dominated.    
-    """    
+    """
+    entriesToSimGame()
     # saving the original game in case the user wants to revert back to it
     global numIESDSClicks
     global originalGame
@@ -1298,9 +1289,6 @@ def getNumRecords():
 def iesdsStepsClicked(value):
     iesdsSteps.set(value)
 
-def onClick(event):
-    rootCanvas.configure(scrollregion=rootCanvas.bbox("all"), width=root.winfo_width() - 25, height=root.winfo_height() - 25)
-
 def openFile():
     """
         opens a file and reads the data from it into a list
@@ -1549,6 +1537,7 @@ def resetPayoffMatrix():
         if type(eqLabel).__name__ == "Label":
             eqLabel.grid_remove()
         
+        entriesToSimGame()
         root.geometry(f"{45 * numStrats2 + 700}x{25 * numStrats1 + 490}")
     return
 
@@ -1628,6 +1617,8 @@ def resetStrategies():
             else:
                 e.insert(0, "D")
             e.grid(row=j + 1, column=0, padx=5)
+            
+        entriesToSimGame()
     else:
         return
     
@@ -2027,6 +2018,7 @@ def simGameToEntries():
 def submitRemoveStrategy():
     """Removes the strategy for the player entered in function removeStrategy
     """
+    entriesToSimGame()
     
     numStrats1 = int(numStratsEntries[0].get())
     numStrats2 = int(numStratsEntries[1].get())
@@ -2664,7 +2656,7 @@ xRootScrollbar.pack(side=BOTTOM, fill=X)
 yRootScrollbar.pack(side=RIGHT, fill=Y)
 rootCanvas.pack(side=TOP)
 rootCanvas.create_window((0, 0), window=rootFrame, anchor = "nw")
-rootFrame.bind("<Configure>", onClick)
+rootFrame.bind("<Configure>", lambda e: rootCanvas.configure(scrollregion=rootCanvas.bbox("all"), width=root.winfo_width() - 25, height=root.winfo_height() - 25))
 
 # Dimensions Frame
 dimensionsFrame = LabelFrame(rootFrame, text="Dimensions")
