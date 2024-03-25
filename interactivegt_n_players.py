@@ -9,7 +9,6 @@ from tkinter import filedialog
 import nashpy as nash
 import axelrod as axl
 import numpy as np
-import warnings
 import sqlite3
 from itertools import combinations
 import pysimultaneous
@@ -291,16 +290,17 @@ def computeEquilibria(output):
             if type(eqSlaves[0]).__name__ == "Listbox":
                 eqSlaves[0].grid_remove()
             
-            myFrame = LabelFrame(equilibriaFrame)
+            global eqOutputFrame
+            eqOutputFrame = LabelFrame(equilibriaFrame)
     
-            xscrollbar = Scrollbar(myFrame, orient=HORIZONTAL)
-            yscrollbar = Scrollbar(myFrame, orient=VERTICAL)
+            xscrollbar = Scrollbar(eqOutputFrame, orient=HORIZONTAL)
+            yscrollbar = Scrollbar(eqOutputFrame, orient=VERTICAL)
             
-            equilibriaOutputListBox = Listbox(myFrame, width=50, xscrollcommand=xscrollbar.set, yscrollcommand=yscrollbar.set, bg="black", fg="white")
+            equilibriaOutputListBox = Listbox(eqOutputFrame, width=50, xscrollcommand=xscrollbar.set, yscrollcommand=yscrollbar.set, bg="black", fg="white")
             for eq in eqList:
                 equilibriaOutputListBox.insert(0, eq)
             
-            myFrame.grid(row=2, column=0, columnspan=2)
+            eqOutputFrame.grid(row=2, column=0, columnspan=2)
             equilibriaOutputListBox.grid(row=0, column=0, padx=10, sticky=NSEW)
             xscrollbar.grid(row=1, column=0, columnspan=2, sticky=EW)
             xscrollbar.config(command = equilibriaOutputListBox.xview)
@@ -600,21 +600,22 @@ def dimensionsClick():
     Resizes the payoff matrix according to the numbers of strategies entered in by the user
     """
     entriesToSimGame()
-    numStrats1 = int(numStratsEntries[0].get())
-    numStrats2 = int(numStratsEntries[1].get())
+    numStrats = []
+    for x in range(G.numPlayers):
+        numStrats.append(int(numStratsEntries[x].get()))
     negativeStratsError = -1
     zeroStratsError = -1
     oneByOneError = -1
-    if numStrats1 == 0 or numStrats2 == 0:
+    if numStrats[0] == 0 or numStrats[1] == 0:
         zeroStratsError = messagebox.showerror("Error", "dimensionsClick: A player may not have zero strategies.")
     
     if zeroStratsError == -1:
-        if numStrats1 == 1 or numStrats2 == 1:
+        if numStrats[0] == 1 or numStrats[1] == 1:
             oneByOneError = messagebox.showerror("Error", "dimensionsClick: A player may not have only one strategy.")
             return
         
         if oneByOneError == -1:
-            if numStrats1 < 0 or numStrats2 < 0:
+            if numStrats[0] < 0 or numStrats[1] < 0:
                 negativeStratsError = messagebox.showerror("Error", "dimensionsClick: A player may not have a negative number of strategies.")
                 return
             if negativeStratsError == -1:
@@ -628,34 +629,34 @@ def dimensionsClick():
                         slave.grid_remove()
                     
                     # refilling the table
-                    for i in range(numStrats2):
+                    for j in range(numStrats[1]):
                         e = Entry(payoffsFrame, width=10)
-                        if i == 0:
+                        if j == 0:
                             e.insert(0, "L")
-                        elif i > 0 and i < numStrats2 - 1 and numStrats2 == 3:
+                        elif j > 0 and j < numStrats[1] - 1 and numStrats[1] == 3:
                             e.insert(0, "C")
-                        elif i > 0 and i < numStrats2 - 1 and numStrats2 >= 3:
+                        elif j > 0 and j < numStrats[1] - 1 and numStrats[1] >= 3:
                             e.insert(0, "C" + str(i))
                         else:
                             e.insert(0, "R")
-                        e.grid(row=0, column=i + 1, pady=5)
+                        e.grid(row=0, column=j + 1, pady=5)
                         
-                    for j in range(numStrats1):
+                    for i in range(numStrats[0]):
                         e = Entry(payoffsFrame, width=10)
-                        if j == 0:
+                        if i == 0:
                             e.insert(0, "U")
-                        elif j > 0 and j < numStrats1 - 1 and numStrats1 == 3:
+                        elif i > 0 and i < numStrats[0] - 1 and numStrats[0] == 3:
                             e.insert(0, "M")
-                        elif j > 0 and j < numStrats1 - 1 and numStrats1 > 3:
+                        elif i > 0 and i < numStrats[0] - 1 and numStrats[0] > 3:
                             e.insert(0, "M" + str(j))
                         else:
                             e.insert(0, "D")
-                        e.grid(row=j + 1, column=0, padx=5)
+                        e.grid(row=i + 1, column=0, padx=5)
 
                     rows = []
-                    for i in range(numStrats1):
+                    for i in range(numStrats[0]):
                         cols = []
-                        for j in range(numStrats2):
+                        for j in range(numStrats[1]):
                             e = Entry(payoffsFrame, width=5)
                             e.grid(row=i + 1, column=j + 1, sticky=NSEW)
                             e.insert(END, '%d, %d' % (0, 0))
@@ -663,12 +664,16 @@ def dimensionsClick():
                         rows.append(cols)
                         
                     # Clearing the equilibria
-                    equilibriaSlaves = equilibriaFrame.grid_slaves()
-                    eqLabel = equilibriaSlaves[0]
-                    if type(eqLabel).__name__ == "Label":
-                        eqLabel.grid_remove()
+                    eqOutputSlaves = eqOutputFrame.grid_slaves()
+                    scrollbar1 = eqOutputSlaves[0]
+                    scrollbar2 = eqOutputSlaves[1]
+                    eqListBox = eqOutputSlaves[2]
+                    scrollbar1.grid_remove()
+                    scrollbar2.grid_remove()
+                    eqListBox.grid_remove()
+                    eqOutputFrame.grid_remove()
                     
-                    root.geometry(f"{45 * numStrats2 + 700}x{25 * numStrats1 + 490}")
+                    root.geometry(f"{45 * numStrats[1] + 700}x{25 * numStrats[0] + 490}")
                     return proceed
                 else:
                     return

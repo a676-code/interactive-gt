@@ -10,6 +10,7 @@ from sympy import solve
 from sympy.solvers.solveset import linsolve
 from sympy import srepr
 from sympy import simplify
+import warnings
 
 class ListNode:
     head = None
