@@ -643,7 +643,7 @@ def dimensionsClick():
                         elif j > 0 and j < numStrats[1] - 1 and numStrats[1] == 3:
                             e.insert(0, "C")
                         elif j > 0 and j < numStrats[1] - 1 and numStrats[1] >= 3:
-                            e.insert(0, "C" + str(i))
+                            e.insert(0, "C" + str(j))
                         else:
                             e.insert(0, "R")
                         e.grid(row=0, column=j + 1, pady=5)
@@ -2709,6 +2709,7 @@ option_menu = Menu(menubar)
 menubar.add_cascade(label="Options", menu=option_menu)
 option_menu.add_command(label="Change Background Color", command=changeBackgroundColor)
 
+# FIXME: The scrollbars are in the right place, but instead of becoming usable when the contents of the frame get bigger, the frame simply stretches, leaving the scrollbars grayed out. 
 # rootFrame < rootCanvas < mainFrame < root
 mainFrame = Frame(root)
 rootCanvas = Canvas(mainFrame) # canvas in root
@@ -2736,8 +2737,20 @@ for x in range(G.numPlayers):
 numPlayersButton = Button(dimensionsFrame, text="Enter numPlayers", command=numPlayersClick)
 dimensionsButton = Button(dimensionsFrame, text="Enter Dimensions", command=dimensionsClick)
 
+# payoffsFrame < payoffsCanvas < mainPayoffsFrame < rootFrame < ...
 # Payoffs Frame
-payoffsFrame = LabelFrame(rootFrame, text="Payoffs", padx=10, pady=10)
+def onScroll(event):
+    payoffsCanvas.configure(scrollregion=payoffsCanvas.bbox("all"), width=100 * numStrats2, height=40 * numStrats1)
+
+mainPayoffsFrame = LabelFrame(rootFrame, text="Payoffs", padx=10, pady=10)
+payoffsCanvas = Canvas(mainPayoffsFrame)
+# payoffsCanvas.pack(side=LEFT, fill=BOTH, expand=1)
+yPayoffsScrollbar = Scrollbar(mainPayoffsFrame, orient="vertical", command=payoffsCanvas.yview)
+xPayoffsScrollbar = Scrollbar(mainPayoffsFrame, orient="horizontal", command=payoffsCanvas.xview)
+payoffsCanvas.configure(xscrollcommand=xPayoffsScrollbar.set, yscrollcommand=yPayoffsVScrollbar.set)
+payoffsCanvas.bind('<Configure>', onScroll)
+payoffsFrame = Frame(payoffsCanvas, padx=10, pady=10)
+payoffsCanvas.create_window((0, 0), window=payoffsFrame, anchor="nw")
 
 # Adding strategy names
 p2strat1Name = Entry(payoffsFrame, width=10)
@@ -2876,7 +2889,16 @@ for x in range(G.numPlayers):
 numPlayersButton.grid(row=3, column=0, padx=(0, 5), pady=5)
 dimensionsButton.grid(row=3, column=1, padx=(0, 5), pady=5, sticky=W)
 
-payoffsFrame.grid(row=0, column=1, padx=10, pady=10, sticky=W)
+# payoffsFrame.grid(row=0, column=1, padx=10, pady=10, sticky=W)
+mainPayoffsFrame.grid(row=0, column=1)
+# payoffsVScrollbar.pack(side=RIGHT, fill=Y)
+# payoffsHScrollbar.pack(side=BOTTOM, fill=X)
+xPayoffsScrollbar.grid(row=1, column=0, sticky=EW)
+yPayoffsScrollbar.grid(row=0, column=1, sticky=NS)
+
+payoffsCanvas.grid(row=0, column=0)
+payoffsFrame.pack(side=TOP)
+
 
 iesdsFrame.grid(row=1, column=1, padx=10, pady=10, sticky=W)
 revertButton.grid(row=0, column=1)

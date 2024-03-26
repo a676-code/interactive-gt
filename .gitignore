@@ -3,6 +3,7 @@ error.png
 file.*
 match.db
 payoffMatrixScrollbars.py
+payoffMatrixScrollbars_3players.py
 scrollbar.py
 testnash.py
 testaxelrod.py
