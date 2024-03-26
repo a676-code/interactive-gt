@@ -2876,16 +2876,16 @@ for x in range(G.numPlayers):
 numPlayersButton.grid(row=3, column=0, padx=(0, 5), pady=5)
 dimensionsButton.grid(row=3, column=1, padx=(0, 5), pady=5, sticky=W)
 
-payoffsFrame.grid(row=0, column=1, padx=10, pady=10)
+payoffsFrame.grid(row=0, column=1, padx=10, pady=10, sticky=W)
 
-iesdsFrame.grid(row=1, column=1, padx=10, pady=10)
+iesdsFrame.grid(row=1, column=1, padx=10, pady=10, sticky=W)
 revertButton.grid(row=0, column=1)
 iesdsButton.grid(row=2, column=0, columnspan=2)
 
 equilibriaFrame.grid(row=1, column=0, padx=10, pady=10)
 equilibriaButton.grid(row=1, column=1, padx=10, pady=10)
 
-axelrodFrame.grid(row=2, column=1, padx=10, pady=10)
+axelrodFrame.grid(row=2, column=1, padx=10, pady=10, sticky=W)
 strategyLabel1.grid(row=0, column=0, sticky=W)
 dropdown1.grid(row=0, column=1, sticky=W)
 strategyLabel2.grid(row=1, column=0, sticky=W)
