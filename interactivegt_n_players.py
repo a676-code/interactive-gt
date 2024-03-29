@@ -1368,8 +1368,6 @@ def openFile():
                 numPlayersEntry = dimensionsEntries[-1]
                     
                 numPlayers = int(numPlayersEntry.get())
-                    
-                print("nPE: ", numPlayers)
                 
                 for x in range(numPlayers):
                     numStratsEntries[x].delete(0, 'end')
@@ -1836,36 +1834,6 @@ def saveAs():
                     file.write(str(payoff[0]) + " " + str(payoff[1]))
             if i < len(groupedPayoffs) - 1:
                 file.write("\n")
-    return
-
-def saveAsLatex():
-    """
-        Saves the current payoff matrix in the format of a buildable LaTeX array
-    """
-    numStrats1 = int(numStratsEntries[0].get())
-    numStrats2 = int(numStratsEntries[1].get())
-    
-    payoffMatrixSlaves = payoffsFrame.grid_slaves()
-    outcomes = payoffMatrixSlaves[:numStrats1 * numStrats2]
-    payoffs = [outcome.get() for outcome in outcomes]
-    payoffs.reverse()
-    payoffs = [[payoff[0], payoff[3]] for payoff in payoffs]
-    groupedPayoffs = [payoffs[i:i + numStrats2] for i in range(0, len(payoffs), numStrats2)]
-    
-    # Prompting the user for a file name
-    top = Toplevel()
-    top.title("Save as LaTeX")
-    top.iconbitmap("knight.ico")
-    top.geometry("250x30")
-
-    fileNameLabel = Label(top, text="Enter a File Name: ")
-    fileNameEntry = Entry(top, width=15)
-    fileNameButton = Button(top, text="Enter", command=lambda: [writeToFileLatex(fileNameEntry.get(), groupedPayoffs), top.destroy()])
-    
-    # Putting everything in the top window
-    fileNameLabel.grid(row=0, column=0)
-    fileNameEntry.grid(row=0, column=1)
-    fileNameButton.grid(row=0, column=2)
     return
 
 def saveRecord():
@@ -2392,189 +2360,198 @@ def writeToFile(fileName, groupedPayoffs):
                 file.write("\n")
     return
 
-def writeToFileLatex(fileName, groupedPayoffs):
+def saveAsLatex():
     """
-        Writes the data of the current game into the fileName file in the format of a buildable LaTeX array
-    """
-    LETTERS = ["a", "b", "c", "d", "e", "f","g", "h","i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z",]
-    GREEK_LETTERS = [
-        "alpha",
-        "beta",
-        "gamma",
-        "delta",
-        "epsilon",
-        "zeta",
-        "eta",
-        "theta",
-        "iota",
-        "kappa",
-        "lambda",
-        "mu", 
-        "nu",
-        "xi",
-        # "omicron",
-        "pi",
-        "rho",
-        "sigma",
-        "tau",
-        "upsilon",
-        "phi",
-        "chi",
-        "psi",
-        "omega"
-    ]
-    CAPITAL_GREEK_LETTERS = [
-        # "Alpha",
-        # "Beta",
-        "Gamma",
-        "Delta",
-        # "Epsilon",
-        # "Zeta",
-        # "Eta", 
-        "Theta",
-        # "Iota",
-        # "Kappa",
-        "Lambda",
-        # "Mu", 
-        # "Nu",
-        "Xi",
-        # "Omicron",
-        "Pi",
-        # "Rho",
-        "Sigma",
-        # "Tau",
-        # "Upsilon"
-        "Phi",
-        "Chi",
-        "Psi",
-        "Omega"
-    ]
-    
-    numStrats1 = int(numStratsEntries[0].get())
-    numStrats2 = int(numStratsEntries[1].get())
-    
-    # Getting list of the strategy names
-    """
-    We want to accept all names of the forms: 
-      X+, 
-      X+n+, 
-      X+_n+, 
-      g, 
-      gn+, and 
-      g_n, 
-    where X+ is a string of characters, g is the English name of a greek letter, and n+ is a string of digits, and reject all others. So, we want to reject things like spaces, n+, n+X+, X+_ and any name with multiple underscores
-    """
-    payoffMatrixSlaves = payoffsFrame.grid_slaves()
-    strategyNameEntries = payoffMatrixSlaves[numStrats1 * numStrats2:]
-    
-    # P1 ###########################################################
-    p1StrategyNameEntries = strategyNameEntries[:numStrats1]
-    p1StrategyNameEntries.reverse()
-    p1StrategyNames = [name.get() for name in p1StrategyNameEntries]
-    
-    # Input validation; checking for invalid names and cancelling if rejects are found
-    for i, name in enumerate(p1StrategyNames):
-        if name[0].isalpha(): # starts with a letter
-            numUnderscores = 0
-            for char in name:
-                if char == "_":
-                    numUnderscores += 1
-                    if numUnderscores > 1:
-                        # ERROR: multiple underscores
-                        multipleUnderscoresError = messagebox.showerror("Error", f"Invalid strategy name \"{name}\". Strategy names may not contain multiple underscores.")
-                        return
+        Saves the current payoff matrix in the format of a buildable LaTeX array
+    """    
+    file = filedialog.asksaveasfile(defaultextension = ".tex", mode='w', initialdir=".", title="Save As", filetypes=(("LaTeX files", "*.tex"),))
+    if file:
+        numStrats1 = int(numStratsEntries[0].get())
+        numStrats2 = int(numStratsEntries[1].get())
+        
+        payoffMatrixSlaves = payoffsFrame.grid_slaves()
+        outcomes = payoffMatrixSlaves[:numStrats1 * numStrats2]
+        payoffs = [outcome.get() for outcome in outcomes]
+        payoffs.reverse()
+        payoffs = [[payoff[0], payoff[3]] for payoff in payoffs]
+        groupedPayoffs = [payoffs[i:i + numStrats2] for i in range(0, len(payoffs), numStrats2)]
+        
+        LETTERS = ["a", "b", "c", "d", "e", "f","g", "h","i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z",]
+        GREEK_LETTERS = [
+            "alpha",
+            "beta",
+            "gamma",
+            "delta",
+            "epsilon",
+            "zeta",
+            "eta",
+            "theta",
+            "iota",
+            "kappa",
+            "lambda",
+            "mu", 
+            "nu",
+            "xi",
+            # "omicron",
+            "pi",
+            "rho",
+            "sigma",
+            "tau",
+            "upsilon",
+            "phi",
+            "chi",
+            "psi",
+            "omega"
+        ]
+        CAPITAL_GREEK_LETTERS = [
+            # "Alpha",
+            # "Beta",
+            "Gamma",
+            "Delta",
+            # "Epsilon",
+            # "Zeta",
+            # "Eta", 
+            "Theta",
+            # "Iota",
+            # "Kappa",
+            "Lambda",
+            # "Mu", 
+            # "Nu",
+            "Xi",
+            # "Omicron",
+            "Pi",
+            # "Rho",
+            "Sigma",
+            # "Tau",
+            # "Upsilon"
+            "Phi",
+            "Chi",
+            "Psi",
+            "Omega"
+        ]
+        
+        # Getting list of the strategy names
+        """
+        We want to accept all names of the forms: 
+        X+, 
+        X+n+, 
+        X+_n+, 
+        g, 
+        gn+, and 
+        g_n, 
+        where X+ is a string of characters, g is the English name of a greek letter, and n+ is a string of digits, and reject all others. So, we want to reject things like spaces, n+, n+X+, X+_ and any name with multiple underscores
+        """
+        payoffMatrixSlaves = payoffsFrame.grid_slaves()
+        strategyNameEntries = payoffMatrixSlaves[numStrats1 * numStrats2:]
+        
+        # P1 ###########################################################
+        p1StrategyNameEntries = strategyNameEntries[:numStrats1]
+        p1StrategyNameEntries.reverse()
+        p1StrategyNames = [name.get() for name in p1StrategyNameEntries]
+        
+        # Input validation; checking for invalid names and cancelling if rejects are found
+        for i, name in enumerate(p1StrategyNames):
+            if name[0].isalpha(): # starts with a letter
+                numUnderscores = 0
+                for char in name:
+                    if char == "_":
+                        numUnderscores += 1
+                        if numUnderscores > 1:
+                            # ERROR: multiple underscores
+                            multipleUnderscoresError = messagebox.showerror("Error", f"Invalid strategy name \"{name}\". Strategy names may not contain multiple underscores.")
+                            return
+                        
+                if " " in name:
+                    # ERROR: spaces
+                    spacesError = messagebox.showerror("Error", f"Invalid strategy name \"{name}\". Strategy names may not contain spaces.")
                     
-            if " " in name:
-                # ERROR: spaces
-                spacesError = messagebox.showerror("Error", f"Invalid strategy name \"{name}\". Strategy names may not contain spaces.")
+                if name[-1] == "_":
+                    # ERRROR: ending underscore
+                    endingUnderscoreError = messagebox.showerror("Error", f"Invalid strategy name \"{name}\". Strategy names may not end with an underscore.")
                 
-            if name[-1] == "_":
-                # ERRROR: ending underscore
-                endingUnderscoreError = messagebox.showerror("Error", f"Invalid strategy name \"{name}\". Strategy names may not end with an underscore.")
-            
-            # Getting the last index of the first alphabetical string in the name
-            # num = 0
-            # breakWhile = False
-            # while num < len(name) and not name[num].isdigit():
-            #     for g in GREEK_LETTERS:
-            #         if g in name[num + 1:len(name) - 1]:
-            #             lastIndexOfFirstString = num
-            #             breakWhile = True
-            #             break
-            #     if breakWhile == True:
-            #         break
-            #     if name[num].isdigit() or num == len(name) - 1:
-            #         lastIndexOfFirstString = num
-            #     num += 1
-            
-            # adding a slash to greek letters
-            if name in GREEK_LETTERS or name in CAPITAL_GREEK_LETTERS:
-                p1StrategyNames[i] = "\\" + name
-            
-            if name[-1].isdigit():
-                # Getting the position of the last alphabetical character in the name
-                lastAlphaPos = -1
-                j = len(name) - 1
-                while j > 0 and lastAlphaPos == -1:
-                    if name[j].isalpha():
-                        lastAlphaPos = j
-                    j -= 1
-                # inserting an underscore at that position
-                if "_" not in name:
-                    p1StrategyNames[i] = name[:lastAlphaPos + 1] + "_" + name[lastAlphaPos + 1:]
-            
-            if name[:lastAlphaPos + 1] in GREEK_LETTERS or name[:lastAlphaPos + 1] in CAPITAL_GREEK_LETTERS:
-                p1StrategyNames[i] = "\\" + p1StrategyNames[i]
-        else:
-            # ERROR: n+, n+X, _X+
-            digitsAndUnderscoresError = messagebox.showerror("Error", f"Invalid strategy name \"{name}\". Strategy names may not begin with digits or underscores.")
-            return
-    # P2 ###########################################################
-    p2StrategyNamesEntries = strategyNameEntries[numStrats1:]
-    p2StrategyNamesEntries.reverse()
-    p2StrategyNames = [name.get() for name in p2StrategyNamesEntries]
-    
-    # Input validation; checking for invalid names and cancelling if rejects are found
-    for i, name in enumerate(p2StrategyNames):
-        if name[0].isalpha(): # starts with a letter
-            numUnderscores = 0
-            for char in name:
-                if char == "_":
-                    numUnderscores += 1
-                    if numUnderscores > 1:
-                        # ERROR: multiple underscores
-                        multipleUnderscoresError = messagebox.showerror("Error", f"Invalid strategy name \"{name}\". Strategy names may not contain multiple underscores.")
-                        return
-                    
-            if " " in name:
-                # ERROR: spaces
-                spacesError = messagebox.showerror("Error", f"Invalid strategy name \"{name}\". Strategy names may not contain spaces.")
+                # Getting the last index of the first alphabetical string in the name
+                # num = 0
+                # breakWhile = False
+                # while num < len(name) and not name[num].isdigit():
+                #     for g in GREEK_LETTERS:
+                #         if g in name[num + 1:len(name) - 1]:
+                #             lastIndexOfFirstString = num
+                #             breakWhile = True
+                #             break
+                #     if breakWhile == True:
+                #         break
+                #     if name[num].isdigit() or num == len(name) - 1:
+                #         lastIndexOfFirstString = num
+                #     num += 1
                 
-            if name[-1] == "_":
-                # ERRROR: ending underscore
-                endingUnderscoreError = messagebox.showerror("Error", f"Invalid strategy name \"{name}\". Strategy names may not end with an underscore.")
-            
-            if name in GREEK_LETTERS or name in CAPITAL_GREEK_LETTERS:
-                    p2StrategyNames[i] = "\\" + name
+                # adding a slash to greek letters
+                if name in GREEK_LETTERS or name in CAPITAL_GREEK_LETTERS:
+                    p1StrategyNames[i] = "\\" + name
+                
+                if name[-1].isdigit():
+                    # Getting the position of the last alphabetical character in the name
+                    lastAlphaPos = -1
+                    j = len(name) - 1
+                    while j > 0 and lastAlphaPos == -1:
+                        if name[j].isalpha():
+                            lastAlphaPos = j
+                        j -= 1
+                    # inserting an underscore at that position
+                    if "_" not in name:
+                        p1StrategyNames[i] = name[:lastAlphaPos + 1] + "_" + name[lastAlphaPos + 1:]
+                
+                    if name[:lastAlphaPos + 1] in GREEK_LETTERS or name[:lastAlphaPos + 1] in CAPITAL_GREEK_LETTERS:
+                        p1StrategyNames[i] = "\\" + p1StrategyNames[i]
+            else:
+                # ERROR: n+, n+X, _X+
+                digitsAndUnderscoresError = messagebox.showerror("Error", f"Invalid strategy name \"{name}\". Strategy names may not begin with digits or underscores.")
+                return
+        # P2 ###########################################################
+        p2StrategyNamesEntries = strategyNameEntries[numStrats1:]
+        p2StrategyNamesEntries.reverse()
+        p2StrategyNames = [name.get() for name in p2StrategyNamesEntries]
+        
+        # Input validation; checking for invalid names and cancelling if rejects are found
+        for j, name in enumerate(p2StrategyNames):
+            if name[0].isalpha(): # starts with a letter
+                numUnderscores = 0
+                for char in name:
+                    if char == "_":
+                        numUnderscores += 1
+                        if numUnderscores > 1:
+                            # ERROR: multiple underscores
+                            multipleUnderscoresError = messagebox.showerror("Error", f"Invalid strategy name \"{name}\". Strategy names may not contain multiple underscores.")
+                            return
+                        
+                if " " in name:
+                    # ERROR: spaces
+                    spacesError = messagebox.showerror("Error", f"Invalid strategy name \"{name}\". Strategy names may not contain spaces.")
                     
-            if name[-1].isdigit():
-                # Getting the position of the last alphabetical character in the name
-                lastAlphaPos = -1
-                j = len(name) - 1
-                while j > 0 and lastAlphaPos == -1:
-                    if name[j].isalpha():
-                        lastAlphaPos = j
-                    j -= 1
-                # inserting an underscore at that position
-                if "_" not in name:
-                    p2StrategyNames[i] = name[:lastAlphaPos + 1] + "_" + name[lastAlphaPos + 1:]
-            
-            if name[:lastAlphaPos + 1] in GREEK_LETTERS or name[:lastAlphaPos + 1] in CAPITAL_GREEK_LETTERS:
-                p2StrategyNames[i] = "\\" + p2StrategyNames[i]
-        else:
-            # ERROR: n+, n+X, _X+
-            digitsAndUnderscoresError = messagebox.showerror("Error", f"Invalid strategy name \"{name}\". Strategy names may not begin with digits or underscores.")
-            return
+                if name[-1] == "_":
+                    # ERRROR: ending underscore
+                    endingUnderscoreError = messagebox.showerror("Error", f"Invalid strategy name \"{name}\". Strategy names may not end with an underscore.")
+                
+                if name in GREEK_LETTERS or name in CAPITAL_GREEK_LETTERS:
+                        p2StrategyNames[j] = "\\" + name
+                        
+                if name[-1].isdigit():
+                    # Getting the position of the last alphabetical character in the name
+                    lastAlphaPos = -1
+                    j = len(name) - 1
+                    while j > 0 and lastAlphaPos == -1:
+                        if name[j].isalpha():
+                            lastAlphaPos = j
+                        j -= 1
+                    # inserting an underscore at that position
+                    if "_" not in name:
+                        p2StrategyNames[i] = name[:lastAlphaPos + 1] + "_" + name[lastAlphaPos + 1:]
+                
+                    if name[:lastAlphaPos + 1] in GREEK_LETTERS or name[:lastAlphaPos + 1] in CAPITAL_GREEK_LETTERS:
+                        p2StrategyNames[j] = "\\" + p2StrategyNames[j]
+            else:
+                # ERROR: n+, n+X, _X+
+                digitsAndUnderscoresError = messagebox.showerror("Error", f"Invalid strategy name \"{name}\". Strategy names may not begin with digits or underscores.")
+    return
     
     with open(fileName, 'w') as file:
         file.write("\documentclass[12pt]{article}\n\n")
