@@ -641,8 +641,6 @@ class SimGame:
             for x in range(self.numPlayers - oldNumPlayers):
                 self.players.append(Player(numStrats[oldNumPlayers + x]))
         
-        print("PAYOFFS:", payoffs)
-        
         self.payoffMatrix = []
         if self.numPlayers < 3:
             matrix = []

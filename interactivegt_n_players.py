@@ -290,7 +290,7 @@ def computeEquilibria(output):
             if type(eqSlaves[0]).__name__ == "Listbox":
                 eqSlaves[0].grid_remove()
             
-            global eqOutputFrame
+            # global eqOutputFrame
             eqOutputFrame = LabelFrame(equilibriaFrame)
     
             xscrollbar = Scrollbar(eqOutputFrame, orient=HORIZONTAL)
@@ -474,7 +474,7 @@ def containsDigit(string):
     return any(char.isdigit() for char in string)
 
 def db():
-    global dbWindow
+    # global dbWindow
     dbWindow = Toplevel()
     dbWindow.title("Match DB")
     dbWindow.geometry("400x400")
@@ -495,11 +495,11 @@ def db():
         )""")
     
     # Creating fields
-    global dbTurnsEntry
-    global dbClicked1
-    global dbClicked2
-    global dbDropdown1
-    global selectIDEntry
+    # global dbTurnsEntry
+    # global dbClicked1
+    # global dbClicked2
+    # global dbDropdown1
+    # global selectIDEntry
     
     dbStrategyLabel1 = Label(dbWindow, text="Choose a strategy for player 1: ")
     dbStrategyLabel2 = Label(dbWindow, text="Choose a strategy for player 2: ")
@@ -799,10 +799,10 @@ def eliminateStrictlyDominatedStrategies(steps):
     """
     entriesToSimGame()
     # saving the original game in case the user wants to revert back to it
-    global numIESDSClicks
-    global originalGame
-    global originalNumStrats1
-    global originalNumStrats2
+    # global numIESDSClicks
+    # global originalGame
+    # global originalNumStrats1
+    # global originalNumStrats2
     if steps == 0 or numIESDSClicks == 0:
         originalGame = payoffsFrame.grid_slaves()
         originalNumStrats1 = int(numStratsEntries[0].get())
@@ -1151,20 +1151,20 @@ def entriesToSimGame():
     
     # Getting the entries from the payoffs frame
     payoffMatrixSlaves = payoffsFrame.grid_slaves()
-    outcomes = payoffMatrixSlaves[:numStrats1 * numStrats2]
+    outcomes = payoffMatrixSlaves[:numStrats[0] * numStrats[1]]
     outcomes.reverse()
-    strategyNames = payoffMatrixSlaves[numStrats1 * numStrats2:]
-    p1StrategyNameEntries = strategyNames[:numStrats1]
+    strategyNames = payoffMatrixSlaves[numStrats[0] * numStrats[1]:]
+    p1StrategyNameEntries = strategyNames[:numStrats[0]]
     p1StrategyNameEntries.reverse()
-    p2StrategyNameEntries = strategyNames[numStrats2:]
+    p2StrategyNameEntries = strategyNames[numStrats[1]:]
     p2StrategyNameEntries.reverse()
     
     # Grouping the outcomes
-    groupedOutcomes = [outcomes[i:i + numStrats2] for i in range(0, len(outcomes), numStrats2)]
+    groupedOutcomes = [outcomes[i:i + numStrats[1]] for i in range(0, len(outcomes), numStrats[1])]
     newGroupedOutcomes = []
     for outcome in groupedOutcomes:
         row = []
-        for i in range(numStrats2):
+        for i in range(numStrats[0]):
             row.append(outcome[i])
         newGroupedOutcomes.append(row)
     outcomesListList= []
@@ -1181,6 +1181,8 @@ def entriesToSimGame():
                 for el in l:
                     el = float(el)
         newListList.append(newRow)
+    
+    print("nLL:", newListList)
     # Entering the payoffs
     G.enterPayoffs(newListList, numPlayers, numStrats)
     
@@ -1221,7 +1223,7 @@ def enterPayoffs():
                 numInRow = 0
                 row = []
     
-    global G
+    # global G
     G.enterPayoffs(newPayoffs, numPlayers, [numStrats1, numStrats2])
     return True
 
@@ -1358,34 +1360,46 @@ def openFile():
                 # Resetting the number of IESDS steps that have been computed
                 numIESDSClicks = 0
                 
-                numStratsEntries[0].delete(0, 'end')
-                numStratsEntries[1].delete(0, 'end')
-                numStratsEntries[0].insert(0, numStrats[0])
-                numStratsEntries[1].insert(0, numStrats[1])
+                dimensionsSlaves = dimensionsFrame.grid_slaves()
+                dimensionsEntries = []
+                for slave in dimensionsSlaves:
+                    if type(slave).__name__ == "Entry":
+                        dimensionsEntries.append(slave)
+                numPlayersEntry = dimensionsEntries[-1]
+                    
+                numPlayers = int(numPlayersEntry.get())
+                    
+                print("nPE: ", numPlayers)
+                
+                for x in range(numPlayers):
+                    numStratsEntries[x].delete(0, 'end')
+                    numStratsEntries[x].insert(0, numStrats[x])
                 dimensionsClickNoWarning()
-                numStrats1 = int(numStratsEntries[0].get())
-                numStrats2 = int(numStratsEntries[1].get())
+                numStrats = []
+                for x in range(numPlayers):
+                    numStrats.append(int(numStratsEntries[x].get()))
                 
                 # Entering the strategy names
-                p1StrategyNames = file.readline().rstrip().split(" ")
-                p2StrategyNames = file.readline().rstrip().split(" ")
+                strategyNames = []
+                for x in range(numPlayers):
+                    strategyNames.append(file.readline().rstrip().split(" "))
                 payoffMatrixSlaves = payoffsFrame.grid_slaves()
-                strategyNames = payoffMatrixSlaves[numStrats1 * numStrats2:]
-                p1StrategyNameEntries = strategyNames[:numStrats1]
+                strategyNamesEntries = payoffMatrixSlaves[numStrats[0] * numStrats[1]:]
+                p1StrategyNameEntries = strategyNamesEntries[:numStrats[0]]
                 p1StrategyNameEntries.reverse()
-                p2StrategyNameEntries = strategyNames[numStrats2:]
+                p2StrategyNameEntries = strategyNamesEntries[numStrats[1]:]
                 p2StrategyNameEntries.reverse()
                 
                 for i, entry in enumerate(p1StrategyNameEntries):
                     entry.delete(0, 'end')
-                    entry.insert(0, p1StrategyNames[i])
-                for i, entry in enumerate(p2StrategyNameEntries):
+                    entry.insert(0, strategyNames[0][i])
+                for j, entry in enumerate(p2StrategyNameEntries):
                     entry.delete(0, 'end')
-                    entry.insert(0, p2StrategyNames[i])
+                    entry.insert(0, strategyNames[1][j])
                 
-                payoffs = payoffMatrixSlaves[:numStrats1 * numStrats2]
+                payoffs = payoffMatrixSlaves[:numStrats[0] * numStrats[1]]
                 payoffs.reverse()
-                groupedOutcomes = [payoffs[i:i + numStrats2] for i in range(0, len(payoffs), numStrats2)]
+                groupedOutcomes = [payoffs[i:i + numStrats[1]] for i in range(0, len(payoffs), numStrats[1])]
                 
                 # clearing the payoff matrix
                 for row in groupedOutcomes:
@@ -1515,8 +1529,8 @@ def playMatch(p1, p2, output, t = 6):
 def removeStrategy():
     """Removes a single strategy
     """
-    global playerEntry
-    global stratEntry
+    # global playerEntry
+    # global stratEntry
     
     # prompt the user for a player index and a strategy name
     topRemoveStrat = Toplevel()
@@ -1680,7 +1694,7 @@ def revert():
     """
         Reverts back to the original game after computing IESDS
     """
-    global numIESDSClicks
+    # global numIESDSClicks
     numIESDSClicks = 0
     numStrats1 = int(numStratsEntries[0].get())
     numStrats2 = int(numStratsEntries[1].get())
@@ -1885,20 +1899,20 @@ def saveRecord():
     topUpdate.destroy()
     
 def searchRecords():
-    global topSearch
+    # global topSearch
     
     topSearch = Toplevel()
     topSearch.title("Search Records")
     topSearch.iconbitmap("knight.ico")
     topSearch.geometry("400x180")
     
-    global searchClicked1
-    global searchClicked2
-    global numTurnsSearchEntry
-    global outputSearchEntry
-    global score1SearchEntry
-    global score2SearchEntry
-    global IDEntry
+    # global searchClicked1
+    # global searchClicked2
+    # global numTurnsSearchEntry
+    # global outputSearchEntry
+    # global score1SearchEntry
+    # global score2SearchEntry
+    # global IDEntry
     
     options = [s() for s in axl.strategies]
     searchClicked1 = StringVar()
@@ -2260,7 +2274,7 @@ def updateRecord():
         conn.close()
         return
     
-    global topUpdate
+    # global topUpdate
     topUpdate = Toplevel()
     topUpdate.title("Update a Record")
     topUpdate.iconbitmap("knight.ico")
@@ -2268,12 +2282,12 @@ def updateRecord():
         
     records = c.fetchall()
     
-    global updateClicked1
-    global updateClicked2
-    global numTurnsEntry
-    global outputEntry
-    global score1Entry
-    global score2Entry
+    # global updateClicked1
+    # global updateClicked2
+    # global numTurnsEntry
+    # global outputEntry
+    # global score1Entry
+    # global score2Entry
     
     options = [s() for s in axl.strategies]
     updateClicked1 = StringVar()
@@ -2668,7 +2682,7 @@ def writeToFileLatex(fileName, groupedPayoffs):
 ###################################################################
 ###################################################################
 # Creating our SimGame object
-global G
+# global G
 G = SimGame(2)
 
 # Defining the root window
@@ -2747,7 +2761,7 @@ payoffsCanvas = Canvas(mainPayoffsFrame)
 # payoffsCanvas.pack(side=LEFT, fill=BOTH, expand=1)
 yPayoffsScrollbar = Scrollbar(mainPayoffsFrame, orient="vertical", command=payoffsCanvas.yview)
 xPayoffsScrollbar = Scrollbar(mainPayoffsFrame, orient="horizontal", command=payoffsCanvas.xview)
-payoffsCanvas.configure(xscrollcommand=xPayoffsScrollbar.set, yscrollcommand=yPayoffsVScrollbar.set)
+payoffsCanvas.configure(xscrollcommand=xPayoffsScrollbar.set, yscrollcommand=yPayoffsScrollbar.set)
 payoffsCanvas.bind('<Configure>', onScroll)
 payoffsFrame = Frame(payoffsCanvas, padx=10, pady=10)
 payoffsCanvas.create_window((0, 0), window=payoffsFrame, anchor="nw")
