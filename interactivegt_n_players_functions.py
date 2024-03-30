@@ -512,7 +512,7 @@ def db(clicked1, clicked2):
     selectIDEntry = Entry(dbWindow, width=20)
     deleteRecordButton = Button(dbWindow, text="Delete Record", command=deleteRecord)
     updateRecordButton = Button(dbWindow, text="Update Record", command=updateRecord)
-    resetRecordButton = Button(dbWindow, text="Reset Record", command=resetRecord)
+    resetRecordButton = Button(dbWindow, text="Reset Record", command=lambda: resetRecord(clicked1, clicked2, selectIDEntry, dbClicked1, dbClicked2, dbTurnsEntry))
     clearDBButton = Button(dbWindow, text="Clear DB", command=clearDB)
         
     # Putting everything in the top window
@@ -1596,7 +1596,7 @@ def resetPayoffMatrix():
         root.geometry(f"{45 * numStrats2 + 700}x{25 * numStrats1 + 490}")
     return
 
-def resetRecord():
+def resetRecord(clicked1, clicked2, selectIDEntry, dbClicked1, dbClicked2, dbTurnsEntry):
     """
     Resets or recomputes the values that should be in a record according to the given inputs. 
     """
@@ -1623,9 +1623,9 @@ def resetRecord():
                   'strategy1': dbClicked1.get(), 
                   'strategy2': dbClicked2.get(), 
                   'numTurns': dbTurnsEntry.get(),
-                  'output': dbPlayMatch(dbClicked1.get(), dbClicked2.get(), int(dbTurnsEntry.get()))[0],
-                  'score1': dbPlayMatch(dbClicked1.get(), dbClicked2.get(), int(dbTurnsEntry.get()))[1][0],
-                  'score2': dbPlayMatch(dbClicked1.get(), dbClicked2.get(), int(dbTurnsEntry.get()))[1][1],
+                  'output': dbPlayMatch(clicked1, clicked2, clicked1.get(), clicked2.get(), int(dbTurnsEntry.get()))[0],
+                  'score1': dbPlayMatch(clicked1, clicked2, clicked1.get(), clicked2.get(), int(dbTurnsEntry.get()))[1][0],
+                  'score2': dbPlayMatch(clicked1, clicked2, clicked1.get(), clicked2.get(), int(dbTurnsEntry.get()))[1][1],
                   'oid': recordID
               })    
     
