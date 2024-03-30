@@ -967,7 +967,6 @@ def eliminateStrictlyDominatedStrategies(G, dimensionsFrame, payoffsFrame, numPl
                 break
     elif steps == 1: # perform IESDS computation step by step
         numIESDSClicks += 1
-        print("THERE:", numIESDSClicks)
         pairs1 = combinations(p1Strategies, r=2) # pairs of p1's strategies to compare; indices
         pairs2 = combinations(p2Strategies, r=2) # pairs of p2's strategies to compare; indices
         numCombos1 = sum(1 for pair in pairs1)
@@ -1189,7 +1188,6 @@ def entriesToSimGame(G, dimensionsFrame, payoffsFrame, numPlayers):
                     el = float(el)
         newListList.append(newRow)
     
-    print("nLL:", newListList)
     # Entering the payoffs
     G.enterPayoffs(newListList, numPlayers, numStrats)
     
