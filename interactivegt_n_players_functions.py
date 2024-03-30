@@ -505,7 +505,7 @@ def db(clicked1, clicked2):
     addRecordButton = Button(dbWindow, text="Add Record", command=lambda: addRecord(clicked1, clicked2, dbClicked1, dbClicked2, dbTurnsEntry))
     addAllPairsButton = Button(dbWindow, text="Add All Pairs for a Given Number of Turns", command=addAllPairs)
     numRecordsButton = Button(dbWindow, text="Get Total Number of Records", command=lambda: getNumRecords(dbWindow))
-    showRecordsButton = Button(dbWindow, text="Show Records", command=showRecords)
+    showRecordsButton = Button(dbWindow, text="Show Records", command=lambda: showRecords(dbWindow))
     exportButton = Button(dbWindow, text="Export to csv", command=exportGetFileName)
     searchRecordsButton = Button(dbWindow, text="Search Records", command=searchRecords)
     selectIDLabel = Label(dbWindow, text="Select ID: ")
@@ -1934,7 +1934,7 @@ def searchRecords():
     
     return
 
-def showRecords():
+def showRecords(dbWindow):
     # Create a database or connect to one
     conn = sqlite3.connect('match.db')
     
@@ -1944,30 +1944,34 @@ def showRecords():
     c.execute("SELECT *, oid FROM matches")
     records = c.fetchall()
     numRecords = len(records)
-
-    recordsList = []
-    recordsList.append(f"{numRecords} records retrieved from the matches table\n")
-    for record in records:
-        recordsList.append(
-            str(record[0]) + " " + str(record[1]) + " " + str(record[2]) + " " + str(record[3]) + " " + str(record[4]) + " " + str(record[5]) + " " + str(record[6])
-        )
-    recordsList.reverse()
     
-    myFrame = LabelFrame(dbWindow)
-    
-    xscrollbar = Scrollbar(myFrame, orient=HORIZONTAL)
-    yscrollbar = Scrollbar(myFrame, orient=VERTICAL)
-    
-    showRecordsListBox = Listbox(myFrame, width=50, xscrollcommand=xscrollbar.set, yscrollcommand=yscrollbar.set, bg="black", fg="white")
-    for record in recordsList:
-        showRecordsListBox.insert(0, record)
-    
-    myFrame.grid(row=14, column=0, columnspan=2)
-    showRecordsListBox.grid(row=0, column=0, padx=10, sticky=NSEW)
-    xscrollbar.grid(row=1, column=0, columnspan=2, sticky=EW)
-    xscrollbar.config(command = showRecordsListBox.xview)
-    yscrollbar.grid(row=0, column=1, sticky=NS)
-    yscrollbar.config(command = showRecordsListBox.yview)
+    proceed = True
+    if numRecords >= 100000:
+        proceed = messagebox.askyesno("Warning", f"The number of records retrieved from the database was {numRecords}. This may take some time. Do you want to proceed?")
+    if proceed:
+        recordsList = []
+        recordsList.append(f"{numRecords} records retrieved from the matches table\n")
+        for record in records:
+            recordsList.append(
+                str(record[0]) + " " + str(record[1]) + " " + str(record[2]) + " " + str(record[3]) + " " + str(record[4]) + " " + str(record[5]) + " " + str(record[6])
+            )
+        recordsList.reverse()
+        
+        myFrame = LabelFrame(dbWindow)
+        
+        xscrollbar = Scrollbar(myFrame, orient=HORIZONTAL)
+        yscrollbar = Scrollbar(myFrame, orient=VERTICAL)
+        
+        showRecordsListBox = Listbox(myFrame, width=50, xscrollcommand=xscrollbar.set, yscrollcommand=yscrollbar.set, bg="black", fg="white")
+        for record in recordsList:
+            showRecordsListBox.insert(0, record)
+        
+        myFrame.grid(row=14, column=0, columnspan=2)
+        showRecordsListBox.grid(row=0, column=0, padx=10, sticky=NSEW)
+        xscrollbar.grid(row=1, column=0, columnspan=2, sticky=EW)
+        xscrollbar.config(command = showRecordsListBox.xview)
+        yscrollbar.grid(row=0, column=1, sticky=NS)
+        yscrollbar.config(command = showRecordsListBox.yview)
     
     # Commit changes
     conn.commit()
