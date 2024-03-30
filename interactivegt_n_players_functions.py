@@ -152,7 +152,7 @@ def clearPayoffs():
         if type(eqLabel).__name__ == "Label":
             eqLabel.grid_remove()
         
-        entriesToSimGame()
+        entriesToSimGame(G, dimensionsFrame, payoffsFrame, numPlayers)
         root.geometry(f"{45 * numStrats2 + 700}x{25 * numStrats1 + 490}")
     return
     
@@ -194,7 +194,7 @@ def clearPayoffMatrix():
         if type(eqLabel).__name__ == "Label":
             eqLabel.grid_remove()
         
-        entriesToSimGame()
+        entriesToSimGame(G, dimensionsFrame, payoffsFrame, numPlayers)
         root.geometry(f"{45 * numStrats2 + 700}x{25 * numStrats1 + 490}")
     return
 
@@ -223,7 +223,7 @@ def clearStrategies():
             e = Entry(payoffsFrame, width=10)
             e.grid(row=j + 1, column=0, padx=5)
             
-        entriesToSimGame()
+        entriesToSimGame(G, dimensionsFrame, payoffsFrame, numPlayers)
     else:
         return
 
@@ -231,7 +231,7 @@ def computeEquilibria(output):
     """
     Computes the equilibria of the current game and formats the output according to whether the output variable is 0 or 1, 
     """
-    entriesToSimGame()
+    entriesToSimGame(G, dimensionsFrame, payoffsFrame, numPlayers)
     proceed = enterPayoffs()
     if proceed == True:
         numStrats1 = int(numStratsEntries[0].get())
@@ -591,16 +591,16 @@ def deleteRecord():
     conn.close()
     return
 
-def dimensionsClick():
+def dimensionsClick(dimensionsFrame, payoffsFrame, numPlayers):
     """
     Resizes the payoff matrix according to the numbers of strategies entered in by the user
     """
-    dimensionsSlaves = dimensionsFrame.grid_slaves()
+    dimensionsSlaves = dimensionsFrame.grid_slaves()    
     numStratsEntries = []
     for slave in dimensionsSlaves:
         if type(slave).__name__ == "Entry":
             numStratsEntries.append(slave)
-    numStratsEntries.pop() # last one will be the numPlayers entry
+    # numStratsEntries.pop() # last one will be the numPlayers entry
     numStratsEntries.reverse()
     
     numStrats = []
@@ -698,7 +698,7 @@ def dimensionsClick():
                         eqListBox.grid_remove()
                         eqOutputFrame.grid_remove()
                     
-                    entriesToSimGame()
+                    entriesToSimGame(G, dimensionsFrame, payoffsFrame, numPlayers)
                     
                     root.geometry(f"{45 * numStrats[1] + 700}x{25 * numStrats[0] + 490}")
                     return proceed
@@ -780,7 +780,7 @@ def dimensionsClickNoWarning():
                 if type(eqLabel).__name__ == "Label":
                     eqLabel.grid_remove()
                 
-                entriesToSimGame()
+                entriesToSimGame(G, dimensionsFrame, payoffsFrame, numPlayers)
                 root.geometry(f"{45 * numStrats2 + 700}x{25 * numStrats1 + 490}")
                 return
             else:
@@ -793,7 +793,7 @@ def eliminateStrictlyDominatedStrategies(steps):
     """
     Compares all payoffs of all pairs of strategies for both players and eliminates strategies that are strictly dominated.    
     """
-    entriesToSimGame()
+    entriesToSimGame(G, dimensionsFrame, payoffsFrame, numPlayers)
     # saving the original game in case the user wants to revert back to it
     # global numIESDSClicks
     # global originalGame
@@ -1133,12 +1133,9 @@ def enterColor(rootFrame, color):
         colorNotFound = messagebox.showerror(f"Error", f"Unknown color name \"{color}\". Try entering in a different color.")
     return
 
-def entriesToSimGame():
+def entriesToSimGame(G, dimensionsFrame, payoffsFrame, numPlayers):
     """Enters the information in the text entries into the SimGame object
-    """
-    # Getting the number of players
-    numPlayers = int(numPlayersEntry.get())
-    
+    """    
     # Getting the numbers of strategies
     numStrats = []
     dimensionsSlaves = dimensionsFrame.grid_slaves()
@@ -1602,7 +1599,7 @@ def resetPayoffMatrix():
         if type(eqLabel).__name__ == "Label":
             eqLabel.grid_remove()
         
-        entriesToSimGame()
+        entriesToSimGame(G, dimensionsFrame, payoffsFrame, numPlayers)
         root.geometry(f"{45 * numStrats2 + 700}x{25 * numStrats1 + 490}")
     return
 
@@ -1683,7 +1680,7 @@ def resetStrategies():
                 e.insert(0, "D")
             e.grid(row=j + 1, column=0, padx=5)
             
-        entriesToSimGame()
+        entriesToSimGame(G, dimensionsFrame, payoffsFrame, numPlayers)
     else:
         return
     
@@ -1795,49 +1792,55 @@ def revert(dimensionsFrame):
         enterPayoffs()
         return
 
-def saveAs():
+def saveAs(dimensionsFrame, payoffsFrame):
     """
     Save the data of the current payoff matrix in a txt file
     """
-    numStrats1 = int(numStratsEntries[0].get())
-    numStrats2 = int(numStratsEntries[1].get())
+    # Getting the numbers of strategies
+    numStrats = []
+    dimensionsSlaves = dimensionsFrame.grid_slaves()
+    for slave in dimensionsSlaves:
+        if type(slave).__name__ == "Entry":
+            numStrats.append(int(slave.get()))
+    numStrats.pop() # last one will be the entry for numPlayers
+    numStrats.reverse()
     
     payoffMatrixSlaves = payoffsFrame.grid_slaves()
-    outcomeEntries = payoffMatrixSlaves[:numStrats1 * numStrats2]
+    outcomeEntries = payoffMatrixSlaves[:numStrats[0] * numStrats[1]]
     outcomes = [entry.get() for entry in outcomeEntries]
     outcomes.reverse()
     
     payoffs = [outcome.split(", ") for outcome in outcomes]
     
-    groupedPayoffs = [payoffs[i:i + numStrats2] for i in range(0, len(payoffs), numStrats2)]
+    groupedPayoffs = [payoffs[i:i + numStrats[1]] for i in range(0, len(payoffs), numStrats[1])]
     
     # Prompting the user for a file name    
     file = filedialog.asksaveasfile(defaultextension = ".txt", mode='w', initialdir=".", title="Save As", filetypes=(("Text files", "*.txt"),))
     if file:
-        numStrats1 = int(numStratsEntries[0].get())
-        numStrats2 = int(numStratsEntries[1].get())
+        numStrats[0] = int(numStratsEntries[0].get())
+        numStrats[1] = int(numStratsEntries[1].get())
         
         # Getting list of the strategy names
         payoffMatrixSlaves = payoffsFrame.grid_slaves()
-        strategyNames = payoffMatrixSlaves[numStrats1 * numStrats2:]
+        strategyNames = payoffMatrixSlaves[numStrats[0] * numStrats[1]:]
         
-        p1StrategyNames = strategyNames[:numStrats1]
+        p1StrategyNames = strategyNames[:numStrats[0]]
         p1StrategyNames = [name.get() for name in p1StrategyNames]
         p1StrategyNames.reverse()
         p1StrategyNamesString = " ".join(p1StrategyNames)
         p1StrategyNamesString = p1StrategyNamesString + "\n"
-        p2StrategyNames = strategyNames[numStrats2:]
+        p2StrategyNames = strategyNames[numStrats[1]:]
         p2StrategyNames = [name.get() for name in p2StrategyNames]
         p2StrategyNames.reverse()
         p2StrategyNamesString = " ".join(p2StrategyNames)
         p2StrategyNamesString = p2StrategyNamesString + "\n"
         
-        file.write(str(numStrats1) + " " + str(numStrats2) + "\n")
+        file.write(str(numStrats[0]) + " " + str(numStrats[1]) + "\n")
         file.write(p1StrategyNamesString)
         file.write(p2StrategyNamesString)
         for i, group in enumerate(groupedPayoffs):
             for j, payoff in enumerate(group):
-                if j < numStrats2 - 1:
+                if j < numStrats[1] - 1:
                     file.write(str(payoff[0]) + " " + str(payoff[1]) + " ")
                 else:
                     file.write(str(payoff[0]) + " " + str(payoff[1]))
@@ -1974,16 +1977,24 @@ def showRecords():
     
     return
 
-def simGameToEntries():
+def simGameToEntries(G, dimensionsFrame, payoffsFrame, numPlayers, numPlayersEntry):
     """Loads the data from the SimGame object into the entries.
     """
-    oldNumStrats1 = int(numStratsEntry1.get())
-    oldNumStrats2 = int(numStratsEntry2.get())
+    # Getting numStrats
+    dimensionsSlaves = dimensionsFrame.grid_slaves()
+    numStratsEntries = []
+    for slave in dimensionsSlaves:
+        if type(slave).__name__ == "Entry":
+            numStratsEntries.append(slave)
+    numStratsEntries.pop() # last one will be the numPlayers entry
+    numStratsEntries.reverse()
+    
+    oldNumStrats = [int(numStratsEntries[x].get()) for x in range(numPlayers)]
     
     # Getting G.numPlayers
-    oldNumPlayers = numPlayersEntry.get()
+    oldNumPlayers = numPlayers
     numPlayersEntry.delete(0, END)
-    numPlayersEntry.insert(G.numPlayers)
+    numPlayersEntry.insert(0, G.numPlayers)
     
     # Handle cases where G.numPlayers is different from what's on the screen
     if oldNumPlayers <= G.numPlayers:
@@ -2017,19 +2028,21 @@ def simGameToEntries():
     
     for x in range(G.numPlayers):
         numStratsEntries[x].delete(0, END)
-        numStratsEntries[x].insert(G.players[x].numStrats)
+        numStratsEntries[x].insert(0, G.players[x].numStrats)
+    
+    numStrats = [int(numStratsEntries[x].get()) for x in range(numPlayers)]
         
     # FIXME: handle cases where entries need to be added or deleted
     # Getting payoffs
     payoffMatrixSlaves = payoffsFrame.grid_slaves()
-    outcomes = payoffMatrixSlaves[:oldNumStrats1 * oldNumStrats2]
-    groupedOutcomes = [outcomes[i:i + numStrats2] for i in range(0, len(outcomes), numStrats2)] # entries
-    strategyNames = payoffMatrixSlaves[oldNumStrats1 * oldNumStrats2:]
+    outcomes = payoffMatrixSlaves[:oldNumStrats[0] * oldNumStrats[1]]
+    groupedOutcomes = [outcomes[i:i + numStrats[1]] for i in range(0, len(outcomes), numStrats[1])] # entries
+    strategyNames = payoffMatrixSlaves[oldNumStrats[0] * oldNumStrats[1]:]
     
     newGroupedOutcomes = []
     for outcome in groupedOutcomes:
         row = []
-        for i in range(oldNumStrats2):
+        for i in range(oldNumStrats[1]):
             row.append(outcome[i])
         newGroupedOutcomes.append(row)
     
@@ -2039,10 +2052,10 @@ def simGameToEntries():
     
     # FIXME: handle cases where entries need to be added or deleted
     # Getting strategy names
-    p1StrategyNames = strategyNames[:oldNumStrats1]
+    p1StrategyNames = strategyNames[:oldNumStrats[0]]
     p1StrategyNames = [name.get() for name in p1StrategyNames]
     p1StrategyNames.reverse()
-    p2StrategyNames = strategyNames[oldNumStrats2:]
+    p2StrategyNames = strategyNames[oldNumStrats[1]:]
     p2StrategyNames = [name.get() for name in p2StrategyNames]
     p2StrategyNames.reverse()
     return
@@ -2063,7 +2076,7 @@ def simGameToEntries():
 def submitRemoveStrategy():
     """Removes the strategy for the player entered in function removeStrategy
     """
-    entriesToSimGame()
+    entriesToSimGame(G, dimensionsFrame, payoffsFrame, numPlayers)
     
     numStrats1 = int(numStratsEntries[0].get())
     numStrats2 = int(numStratsEntries[1].get())

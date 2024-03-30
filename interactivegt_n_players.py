@@ -29,35 +29,6 @@ root.iconbitmap("knight.ico")
 # Initializing the number of IESDS steps computed to 0
 numIESDSClicks = 0
 
-# Menu bar
-menubar = Menu(root)
-root.config(menu=menubar)
-# Create a menu item
-file_menu = Menu(menubar)
-menubar.add_cascade(label="File", menu=file_menu)
-file_menu.add_command(label="Open File", command=openFile)
-file_menu.add_separator()
-file_menu.add_command(label="Save As...", command=saveAs)
-file_menu.add_command(label="Save as LaTeX", command=saveAsLatex)
-
-edit_menu = Menu(menubar)
-menubar.add_cascade(label="Edit", menu=edit_menu)
-edit_menu.add_command(label="Enter Values into SimGame Object", command=entriesToSimGame)
-edit_menu.add_command(label="Load Values from SimGame Object", command=simGameToEntries)
-edit_menu.add_separator()
-edit_menu.add_command(label="Remove a Strategy", command=removeStrategy)
-edit_menu.add_separator()
-edit_menu.add_command(label="Clear Payoffs", command=clearPayoffs)
-edit_menu.add_command(label="Clear Payoff Matrix", command=clearPayoffMatrix)
-edit_menu.add_command(label="Clear Strategy Names", command=clearStrategies)
-edit_menu.add_separator()
-edit_menu.add_command(label="Reset Payoff Matrix", command=resetPayoffMatrix)
-edit_menu.add_command(label="Reset Strategy Names", command=resetStrategies)
-
-option_menu = Menu(menubar)
-menubar.add_cascade(label="Options", menu=option_menu)
-option_menu.add_command(label="Change Background Color", command=lambda: changeBackgroundColor(rootFrame))
-
 # FIXME: The scrollbars are in the right place, but instead of becoming usable when the contents of the frame get bigger, the frame simply stretches, leaving the scrollbars grayed out. 
 # rootFrame < rootCanvas < mainFrame < root
 mainFrame = Frame(root)
@@ -84,7 +55,6 @@ numStratsEntries = [Entry(dimensionsFrame, width=5) for x in range(G.numPlayers)
 for x in range(G.numPlayers):
     numStratsEntries[x].insert(0, "2")
 numPlayersButton = Button(dimensionsFrame, text="Enter numPlayers", command=numPlayersClick)
-dimensionsButton = Button(dimensionsFrame, text="Enter Dimensions", command=dimensionsClick)
 
 # payoffsFrame < payoffsCanvas < mainPayoffsFrame < rootFrame < ...
 # Payoffs Frame
@@ -221,7 +191,6 @@ dbButton = Button(axelrodFrame, text="View Database", command=db)
 
 # Putting everything in the root window
 mainFrame.pack(fill=BOTH, expand=1)
-
 dimensionsFrame.grid(row=0, column=0, padx=10, pady=10)
 numPlayersLabel.grid(row=0, column=0, padx=(10, 0), sticky=E)
 numPlayersEntry.grid(row=0, column=1, padx=(0, 5), sticky=W)
@@ -236,6 +205,8 @@ for x in range(G.numPlayers):
     row += 1
 
 numPlayersButton.grid(row=3, column=0, padx=(0, 5), pady=5)
+
+dimensionsButton = Button(dimensionsFrame, text="Enter Dimensions", command=lambda: dimensionsClick(dimensionsFrame, payoffsFrame, numPlayersEntry))
 dimensionsButton.grid(row=3, column=1, padx=(0, 5), pady=5, sticky=W)
 
 # payoffsFrame.grid(row=0, column=1, padx=10, pady=10, sticky=W)
@@ -268,5 +239,34 @@ turnsEntry.grid(row=2, column=1, sticky=W)
 matchButton.grid(row=3,column=1, pady=5, sticky=W)
 # tournamentButton.grid(row=4,column=1)
 dbButton.grid(row=4, column=1, pady=5, sticky=W)
+
+# Menu bar
+menubar = Menu(root)
+root.config(menu=menubar)
+# Create a menu item
+file_menu = Menu(menubar)
+menubar.add_cascade(label="File", menu=file_menu)
+file_menu.add_command(label="Open File", command=openFile)
+file_menu.add_separator()
+file_menu.add_command(label="Save As...", command=lambda: saveAs(dimensionsFrame, payoffsFrame))
+file_menu.add_command(label="Save as LaTeX", command=saveAsLatex)
+
+edit_menu = Menu(menubar)
+menubar.add_cascade(label="Edit", menu=edit_menu)
+edit_menu.add_command(label="Enter Values into SimGame Object", command=lambda: entriesToSimGame(G, dimensionsFrame, payoffsFrame, int(numPlayersEntry.get())))
+edit_menu.add_command(label="Load Values from SimGame Object", command=lambda: simGameToEntries(G, dimensionsFrame, payoffsFrame, int(numPlayersEntry.get()), numPlayersEntry))
+edit_menu.add_separator()
+edit_menu.add_command(label="Remove a Strategy", command=removeStrategy)
+edit_menu.add_separator()
+edit_menu.add_command(label="Clear Payoffs", command=clearPayoffs)
+edit_menu.add_command(label="Clear Payoff Matrix", command=clearPayoffMatrix)
+edit_menu.add_command(label="Clear Strategy Names", command=clearStrategies)
+edit_menu.add_separator()
+edit_menu.add_command(label="Reset Payoff Matrix", command=resetPayoffMatrix)
+edit_menu.add_command(label="Reset Strategy Names", command=resetStrategies)
+
+option_menu = Menu(menubar)
+menubar.add_cascade(label="Options", menu=option_menu)
+option_menu.add_command(label="Change Background Color", command=lambda: changeBackgroundColor(rootFrame))
 
 root.mainloop()
