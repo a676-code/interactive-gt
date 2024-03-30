@@ -54,7 +54,7 @@ def addAllPairs():
 def addToDBClicked(dbOutput, value):
     dbOutput.set(value)
 
-def addRecord():
+def addRecord(clicked1, clicked2, dbClicked1, dbClicked2, dbTurnsEntry):
     conn = sqlite3.connect('match.db')
     c = conn.cursor()
     
@@ -64,6 +64,7 @@ def addRecord():
     clicked1NoSpaces = dbClicked1.get().replace(" ", "")
     clicked2NoSpaces = dbClicked2.get().replace(" ", "")
     counter = 0
+    options = [s() for s in axl.strategies]
     while type(p1).__name__ == "str" and counter < len(axl.strategies):
         if type(options[counter]).__name__ == clicked1NoSpaces:
             p1 = options[counter]
@@ -80,9 +81,9 @@ def addRecord():
             'strategy1': dbClicked1.get(),
             'strategy2': dbClicked2.get(),
             'numTurns': dbTurnsEntry.get(),
-            'output': str(dbPlayMatch(p1, p2, int(dbTurnsEntry.get()))[0]),
-            'score1': dbPlayMatch(p1, p2, int(dbTurnsEntry.get()))[1][0],
-            'score2': dbPlayMatch(p1, p2, int(dbTurnsEntry.get()))[1][1]
+            'output': str(dbPlayMatch(clicked1, clicked2, p1, p2, int(dbTurnsEntry.get()))[0]),
+            'score1': dbPlayMatch(clicked1, clicked2, p1, p2, int(dbTurnsEntry.get()))[1][0],
+            'score2': dbPlayMatch(clicked1, clicked2, p1, p2, int(dbTurnsEntry.get()))[1][1]
         }
     )
     # """
@@ -468,8 +469,8 @@ def containsDigit(string):
     """
     return any(char.isdigit() for char in string)
 
-def db():
-    dbWindow = Toplevel()
+def db(clicked1, clicked2):
+    dbWindow = Tk()
     dbWindow.title("Match DB")
     dbWindow.geometry("400x400")
     dbWindow.iconbitmap("knight.ico")
@@ -501,9 +502,9 @@ def db():
     dbTurnsLabel = Label(dbWindow, text="Number of turns: ")
     dbTurnsEntry = Entry(dbWindow, width=5)
     dbTurnsEntry.insert(0, "6")
-    addRecordButton = Button(dbWindow, text="Add Record", command=addRecord)
+    addRecordButton = Button(dbWindow, text="Add Record", command=lambda: addRecord(clicked1, clicked2, dbClicked1, dbClicked2, dbTurnsEntry))
     addAllPairsButton = Button(dbWindow, text="Add All Pairs for a Given Number of Turns", command=addAllPairs)
-    numRecordsButton = Button(dbWindow, text="Get Total Number of Records", command=getNumRecords)
+    numRecordsButton = Button(dbWindow, text="Get Total Number of Records", command=lambda: getNumRecords(dbWindow))
     showRecordsButton = Button(dbWindow, text="Show Records", command=showRecords)
     exportButton = Button(dbWindow, text="Export to csv", command=exportGetFileName)
     searchRecordsButton = Button(dbWindow, text="Search Records", command=searchRecords)
@@ -540,7 +541,7 @@ def db():
     conn.close()
     return
 
-def dbPlayMatch(p1, p2, t = 6):    
+def dbPlayMatch(clicked1, clicked2, p1, p2, t = 6):    
     """
     Runs an axelrod match between players of type p1 and p2 with t turns and returns a tuple of the match output and scores
     """    
@@ -548,7 +549,8 @@ def dbPlayMatch(p1, p2, t = 6):
     p2 = ""
     clicked1NoSpaces = clicked1.get().replace(" ", "")
     clicked2NoSpaces = clicked2.get().replace(" ", "")
-    counter= 0
+    counter = 0
+    options = [s() for s in axl.strategies]
     while type(p1).__name__ == "str" and counter <= len(axl.strategies):
         try:
             if type(options[counter]).__name__ == clicked1NoSpaces:
@@ -583,7 +585,7 @@ def deleteRecord():
     conn.close()
     return
 
-def dimensionsClick(dimensionsFrame, payoffsFrame, numPlayers):
+def dimensionsClick(G, dimensionsFrame, payoffsFrame, numPlayers):
     """
     Resizes the payoff matrix according to the numbers of strategies entered in by the user
     """
@@ -592,11 +594,11 @@ def dimensionsClick(dimensionsFrame, payoffsFrame, numPlayers):
     for slave in dimensionsSlaves:
         if type(slave).__name__ == "Entry":
             numStratsEntries.append(slave)
-    # numStratsEntries.pop() # last one will be the numPlayers entry
+    numStratsEntries.pop() # last one will be the numPlayers entry
     numStratsEntries.reverse()
     
     numStrats = []
-    for x in range(int(numPlayersEntry.get())):
+    for x in range(numPlayers):
         numStrats.append(int(numStratsEntries[x].get()))
     negativeStratsError = -1
     zeroStratsError = -1
@@ -649,21 +651,18 @@ def dimensionsClick(dimensionsFrame, payoffsFrame, numPlayers):
                         e.grid(row=i + 1, column=0, padx=5)
                     
                     numMatrices = 1
-                    for x in range(2, int(numPlayersEntry.get())):
+                    for x in range(2, numPlayers):
                         numMatrices *= numStrats[x]
 
-                    defaultPayoffs = [0 for x in range(int(numPlayersEntry.get()))]
+                    defaultPayoffs = [0 for x in range(numPlayers)]
                     stringFormatter = ''
-                    for x in range(int(numPlayersEntry.get())):
+                    for x in range(numPlayers):
                         stringFormatter += '%d'
-                        if x < int(numPlayersEntry.get()) - 1:
+                        if x < numPlayers - 1:
                             stringFormatter += ', '
                     
-                    matrices = []
                     for m in range(numMatrices):
-                        rows = []
                         for i in range(numStrats[0]):
-                            cols = []
                             for j in range(numStrats[1]):
                                 e = Entry(payoffsFrame, width=10)
                                 if j < numStrats[1] - 1:
@@ -671,9 +670,6 @@ def dimensionsClick(dimensionsFrame, payoffsFrame, numPlayers):
                                 else:
                                     e.grid(row=i + 1, column=j + 1 + (m * numStrats[1]), sticky=NSEW, padx=(0, 10))
                                 e.insert(END, stringFormatter % tuple(defaultPayoffs))
-                                cols.append(e)
-                            rows.append(cols)
-                        matrices.append(rows)
                         
                     # Clearing the equilibria
                     try:
@@ -1214,7 +1210,7 @@ def enterPayoffs():
                 newPayoffs.append(row)
                 numInRow = 0
                 row = []
-    
+
     G.enterPayoffs(newPayoffs, numPlayers, [numStrats1, numStrats2])
     return True
 
@@ -1287,7 +1283,7 @@ def exportSearchGetFileName(records):
     fileNameButton.grid(row=0, column=2)
     return
 
-def getNumRecords():
+def getNumRecords(dbWindow):
     # Create a database or connect to one
     conn = sqlite3.connect('match.db')
     # Create cursor
@@ -1320,11 +1316,10 @@ def getNumRecords():
 def iesdsStepsClicked(iesdsSteps, value):
     iesdsSteps.set(value)
 
-def numPlayersClick():
-    print("HERE")
+def numPlayersClick(G, dimensionsFrame, numPlayersButton, dimensionsButton, numPlayers):
     # FIXME: clear the frame and regrid everything so that the buttons will always be in the right place
     oldNumPlayers = G.numPlayers
-    numPlayers = int(numPlayersEntry.get())
+    numPlayers = numPlayers
     for x in range(numPlayers - oldNumPlayers):
         print("x:", x)
         l = Label(dimensionsFrame, text=f"Number of strategies for player {oldNumPlayers + x + 1}: ")
@@ -1476,7 +1471,7 @@ def playMatch(p1, p2, output, t = 6):
                 'strategy1': clicked1.get(),
                 'strategy2': clicked2.get(),
                 'numTurns': turnsEntry.get(),
-                'output': str(dbPlayMatch(p1, p2, int(turnsEntry.get()))[0]),
+                'output': str(dbPlayMatch(clicked1, clicked2, p1, p2, int(turnsEntry.get()))[0]),
                 'score1': dbPlayMatch(p1, p2, int(turnsEntry.get()))[1][0],
                 'score2': dbPlayMatch(p1, p2, int(turnsEntry.get()))[1][1]
             }

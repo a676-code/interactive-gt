@@ -53,7 +53,7 @@ numStratsLabels = [Label(dimensionsFrame, text=f"Number of strategies for player
 numStratsEntries = [Entry(dimensionsFrame, width=5) for x in range(G.numPlayers)]
 for x in range(G.numPlayers):
     numStratsEntries[x].insert(0, "2")
-numPlayersButton = Button(dimensionsFrame, text="Enter numPlayers", command=numPlayersClick)
+numPlayersButton = Button(dimensionsFrame, text="Enter numPlayers", command=lambda: numPlayersClick(G, dimensionsFrame, numPlayersButton, dimensionsButton, int(numPlayersEntry.get())))
 
 # payoffsFrame < payoffsCanvas < mainPayoffsFrame < rootFrame < ...
 # Payoffs Frame
@@ -186,7 +186,7 @@ while type(p2).__name__ == "str":
 
 matchButton = Button(axelrodFrame, text="Play Match", command=lambda: playMatch(p1, p2, dbOutput.get(), int(turnsEntry.get())))
 # tournamentButton = Button(axelrodFrame, text="Start Tournament", command=startTournament(int(turnsEntry.get())))
-dbButton = Button(axelrodFrame, text="View Database", command=db)
+dbButton = Button(axelrodFrame, text="View Database", command=lambda: db(clicked1, clicked2))
 
 # Putting everything in the root window
 mainFrame.pack(fill=BOTH, expand=1)
@@ -205,13 +205,10 @@ for x in range(G.numPlayers):
 
 numPlayersButton.grid(row=3, column=0, padx=(0, 5), pady=5)
 
-dimensionsButton = Button(dimensionsFrame, text="Enter Dimensions", command=lambda: dimensionsClick(dimensionsFrame, payoffsFrame, numPlayersEntry))
+dimensionsButton = Button(dimensionsFrame, text="Enter Dimensions", command=lambda: dimensionsClick(G, dimensionsFrame, payoffsFrame, int(numPlayersEntry.get())))
 dimensionsButton.grid(row=3, column=1, padx=(0, 5), pady=5, sticky=W)
 
-# payoffsFrame.grid(row=0, column=1, padx=10, pady=10, sticky=W)
 mainPayoffsFrame.grid(row=0, column=1)
-# payoffsVScrollbar.pack(side=RIGHT, fill=Y)
-# payoffsHScrollbar.pack(side=BOTTOM, fill=X)
 xPayoffsScrollbar.grid(row=1, column=0, sticky=EW)
 yPayoffsScrollbar.grid(row=0, column=1, sticky=NS)
 
