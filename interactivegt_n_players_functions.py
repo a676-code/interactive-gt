@@ -585,7 +585,7 @@ def deleteRecord():
     conn.close()
     return
 
-def dimensionsClick(G, dimensionsFrame, payoffsFrame, numPlayers):
+def dimensionsClick(G, root, dimensionsFrame, payoffsFrame, numPlayers):
     """
     Resizes the payoff matrix according to the numbers of strategies entered in by the user
     """
@@ -641,7 +641,6 @@ def dimensionsClick(G, dimensionsFrame, payoffsFrame, numPlayers):
                                 e.insert(0, "C" + str(j))
                             else:
                                 e.insert(0, "R")
-                            print("HERE:", j + (j * m) + 1)
                             e.grid(row=0, column=j + (numStrats[1] * m) + 1, pady=5)
                         
                     for i in range(numStrats[0]):
@@ -1163,16 +1162,25 @@ def entriesToSimGame(G, dimensionsFrame, payoffsFrame, numPlayers):
     
     # Getting the entries from the payoffs frame
     payoffMatrixSlaves = payoffsFrame.grid_slaves()
-    outcomes = payoffMatrixSlaves[:numStrats[0] * numStrats[1]]
+    
+    numOutcomes = 1
+    for x in range(numPlayers):
+        numOutcomes *= numStrats[x]
+    
+    outcomes = payoffMatrixSlaves[:numOutcomes]
     outcomes.reverse()
-    strategyNames = payoffMatrixSlaves[numStrats[0] * numStrats[1]:]
+    
+    strategyNames = payoffMatrixSlaves[numOutcomes:]
     p1StrategyNameEntries = strategyNames[:numStrats[0]]
     p1StrategyNameEntries.reverse()
     p2StrategyNameEntries = strategyNames[numStrats[1]:]
     p2StrategyNameEntries.reverse()
     
     # Grouping the outcomes
-    groupedOutcomes = [outcomes[i:i + numStrats[1]] for i in range(0, len(outcomes), numStrats[1])]
+    matrixGroupedOutcomes = [outcomes[n:n + numStrats[0] * numStrats[1]] for n in range(0, numOutcomes, numStrats[0] * numStrats[1])]
+    groupedOutcomes = [[matrix[n:n + numStrats[1]] for n in range(0, numStrats[0] * numStrats[1], numStrats[1])] for matrix in matrixGroupedOutcomes]
+    
+    # groupedOutcomes = [outcomes[i:i + numStrats[1]] for i in range(0, len(outcomes), numStrats[1])]
     newGroupedOutcomes = []
     for outcome in groupedOutcomes:
         row = []
@@ -1184,15 +1192,18 @@ def entriesToSimGame(G, dimensionsFrame, payoffsFrame, numPlayers):
         outcomesListList.append(outcome)
     
     # Converting from a list of list of entries to a list of list of integers
-    newListList = []
-    for row in outcomesListList:
-        newRow = []
-        for item in row:
-            newRow.append(item.get().split(", "))
-            for l in newRow:
-                for el in l:
-                    el = float(el)
-        newListList.append(newRow)
+    newListList = [] 
+    for matrix in outcomesListList:
+        newMatrix = []
+        for row in matrix:
+            newRow = []
+            for item in row:
+                newRow.append(item.get().split(", "))
+                for l in newRow:
+                    for el in l:
+                        el = float(el)
+            newMatrix.append(newRow)
+        newListList.append(newMatrix)
     
     # Entering the payoffs
     G.enterPayoffs(newListList, numPlayers, numStrats)
