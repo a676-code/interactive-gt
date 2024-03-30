@@ -625,18 +625,24 @@ def dimensionsClick(G, dimensionsFrame, payoffsFrame, numPlayers):
                     for slave in payoffMatrixSlaves:
                         slave.grid_remove()
                     
+                    numMatrices = 1
+                    for x in range(2, numPlayers):
+                        numMatrices *= numStrats[x]
+                    
                     # refilling the table
-                    for j in range(numStrats[1]):
-                        e = Entry(payoffsFrame, width=10)
-                        if j == 0:
-                            e.insert(0, "L")
-                        elif j > 0 and j < numStrats[1] - 1 and numStrats[1] == 3:
-                            e.insert(0, "C")
-                        elif j > 0 and j < numStrats[1] - 1 and numStrats[1] >= 3:
-                            e.insert(0, "C" + str(j))
-                        else:
-                            e.insert(0, "R")
-                        e.grid(row=0, column=j + 1, pady=5)
+                    for m in range(numMatrices):
+                        for j in range(numStrats[1]):
+                            e = Entry(payoffsFrame, width=10)
+                            if j == 0:
+                                e.insert(0, "L")
+                            elif j > 0 and j < numStrats[1] - 1 and numStrats[1] == 3:
+                                e.insert(0, "C")
+                            elif j > 0 and j < numStrats[1] - 1 and numStrats[1] >= 3:
+                                e.insert(0, "C" + str(j))
+                            else:
+                                e.insert(0, "R")
+                            print("HERE:", j + (j * m) + 1)
+                            e.grid(row=0, column=j + (numStrats[1] * m) + 1, pady=5)
                         
                     for i in range(numStrats[0]):
                         e = Entry(payoffsFrame, width=10)
@@ -1195,6 +1201,9 @@ def entriesToSimGame(G, dimensionsFrame, payoffsFrame, numPlayers):
     # Entering the strategy names
     G.strategyNames[0] = [entry.get() for entry in p1StrategyNameEntries]
     G.strategyNames[1] = [entry.get() for entry in p2StrategyNameEntries]
+    
+    print("new G:")
+    G.print()
     return
 
 def enterPayoffs():
@@ -1977,7 +1986,6 @@ def showRecords(dbWindow):
     conn.commit()
     # Close Connection
     conn.close()
-    
     return
 
 def simGameToEntries(G, dimensionsFrame, payoffsFrame, numPlayers, numPlayersEntry):
