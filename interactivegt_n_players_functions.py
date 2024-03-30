@@ -1410,7 +1410,7 @@ def openFile(G, root, dimensionsFrame, payoffsFrame, equilibriaFrame, numPlayers
                         payoff.insert(0, stringPayoffs[i])
     return
 
-def playMatch(p1, p2, output, t = 6):
+def playMatch(root, axelrodFrame, turnsEntry, clicked1, clicked2, p1, p2, output, t = 6):
     """
     Runs an axelrod match between players of type p1 and p2 with t turns
     """
@@ -1420,6 +1420,7 @@ def playMatch(p1, p2, output, t = 6):
         clicked1NoSpaces = clicked1.get().replace(" ", "")
         clicked2NoSpaces = clicked2.get().replace(" ", "")
         counter = 0
+        options = [s() for s in axl.strategies]
         while type(p1).__name__ == "str" and counter <= len(axl.strategies):
             try:
                 if type(options[counter]).__name__ == clicked1NoSpaces:
@@ -1472,8 +1473,8 @@ def playMatch(p1, p2, output, t = 6):
                 'strategy2': clicked2.get(),
                 'numTurns': turnsEntry.get(),
                 'output': str(dbPlayMatch(clicked1, clicked2, p1, p2, int(turnsEntry.get()))[0]),
-                'score1': dbPlayMatch(p1, p2, int(turnsEntry.get()))[1][0],
-                'score2': dbPlayMatch(p1, p2, int(turnsEntry.get()))[1][1]
+                'score1': dbPlayMatch(clicked1, clicked2, p1, p2, int(turnsEntry.get()))[1][0],
+                'score2': dbPlayMatch(clicked1, clicked2, p1, p2, int(turnsEntry.get()))[1][1]
             }
         )
         
@@ -1486,6 +1487,7 @@ def playMatch(p1, p2, output, t = 6):
         clicked1NoSpaces = clicked1.get().replace(" ", "")
         clicked2NoSpaces = clicked2.get().replace(" ", "")
         counter = 0
+        options = [s() for s in axl.strategies]
         while type(p1).__name__ == "str" and counter <= len(axl.strategies):
             try:
                 if type(options[counter]).__name__ == clicked1NoSpaces:

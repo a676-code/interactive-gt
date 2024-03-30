@@ -184,7 +184,7 @@ while type(p2).__name__ == "str":
         p2 = options[counter]
     counter += 1
 
-matchButton = Button(axelrodFrame, text="Play Match", command=lambda: playMatch(p1, p2, dbOutput.get(), int(turnsEntry.get())))
+matchButton = Button(axelrodFrame, text="Play Match", command=lambda: playMatch(root, axelrodFrame, turnsEntry, clicked1, clicked2, p1, p2, dbOutput.get(), int(turnsEntry.get())))
 # tournamentButton = Button(axelrodFrame, text="Start Tournament", command=startTournament(int(turnsEntry.get())))
 dbButton = Button(axelrodFrame, text="View Database", command=lambda: db(clicked1, clicked2))
 
