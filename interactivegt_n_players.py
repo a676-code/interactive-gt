@@ -56,7 +56,7 @@ edit_menu.add_command(label="Reset Strategy Names", command=resetStrategies)
 
 option_menu = Menu(menubar)
 menubar.add_cascade(label="Options", menu=option_menu)
-option_menu.add_command(label="Change Background Color", command=changeBackgroundColor)
+option_menu.add_command(label="Change Background Color", command=lambda: changeBackgroundColor(rootFrame))
 
 # FIXME: The scrollbars are in the right place, but instead of becoming usable when the contents of the frame get bigger, the frame simply stretches, leaving the scrollbars grayed out. 
 # rootFrame < rootCanvas < mainFrame < root

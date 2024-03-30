@@ -90,7 +90,7 @@ def addRecord():
     conn.commit()
     conn.close()
 
-def changeBackgroundColor():
+def changeBackgroundColor(rootFrame):
     """
         Changes the background color of the window
     """
@@ -101,7 +101,7 @@ def changeBackgroundColor():
     
     colorLabel = Label(topColor, text="Enter a color:")
     colorEntry = Entry(topColor, width=10)
-    colorEnter = Button(topColor, text="Enter", command=lambda: enterColor(colorEntry.get()))
+    colorEnter = Button(topColor, text="Enter", command=lambda: enterColor(rootFrame, colorEntry.get()))
     
     # Putting everything on the topColor window
     colorLabel.grid(row=0, column=0)
@@ -1120,12 +1120,15 @@ def eliminateStrictlyDominatedStrategies(steps):
         stepsError = messagebox.showError("Error", f"Unexpected value {steps} for variable\"steps\"")
     return
 
-def enterColor(color):
+def enterColor(rootFrame, color):
     """
         Makes the root window have a certain color
     """
+    print("HERE")
     try:
-        root.configure(bg=color)
+        print("TRYING")
+        rootFrame.config(bg=color)
+        print("after")
     except TclError:
         colorNotFound = messagebox.showerror(f"Error", f"Unknown color name \"{color}\". Try entering in a different color.")
     return
