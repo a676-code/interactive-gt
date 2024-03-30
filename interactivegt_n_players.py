@@ -205,7 +205,7 @@ numPlayersButton.grid(row=3, column=0, padx=(0, 5), pady=5)
 dimensionsButton = Button(dimensionsFrame, text="Enter Dimensions", command=lambda: dimensionsClick(G, dimensionsFrame, payoffsFrame, int(numPlayersEntry.get())))
 dimensionsButton.grid(row=3, column=1, padx=(0, 5), pady=5, sticky=W)
 
-mainPayoffsFrame.grid(row=0, column=1)
+mainPayoffsFrame.grid(row=0, column=1, sticky=W)
 xPayoffsScrollbar.grid(row=1, column=0, sticky=EW)
 yPayoffsScrollbar.grid(row=0, column=1, sticky=NS)
 
