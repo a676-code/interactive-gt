@@ -170,8 +170,8 @@ equilibriaFrame = LabelFrame(rootFrame, text="Equilibria" , padx=10, pady=10)
 eqOutput = IntVar()
 eqOutput.set("0")
 
-Radiobutton(equilibriaFrame, text="Standard nashpy Output", variable=eqOutput, value=0, command=lambda: equilibriaOutputStyleClicked(eqOutput.get())).grid(row=0, column=0, sticky=W)
-Radiobutton(equilibriaFrame, text="Named Strategies", variable=eqOutput, value=1, command=lambda: equilibriaOutputStyleClicked(eqOutput.get())).grid(row=1, column=0, sticky=W)
+Radiobutton(equilibriaFrame, text="Standard nashpy Output", variable=eqOutput, value=0, command=lambda: equilibriaOutputStyleClicked(eqOutput, eqOutput.get())).grid(row=0, column=0, sticky=W)
+Radiobutton(equilibriaFrame, text="Named Strategies", variable=eqOutput, value=1, command=lambda: equilibriaOutputStyleClicked(eqOutput, eqOutput.get())).grid(row=1, column=0, sticky=W)
 
 equilibriaButton = Button(equilibriaFrame, text="Compute Equilibria", command=lambda: computeEquilibria(eqOutput.get()))
 

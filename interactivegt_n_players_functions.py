@@ -1226,7 +1226,7 @@ def enterPayoffs():
     G.enterPayoffs(newPayoffs, numPlayers, [numStrats1, numStrats2])
     return True
 
-def equilibriaOutputStyleClicked(value):
+def equilibriaOutputStyleClicked(eqOutput, value):
     eqOutput.set(value)
     
 def export(fileName, records):
