@@ -51,7 +51,7 @@ def addAllPairs():
     conn.close()
     return
 
-def addToDBClicked(value):
+def addToDBClicked(dbOutput, value):
     dbOutput.set(value)
 
 def addRecord():
@@ -710,25 +710,33 @@ def dimensionsClick(dimensionsFrame, payoffsFrame, numPlayers):
             return
     return
 
-def dimensionsClickNoWarning():
+def dimensionsClickNoWarning(G, root, dimensionsFrame, payoffsFrame, equilibriaFrame, numPlayers):
     """
     Resizes the payoff matrix according to the numbers of strategies entered in by the user without prompting the user
     """
-    numStrats1 = int(numStratsEntries[0].get())
-    numStrats2 = int(numStratsEntries[1].get())
+    dimensionsSlaves = dimensionsFrame.grid_slaves()
+    dimensionsEntries = []
+    for slave in dimensionsSlaves:
+        if type(slave).__name__ == "Entry":
+            dimensionsEntries.append(slave)
+    dimensionsEntries.pop()
+    dimensionsEntries.reverse()
+    numStratsEntries = dimensionsEntries
+    numStrats = [int(numStratsEntries[x].get()) for x in range(numPlayers)]
+
     negativeStratsError = -1
     zeroStratsError = -1
     oneByOneError = -1
-    if numStrats1 == 0 or numStrats2 == 0:
+    if numStrats[0] == 0 or numStrats[1] == 0:
         zeroStratsError = messagebox.showerror("Error", "A player may not have zero strategies.")
     
     if zeroStratsError == -1:
-        if numStrats1 == 1 or numStrats2 == 1:
+        if numStrats[0] == 1 or numStrats[1] == 1:
             oneByOneError = messagebox.showerror("Error", "A player may not have only one strategy.")
             return
         
         if oneByOneError == -1:
-            if numStrats1 < 0 or numStrats2 < 0:
+            if numStrats[0] < 0 or numStrats[1] < 0:
                 negativeStratsError = messagebox.showerror("Error", "A player may not have a negative number of strategies.")
                 return
             if negativeStratsError == -1:
@@ -740,34 +748,34 @@ def dimensionsClickNoWarning():
                     slave.grid_remove()
                 
                 # refilling the table
-                for i in range(numStrats2):
+                for i in range(numStrats[1]):
                     e = Entry(payoffsFrame, width=10)
                     if i == 0:
                         e.insert(0, "L")
-                    elif i > 0 and i < numStrats2 - 1 and numStrats2 == 3:
+                    elif i > 0 and i < numStrats[1] - 1 and numStrats[1] == 3:
                         e.insert(0, "C")
-                    elif i > 0 and i < numStrats2 - 1 and numStrats2 >= 3:
+                    elif i > 0 and i < numStrats[1] - 1 and numStrats[1] >= 3:
                         e.insert(0, "C" + str(i))
                     else:
                         e.insert(0, "R")
                     e.grid(row=0, column=i + 1, pady=5)
                     
-                for j in range(numStrats1):
+                for j in range(numStrats[0]):
                     e = Entry(payoffsFrame, width=10)
                     if j == 0:
                         e.insert(0, "U")
-                    elif j > 0 and j < numStrats1 - 1 and numStrats1 == 3:
+                    elif j > 0 and j < numStrats[0] - 1 and numStrats[0] == 3:
                         e.insert(0, "M")
-                    elif j > 0 and j < numStrats1 - 1 and numStrats1 > 3:
+                    elif j > 0 and j < numStrats[0] - 1 and numStrats[0] > 3:
                         e.insert(0, "M" + str(j))
                     else:
                         e.insert(0, "D")
                     e.grid(row=j + 1, column=0, padx=5)
 
                 rows = []
-                for i in range(numStrats1):
+                for i in range(numStrats[0]):
                     cols = []
-                    for j in range(numStrats2):
+                    for j in range(numStrats[1]):
                         e = Entry(payoffsFrame, width=5)
                         e.grid(row=i + 1, column=j + 1, sticky=NSEW)
                         e.insert(END, '%d, %d' % (0, 0))
@@ -781,7 +789,7 @@ def dimensionsClickNoWarning():
                     eqLabel.grid_remove()
                 
                 entriesToSimGame(G, dimensionsFrame, payoffsFrame, numPlayers)
-                root.geometry(f"{45 * numStrats2 + 700}x{25 * numStrats1 + 490}")
+                root.geometry(f"{45 * numStrats[1] + 700}x{25 * numStrats[0] + 490}")
                 return
             else:
                 return
@@ -1322,7 +1330,7 @@ def getNumRecords():
     conn.close()
     return
 
-def iesdsStepsClicked(value):
+def iesdsStepsClicked(iesdsSteps, value):
     iesdsSteps.set(value)
 
 def numPlayersClick():
@@ -1341,7 +1349,7 @@ def numPlayersClick():
     dimensionsButton.grid(row=numPlayers + 2, column=1)
     return
 
-def openFile():
+def openFile(G, root, dimensionsFrame, payoffsFrame, equilibriaFrame, numPlayers):
     """
         opens a file and reads the data from it into a list
     """
@@ -1361,14 +1369,17 @@ def openFile():
                 for slave in dimensionsSlaves:
                     if type(slave).__name__ == "Entry":
                         dimensionsEntries.append(slave)
-                numPlayersEntry = dimensionsEntries[-1]
                     
-                numPlayers = int(numPlayersEntry.get())
+                numPlayers = int(dimensionsEntries[-1].get())
+
+                dimensionsEntries.pop()
+                dimensionsEntries.reverse()
+                numStratsEntries = dimensionsEntries
                 
                 for x in range(numPlayers):
                     numStratsEntries[x].delete(0, 'end')
                     numStratsEntries[x].insert(0, numStrats[x])
-                dimensionsClickNoWarning()
+                dimensionsClickNoWarning(G, root, dimensionsFrame, payoffsFrame, equilibriaFrame, numPlayers)
                 numStrats = []
                 for x in range(numPlayers):
                     numStrats.append(int(numStratsEntries[x].get()))

@@ -129,9 +129,9 @@ iesdsFrame = LabelFrame(rootFrame, text="IESDS", padx=10, pady=10)
 iesdsSteps = IntVar()
 iesdsSteps.set("0")
 
-Radiobutton(iesdsFrame, text="Full Computation", variable=iesdsSteps, value=0, command=lambda: iesdsStepsClicked(iesdsSteps.get())).grid(row=0, column=0, sticky=W)
+Radiobutton(iesdsFrame, text="Full Computation", variable=iesdsSteps, value=0, command=lambda: iesdsStepsClicked(iesdsSteps, iesdsSteps.get())).grid(row=0, column=0, sticky=W)
 revertButton = Button(iesdsFrame, text="Revert", command=lambda: revert(dimensionsFrame))
-Radiobutton(iesdsFrame, text="Computation in Steps", variable=iesdsSteps, value=1, command=lambda: iesdsStepsClicked(iesdsSteps.get())).grid(row=1, column=0, sticky=W)
+Radiobutton(iesdsFrame, text="Computation in Steps", variable=iesdsSteps, value=1, command=lambda: iesdsStepsClicked(iesdsSteps, iesdsSteps.get())).grid(row=1, column=0, sticky=W)
 iesdsButton = Button(iesdsFrame, text="Eliminate Strictly Dominated Strategies", command=lambda: eliminateStrictlyDominatedStrategies(iesdsSteps.get()))
 
 # Equilibria Frame
@@ -166,8 +166,8 @@ turnsEntry.insert(0, "6")
 dbOutput = IntVar()
 dbOutput.set("0")
 
-Radiobutton(axelrodFrame, text="Add to Database", variable=dbOutput, value=0, command=lambda: addToDBClicked(dbOutput.get())).grid(row=3, column=0, sticky=W)
-Radiobutton(axelrodFrame, text="Don't Add to Database", variable=dbOutput, value=1, command=lambda: addToDBClicked(dbOutput.get())).grid(row=4, column=0, sticky=W)
+Radiobutton(axelrodFrame, text="Add to Database", variable=dbOutput, value=0, command=lambda: addToDBClicked(dbOutput, dbOutput.get())).grid(row=3, column=0, sticky=W)
+Radiobutton(axelrodFrame, text="Don't Add to Database", variable=dbOutput, value=1, command=lambda: addToDBClicked(dbOutput, dbOutput.get())).grid(row=4, column=0, sticky=W)
 
 # Converting the string strategies from the dropdown menus into the actual strategy objects
 p1 = ""
@@ -246,7 +246,7 @@ root.config(menu=menubar)
 # Create a menu item
 file_menu = Menu(menubar)
 menubar.add_cascade(label="File", menu=file_menu)
-file_menu.add_command(label="Open File", command=openFile)
+file_menu.add_command(label="Open File", command=lambda: openFile(G, root, dimensionsFrame, payoffsFrame, equilibriaFrame, int(numPlayersEntry.get())))
 file_menu.add_separator()
 file_menu.add_command(label="Save As...", command=lambda: saveAs(dimensionsFrame, payoffsFrame))
 file_menu.add_command(label="Save as LaTeX", command=saveAsLatex)
