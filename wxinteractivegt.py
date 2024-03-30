@@ -1,4 +1,6 @@
 import wx
+import axelrod as axl
+from pysimultaneous import SimGame
 
 class MyFrame(wx.Frame):
     def __init__(self, parent, title):
@@ -43,7 +45,7 @@ class NumStratsPanel(wx.Panel):
         
         # putting the widgets in the sizer
         numStratsSizer = wx.GridBagSizer(3, 3)
-        numStratsSizer.Add(wx.StaticText(self, label="Numbers of Strategies"), pos=(0, 0), flag=wx.ALIGN_LEFT)
+        numStratsSizer.Add(wx.StaticText(self, label="Dimensions"), pos=(0, 0), flag=wx.ALIGN_LEFT)
         numStratsSizer.Add(numStratsLabel1, pos=(1, 0))
         numStratsSizer.Add(numStratsTextCtrl1, pos=(1, 1))
         numStratsSizer.Add(numStratsLabel2, pos=(2, 0))
