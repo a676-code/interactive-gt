@@ -17,7 +17,6 @@ import interactivegt_n_players_functions
 from interactivegt_n_players_functions import *
 
 # Creating our SimGame object
-# global G
 G = SimGame(2)
 
 # Defining the root window

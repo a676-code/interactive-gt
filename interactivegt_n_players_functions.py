@@ -286,7 +286,6 @@ def computeEquilibria(output):
             if type(eqSlaves[0]).__name__ == "Listbox":
                 eqSlaves[0].grid_remove()
             
-            # global eqOutputFrame
             eqOutputFrame = LabelFrame(equilibriaFrame)
     
             xscrollbar = Scrollbar(eqOutputFrame, orient=HORIZONTAL)
@@ -470,7 +469,6 @@ def containsDigit(string):
     return any(char.isdigit() for char in string)
 
 def db():
-    # global dbWindow
     dbWindow = Toplevel()
     dbWindow.title("Match DB")
     dbWindow.geometry("400x400")
@@ -490,13 +488,7 @@ def db():
         score2 float
         )""")
     
-    # Creating fields
-    # global dbTurnsEntry
-    # global dbClicked1
-    # global dbClicked2
-    # global dbDropdown1
-    # global selectIDEntry
-    
+    # Creating fields    
     dbStrategyLabel1 = Label(dbWindow, text="Choose a strategy for player 1: ")
     dbStrategyLabel2 = Label(dbWindow, text="Choose a strategy for player 2: ")
     options = [s() for s in axl.strategies]
@@ -803,10 +795,6 @@ def eliminateStrictlyDominatedStrategies(steps):
     """
     entriesToSimGame(G, dimensionsFrame, payoffsFrame, numPlayers)
     # saving the original game in case the user wants to revert back to it
-    # global numIESDSClicks
-    # global originalGame
-    # global originalNumStrats1
-    # global originalNumStrats2
     if steps == 0 or numIESDSClicks == 0:
         originalGame = payoffsFrame.grid_slaves()
         originalNumStrats1 = int(numStratsEntries[0].get())
@@ -1227,7 +1215,6 @@ def enterPayoffs():
                 numInRow = 0
                 row = []
     
-    # global G
     G.enterPayoffs(newPayoffs, numPlayers, [numStrats1, numStrats2])
     return True
 
@@ -1534,8 +1521,6 @@ def playMatch(p1, p2, output, t = 6):
 def removeStrategy():
     """Removes a single strategy
     """
-    # global playerEntry
-    # global stratEntry
     
     # prompt the user for a player index and a strategy name
     topRemoveStrat = Toplevel()
@@ -1709,7 +1694,6 @@ def revert(dimensionsFrame):
     dimensionsEntries.reverse()
     numStratsEntries = dimensionsEntries
     
-    # global numIESDSClicks
     numIESDSClicks = 0
     numStrats1 = int(numStratsEntries[0].get())
     numStrats2 = int(numStratsEntries[1].get())
@@ -1889,21 +1873,11 @@ def saveRecord():
     conn.close()
     topUpdate.destroy()
     
-def searchRecords():
-    # global topSearch
-    
+def searchRecords():    
     topSearch = Toplevel()
     topSearch.title("Search Records")
     topSearch.iconbitmap("knight.ico")
     topSearch.geometry("400x180")
-    
-    # global searchClicked1
-    # global searchClicked2
-    # global numTurnsSearchEntry
-    # global outputSearchEntry
-    # global score1SearchEntry
-    # global score2SearchEntry
-    # global IDEntry
     
     options = [s() for s in axl.strategies]
     searchClicked1 = StringVar()
@@ -2275,20 +2249,12 @@ def updateRecord():
         conn.close()
         return
     
-    # global topUpdate
     topUpdate = Toplevel()
     topUpdate.title("Update a Record")
     topUpdate.iconbitmap("knight.ico")
     topUpdate.geometry("400x170")
         
     records = c.fetchall()
-    
-    # global updateClicked1
-    # global updateClicked2
-    # global numTurnsEntry
-    # global outputEntry
-    # global score1Entry
-    # global score2Entry
     
     options = [s() for s in axl.strategies]
     updateClicked1 = StringVar()
