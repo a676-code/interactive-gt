@@ -25,9 +25,6 @@ root.title("Interactive GT")
 root.geometry("700x490")
 root.iconbitmap("knight.ico")
 
-# Initializing the number of IESDS steps computed to 0
-numIESDSClicks = 0
-
 # FIXME: The scrollbars are in the right place, but instead of becoming usable when the contents of the frame get bigger, the frame simply stretches, leaving the scrollbars grayed out. 
 # rootFrame < rootCanvas < mainFrame < root
 mainFrame = Frame(root)
@@ -131,7 +128,7 @@ iesdsSteps.set("0")
 Radiobutton(iesdsFrame, text="Full Computation", variable=iesdsSteps, value=0, command=lambda: iesdsStepsClicked(iesdsSteps, iesdsSteps.get())).grid(row=0, column=0, sticky=W)
 revertButton = Button(iesdsFrame, text="Revert", command=lambda: revert(dimensionsFrame))
 Radiobutton(iesdsFrame, text="Computation in Steps", variable=iesdsSteps, value=1, command=lambda: iesdsStepsClicked(iesdsSteps, iesdsSteps.get())).grid(row=1, column=0, sticky=W)
-iesdsButton = Button(iesdsFrame, text="Eliminate Strictly Dominated Strategies", command=lambda: eliminateStrictlyDominatedStrategies(iesdsSteps.get()))
+iesdsButton = Button(iesdsFrame, text="Eliminate Strictly Dominated Strategies", command=lambda: eliminateStrictlyDominatedStrategies(G, dimensionsFrame, payoffsFrame, int(numPlayersEntry.get()), iesdsSteps.get()))
 
 # Equilibria Frame
 equilibriaFrame = LabelFrame(rootFrame, text="Equilibria" , padx=10, pady=10)
