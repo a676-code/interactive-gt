@@ -1400,13 +1400,21 @@ def openFile(G, root, dimensionsFrame, payoffsFrame, equilibriaFrame, numPlayers
                 numIESDSClicks = 0
                 
                 dimensionsSlaves = dimensionsFrame.grid_slaves()
+                dimensionsLabels = []
                 dimensionsEntries = []
                 for slave in dimensionsSlaves:
-                    if type(slave).__name__ == "Entry":
+                    if type(slave).__name__ == "Label":
+                        dimensionsLabels.append(slave)
+                    elif type(slave).__name__ == "Entry":
                         dimensionsEntries.append(slave)
                     
-                numPlayers = int(dimensionsEntries[-1].get())
+                numPlayers = len(numStrats)
+                
+                dimensionsLabels.pop()
+                dimensionsLabels.reverse()
+                numStratsLabels = dimensionsLabels
 
+                numPlayersEntry = dimensionsEntries[-1]
                 dimensionsEntries.pop()
                 dimensionsEntries.reverse()
                 numStratsEntries = dimensionsEntries
@@ -1461,6 +1469,13 @@ def openFile(G, root, dimensionsFrame, payoffsFrame, equilibriaFrame, numPlayers
                     row = groupedOutcomes[line_index]
                     for i, payoff in enumerate(row):
                         payoff.insert(0, stringPayoffs[i])
+
+                    oldNumPlayers = int(numPlayersEntry.get())
+                    # Removing extra numStrats labels and entries from the dimensionsFrame
+                    if numPlayers < oldNumPlayers:
+                        for x in range(oldNumPlayers - numPlayers):
+                            numStratsLabels[-1].grid_remove()
+                            numStratsEntries[-1].grid_remove()
     return
 
 def playMatch(root, axelrodFrame, turnsEntry, clicked1, clicked2, p1, p2, output, t = 6):

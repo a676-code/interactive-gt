@@ -649,7 +649,7 @@ class SimGame:
         self.payoffMatrix = []
         numMatrices = 1
         for x in range(2, self.numPlayers):
-            numMatrices *= oldNumStrats[x]
+            numMatrices *= numStrats[x]
         for m in range(numMatrices):
             matrix = []
             for i in range(self.players[0].numStrats):
