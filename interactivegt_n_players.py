@@ -242,7 +242,7 @@ file_menu = Menu(menubar)
 menubar.add_cascade(label="File", menu=file_menu)
 file_menu.add_command(label="Open File", command=lambda: openFile(G, root, dimensionsFrame, payoffsFrame, equilibriaFrame, int(numPlayersEntry.get())))
 file_menu.add_separator()
-file_menu.add_command(label="Save As...", command=lambda: saveAs(dimensionsFrame, payoffsFrame))
+file_menu.add_command(label="Save As...", command=lambda: saveAs(G, dimensionsFrame, payoffsFrame))
 file_menu.add_command(label="Save as LaTeX", command=saveAsLatex)
 
 edit_menu = Menu(menubar)
