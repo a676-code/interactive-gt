@@ -99,7 +99,7 @@ payoffMatrixSlaves.pop()
 payoffMatrixSlaves.pop()
 payoffMatrixSlaves.pop()
 payoffMatrixSlaves.pop()
-payoffs = [list(map(int, slave.get().split(", "))) for slave in payoffMatrixSlaves]
+payoffs = [list(map(float, slave.get().split(", "))) for slave in payoffMatrixSlaves]
 payoffs.reverse()
 numStrats1 = int(numStratsEntries[0].get())
 numStrats2 = int(numStratsEntries[1].get())
@@ -116,6 +116,7 @@ for p in payoffs:
             newPayoffs.append(row)
             numInRow = 0
             row = []
+newPayoffs = [newPayoffs]
 
 G.enterPayoffs(newPayoffs, 2, [2, 2])
 
@@ -126,7 +127,7 @@ iesdsSteps = IntVar()
 iesdsSteps.set("0")
 
 Radiobutton(iesdsFrame, text="Full Computation", variable=iesdsSteps, value=0, command=lambda: iesdsStepsClicked(iesdsSteps, iesdsSteps.get())).grid(row=0, column=0, sticky=W)
-revertButton = Button(iesdsFrame, text="Revert", command=lambda: revert(dimensionsFrame))
+revertButton = Button(iesdsFrame, text="Revert", command=lambda: revert(G, dimensionsFrame, payoffsFrame, int(numPlayersEntry.get())))
 Radiobutton(iesdsFrame, text="Computation in Steps", variable=iesdsSteps, value=1, command=lambda: iesdsStepsClicked(iesdsSteps, iesdsSteps.get())).grid(row=1, column=0, sticky=W)
 iesdsButton = Button(iesdsFrame, text="Eliminate Strictly Dominated Strategies", command=lambda: eliminateStrictlyDominatedStrategies(G, dimensionsFrame, payoffsFrame, int(numPlayersEntry.get()), iesdsSteps.get()))
 

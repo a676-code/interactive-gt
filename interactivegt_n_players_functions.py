@@ -9,6 +9,7 @@ import sqlite3
 from itertools import combinations
 import pysimultaneous
 from pysimultaneous import SimGame
+from pprint import pprint
 
 # Function definitions
 def addAllPairs():
@@ -813,6 +814,8 @@ def eliminateStrictlyDominatedStrategies(G, dimensionsFrame, payoffsFrame, numPl
     # saving the original game in case the user wants to revert back to it
     if steps == 0 or numIESDSClicks == 0:
         entriesToSimGame(G, dimensionsFrame, payoffsFrame, numPlayers)
+        global originalGame
+        global originalNumStrats
         originalGame = payoffsFrame.grid_slaves()
         originalNumStrats = []
         for x in range(numPlayers):
@@ -1176,11 +1179,12 @@ def entriesToSimGame(G, dimensionsFrame, payoffsFrame, numPlayers):
     p2StrategyNameEntries = strategyNames[numStrats[1]:]
     p2StrategyNameEntries.reverse()
     
+    outcomesGet = [outcome.get() for outcome in outcomes]
+    
     # Grouping the outcomes
-    matrixGroupedOutcomes = [outcomes[n:n + numStrats[0] * numStrats[1]] for n in range(0, numOutcomes, numStrats[0] * numStrats[1])]
+    matrixGroupedOutcomes = [outcomesGet[n:n + numStrats[0] * numStrats[1]] for n in range(0, numOutcomes, numStrats[0] * numStrats[1])]  
     groupedOutcomes = [[matrix[n:n + numStrats[1]] for n in range(0, numStrats[0] * numStrats[1], numStrats[1])] for matrix in matrixGroupedOutcomes]
     
-    # groupedOutcomes = [outcomes[i:i + numStrats[1]] for i in range(0, len(outcomes), numStrats[1])]
     newGroupedOutcomes = []
     for outcome in groupedOutcomes:
         row = []
@@ -1191,23 +1195,24 @@ def entriesToSimGame(G, dimensionsFrame, payoffsFrame, numPlayers):
     for outcome in newGroupedOutcomes:
         outcomesListList.append(outcome)
     
-    # Converting from a list of list of entries to a list of list of integers
+    # Converting from a list of list of entries to a list of list of floats
     newListList = [] 
     for matrix in outcomesListList:
         newMatrix = []
         for row in matrix:
+            tempRow = []
             newRow = []
-            for item in row:
-                newRow.append(item.get().split(", "))
-                for l in newRow:
-                    for el in l:
-                        el = float(el)
+            for outcome in row:
+                newOutcome = []
+                for payoff in outcome.split(", "):
+                    newOutcome.append(float(payoff))
+                newRow.append(newOutcome)
             newMatrix.append(newRow)
         newListList.append(newMatrix)
     
     # Entering the payoffs
     G.enterPayoffs(newListList, numPlayers, numStrats)
-    
+
     # FIXME: Finish for games with >= 3 players
     # Entering the strategy names
     G.strategyNames[0] = [entry.get() for entry in p1StrategyNameEntries]
@@ -1217,15 +1222,26 @@ def entriesToSimGame(G, dimensionsFrame, payoffsFrame, numPlayers):
     G.print()
     return
 
-def enterPayoffs():
+def enterPayoffs(G, dimensionsFrame, payoffsFrame):
     """
     Enters the payoffs from the Entries into a list
     """
-    numPlayers = int(numPlayersEntry.get())
-    numStrats1 = int(numStratsEntries[0].get())
-    numStrats2 = int(numStratsEntries[1].get())
+    dimensionsSlaves = dimensionsFrame.grid_slaves()
+    dimensionsEntries = []
+    for slave in dimensionsSlaves:
+        if type(slave).__name__ == "Entry":
+            dimensionsEntries.append(slave)
+        
+    numPlayers = int(dimensionsEntries[-1].get())
+
+    dimensionsEntries.pop()
+    dimensionsEntries.reverse()
+    numStratsEntries = dimensionsEntries
+    numStrats = []
+    for x in range(numPlayers):
+        numStrats.append(int(numStratsEntries[x].get()))
     payoffMatrixSlaves = payoffsFrame.grid_slaves()
-    outcomes = payoffMatrixSlaves[:numStrats1 * numStrats2]
+    outcomes = payoffMatrixSlaves[:numStrats[0] * numStrats[1]]
     # input validation
     for outcome in outcomes:
         if "," not in outcome.get():
@@ -1240,15 +1256,15 @@ def enterPayoffs():
     row = []
     numInRow = 0
     for p in payoffs:
-        if numInRow < numStrats2:
+        if numInRow < numStrats[1]:
             row.append(p)
             numInRow += 1
-            if numInRow == numStrats2:
+            if numInRow == numStrats[1]:
                 newPayoffs.append(row)
                 numInRow = 0
                 row = []
 
-    G.enterPayoffs(newPayoffs, numPlayers, [numStrats1, numStrats2])
+    G.enterPayoffs(newPayoffs, numPlayers, numStrats)
     return True
 
 def equilibriaOutputStyleClicked(eqOutput, value):
@@ -1714,7 +1730,7 @@ def resetStrategies():
     else:
         return
     
-def revert(dimensionsFrame):
+def revert(G, dimensionsFrame, payoffsFrame, numPlayers):
     """
         Reverts back to the original game after computing IESDS
     """
@@ -1724,13 +1740,15 @@ def revert(dimensionsFrame):
     for slave in dimensionsSlaves:
         if type(slave).__name__ == "Entry":
             dimensionsEntries.append(slave)
+    numPlayers = int(dimensionsEntries[-1].get())
     dimensionsEntries.pop()
     dimensionsEntries.reverse()
     numStratsEntries = dimensionsEntries
     
     numIESDSClicks = 0
-    numStrats1 = int(numStratsEntries[0].get())
-    numStrats2 = int(numStratsEntries[1].get())
+    numStrats = []
+    for x in range(numPlayers):
+        numStrats.append(int(numStratsEntries[x].get()))
     try:
         outcomes = originalGame[:originalNumStrats[0] * originalNumStrats[1]] # entries
     except NameError:
@@ -1811,14 +1829,20 @@ def revert(dimensionsFrame):
             rows.append(cols)
         
         # setting the numbers of strategies back to the originals
-        numStratsFrameSlaves = numStratsFrame.grid_slaves()
-        numStratsFrameSlaves[2].delete(0, END)
-        numStratsFrameSlaves[2].insert(0, originalNumStrats[0])
-        numStratsFrameSlaves[1].delete(0, END)
-        numStratsFrameSlaves[1].insert(0, originalNumStrats[1])
+        dimensionsSlaves = dimensionsFrame.grid_slaves()
+        dimensionsEntries = []
+        for slave in dimensionsSlaves:
+            if type(slave).__name__ == "Entry":
+                dimensionsEntries.append(slave)
+        dimensionsEntries.pop()
+        dimensionsEntries.reverse()
+        numStratsEntries = dimensionsEntries
+        for x in range(numPlayers):
+            numStratsEntries[x].delete(0, END)
+            numStratsEntries[x].insert(0, originalNumStrats[x])
 
         # entering the "new" payoffs into the system
-        enterPayoffs()
+        enterPayoffs(G, dimensionsFrame, payoffsFrame)
         return
 
 def saveAs(dimensionsFrame, payoffsFrame):

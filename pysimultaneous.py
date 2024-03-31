@@ -11,6 +11,7 @@ from sympy.solvers.solveset import linsolve
 from sympy import srepr
 from sympy import simplify
 import warnings
+from pprint import pprint
 
 class ListNode:
     head = None
@@ -627,8 +628,9 @@ class SimGame:
     def enterPayoffs(self, payoffs = [
         [[1, 5], [2, 6]],
         [[3, 7], [4, 8]]
-    ], numPlayers = 2, numStrats = [2, 2]):
+    ], numPlayers = 2, numStrats = [2, 2]):        
         oldNumPlayers = self.numPlayers
+        oldNumStrats = [self.players[x].numStrats for x in range(self.numPlayers)]
         self.numPlayers = numPlayers
         
         if self.numPlayers <= oldNumPlayers:
@@ -640,32 +642,25 @@ class SimGame:
             for x in range(self.numPlayers - oldNumPlayers):
                 self.players.append(Player(numStrats[oldNumPlayers + x]))
         
+        # ensuring that the payoffs are a list of matrices
+        if type(payoffs[0][0][0]).__name__ == "float":
+            payoffs = [payoffs]
+        
         self.payoffMatrix = []
-        if self.numPlayers < 3:
+        numMatrices = 1
+        for x in range(2, self.numPlayers):
+            numMatrices *= oldNumStrats[x]
+        for m in range(numMatrices):
             matrix = []
             for i in range(self.players[0].numStrats):
                 row = []
                 for j in range(self.players[1].numStrats):
-                    outcome = ListNode(payoffs[i][j][0], False)
-                    outcome.append(payoffs[i][j][1], False)
-                    row.append(outcome)                      
+                    outcome = ListNode(payoffs[m][i][j][0], False)
+                    for x in range(1, self.numPlayers):
+                        outcome.append(payoffs[m][i][j][x], False)
+                    row.append(outcome)                 
                 matrix.append(row)
             self.payoffMatrix.append(matrix)
-        else:
-            numMatrices = 1
-            for i in range(2, self.numPlayers):
-                numMatrices *= self.players[i].numStrats
-            for m in range(numMatrices):
-                matrix = []
-                for i in range(self.players[0].numStrats):
-                    row = []
-                    for j in range(self.players[1].numStrats):
-                        outcome = ListNode(payoffs[m][i][j][0], False)
-                        for x in range(1, self.numPlayers):
-                            outcome.append(payoffs[m][i][j][x], False)
-                        row.append(outcome)                 
-                    matrix.append(row)
-                self.payoffMatrix.append(matrix)
         
         # updating strategy names
         self.strategyNames = []
@@ -748,26 +743,16 @@ class SimGame:
     
     def print(self):
         """Prints the payoff matrix
-        """
-        if self.numPlayers < 3:
+        """        
+        for m in range(len(self.payoffMatrix)):
             for i in range(self.players[0].numStrats):
                 for j in range(self.players[1].numStrats):
-                    self.payoffMatrix[0][i][j].print()
+                    self.payoffMatrix[m][i][j].print() # print the linked list in self.payoffMatrix[m][i][j]
                     if j < self.players[1].numStrats - 1:
-                            print("  ", end="")
+                        print("  ", end="")
                     else:
                         print()
             print()
-        else:
-            for m in range(len(self.payoffMatrix)):
-                for i in range(self.players[0].numStrats):
-                    for j in range(self.players[1].numStrats):
-                        self.payoffMatrix[m][i][j].print()
-                        if j < self.players[1].numStrats - 1:
-                            print("  ", end="")
-                        else:
-                            print()
-                print()
 
     def printBestResponses(self):
         """Prints the payoff matrix
