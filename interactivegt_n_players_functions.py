@@ -586,7 +586,7 @@ def deleteRecord():
     conn.close()
     return
 
-def dimensionsClick(G, root, dimensionsFrame, payoffsFrame, numPlayers):
+def dimensionsClick(G, root, dimensionsFrame, payoffsFrame):
     """
     Resizes the payoff matrix according to the numbers of strategies entered in by the user
     """
@@ -595,113 +595,124 @@ def dimensionsClick(G, root, dimensionsFrame, payoffsFrame, numPlayers):
     for slave in dimensionsSlaves:
         if type(slave).__name__ == "Entry":
             numStratsEntries.append(slave)
+    numPlayersEntry = numStratsEntries[-1]
     numStratsEntries.pop() # last one will be the numPlayers entry
     numStratsEntries.reverse()
     
-    numStrats = []
-    for x in range(numPlayers):
-        numStrats.append(int(numStratsEntries[x].get()))
-    negativeStratsError = -1
-    zeroStratsError = -1
-    oneByOneError = -1
-    if numStrats[0] == 0 or numStrats[1] == 0:
-        zeroStratsError = messagebox.showerror("Error", "dimensionsClick: A player may not have zero strategies.")
+    numPlayersError = -1
+    numPlayers = int(numPlayersEntry.get())
+    if numPlayers < 2:
+        numPlayersError = messagebox.showerror("Error", "dimensionsClick: There must be at least 2 players.")
     
-    if zeroStratsError == -1:
-        if numStrats[0] == 1 or numStrats[1] == 1:
-            oneByOneError = messagebox.showerror("Error", "dimensionsClick: A player may not have only one strategy.")
-            return
+    if numPlayersError == -1:
+        numStrats = []
+        for x in range(numPlayers):
+            numStrats.append(int(numStratsEntries[x].get()))
+        negativeStratsError = -1
+        zeroStratsError = -1
+        oneByOneError = -1
+        if numStrats[0] == 0 or numStrats[1] == 0:
+            zeroStratsError = messagebox.showerror("Error", "dimensionsClick: A player may not have zero strategies.")
         
-        if oneByOneError == -1:
-            if numStrats[0] < 0 or numStrats[1] < 0:
-                negativeStratsError = messagebox.showerror("Error", "dimensionsClick: A player may not have a negative number of strategies.")
+        if zeroStratsError == -1:
+            if numStrats[0] == 1 or numStrats[1] == 1:
+                oneByOneError = messagebox.showerror("Error", "dimensionsClick: A player may not have only one strategy.")
                 return
-            if negativeStratsError == -1:
-                proceed = messagebox.askokcancel("Clear Payoffs?", "This will reset the payoff matrix. Do you want to proceed?")
-                if (proceed == True):
-                    # Resetting the number of steps of IESDS that have been computed
-                    numIESDSClicks = 0  
-                    # clearing the table
-                    payoffMatrixSlaves = payoffsFrame.grid_slaves()
-                    for slave in payoffMatrixSlaves:
-                        slave.grid_remove()
-                    
-                    numMatrices = 1
-                    for x in range(2, numPlayers):
-                        numMatrices *= numStrats[x]
-                    
-                    # refilling the table
-                    for m in range(numMatrices):
-                        for j in range(numStrats[1]):
-                            e = Entry(payoffsFrame, width=10)
-                            if j == 0:
-                                e.insert(0, "L")
-                            elif j > 0 and j < numStrats[1] - 1 and numStrats[1] == 3:
-                                e.insert(0, "C")
-                            elif j > 0 and j < numStrats[1] - 1 and numStrats[1] >= 3:
-                                e.insert(0, "C" + str(j))
-                            else:
-                                e.insert(0, "R")
-                            e.grid(row=0, column=j + (numStrats[1] * m) + 1, pady=5)
+            
+            if oneByOneError == -1:
+                if numStrats[0] < 0 or numStrats[1] < 0:
+                    negativeStratsError = messagebox.showerror("Error", "dimensionsClick: A player may not have a negative number of strategies.")
+                    return
+                if negativeStratsError == -1:
+                    proceed = messagebox.askokcancel("Clear Payoffs?", "This will reset the payoff matrix. Do you want to proceed?")
+                    if (proceed == True):
+                        # Resetting the number of steps of IESDS that have been computed
+                        numIESDSClicks = 0  
+                        # clearing the table
+                        payoffMatrixSlaves = payoffsFrame.grid_slaves()
+                        for slave in payoffMatrixSlaves:
+                            slave.grid_remove()
                         
-                    for i in range(numStrats[0]):
-                        e = Entry(payoffsFrame, width=10)
-                        if i == 0:
-                            e.insert(0, "U")
-                        elif i > 0 and i < numStrats[0] - 1 and numStrats[0] == 3:
-                            e.insert(0, "M")
-                        elif i > 0 and i < numStrats[0] - 1 and numStrats[0] > 3:
-                            e.insert(0, "M" + str(j))
-                        else:
-                            e.insert(0, "D")
-                        e.grid(row=i + 1, column=0, padx=5)
-                    
-                    numMatrices = 1
-                    for x in range(2, numPlayers):
-                        numMatrices *= numStrats[x]
-
-                    defaultPayoffs = [0 for x in range(numPlayers)]
-                    stringFormatter = ''
-                    for x in range(numPlayers):
-                        stringFormatter += '%d'
-                        if x < numPlayers - 1:
-                            stringFormatter += ', '
-                    
-                    for m in range(numMatrices):
-                        for i in range(numStrats[0]):
+                        numMatrices = 1
+                        for x in range(2, numPlayers):
+                            numMatrices *= numStrats[x]
+                        
+                        # refilling the table
+                        for m in range(numMatrices):
                             for j in range(numStrats[1]):
                                 e = Entry(payoffsFrame, width=10)
-                                if j < numStrats[1] - 1:
-                                    e.grid(row=i + 1, column=j + 1 + (m * numStrats[1]), sticky=NSEW)
+                                if j == 0:
+                                    e.insert(0, "L")
+                                elif j > 0 and j < numStrats[1] - 1 and numStrats[1] == 3:
+                                    e.insert(0, "C")
+                                elif j > 0 and j < numStrats[1] - 1 and numStrats[1] >= 3:
+                                    e.insert(0, "C" + str(j))
                                 else:
-                                    e.grid(row=i + 1, column=j + 1 + (m * numStrats[1]), sticky=NSEW, padx=(0, 10))
-                                e.insert(END, stringFormatter % tuple(defaultPayoffs))
+                                    e.insert(0, "R")
+                                e.grid(row=0, column=j + (numStrats[1] * m) + 1, pady=5)
+                            
+                        for i in range(numStrats[0]):
+                            e = Entry(payoffsFrame, width=10)
+                            if i == 0:
+                                e.insert(0, "U")
+                            elif i > 0 and i < numStrats[0] - 1 and numStrats[0] == 3:
+                                e.insert(0, "M")
+                            elif i > 0 and i < numStrats[0] - 1 and numStrats[0] > 3:
+                                e.insert(0, "M" + str(j))
+                            else:
+                                e.insert(0, "D")
+                            e.grid(row=i + 1, column=0, padx=5)
                         
-                    # Clearing the equilibria
-                    try:
-                        eqOutputFrame
-                    except NameError:
-                        print("eqOutputFrame not defined yet.")
+                        numMatrices = 1
+                        for x in range(2, numPlayers):
+                            numMatrices *= numStrats[x]
+
+                        defaultPayoffs = [0 for x in range(numPlayers)]
+                        stringFormatter = ''
+                        for x in range(numPlayers):
+                            stringFormatter += '%d'
+                            if x < numPlayers - 1:
+                                stringFormatter += ', '
+                        
+                        for m in range(numMatrices):
+                            for i in range(numStrats[0]):
+                                for j in range(numStrats[1]):
+                                    e = Entry(payoffsFrame, width=10)
+                                    if j < numStrats[1] - 1:
+                                        e.grid(row=i + 1, column=j + 1 + (m * numStrats[1]), sticky=NSEW)
+                                    else:
+                                        e.grid(row=i + 1, column=j + 1 + (m * numStrats[1]), sticky=NSEW, padx=(0, 10))
+                                    e.insert(END, stringFormatter % tuple(defaultPayoffs))
+                            
+                        # Clearing the equilibria
+                        try:
+                            eqOutputFrame
+                        except NameError:
+                            print("eqOutputFrame not defined yet.")
+                        else:
+                            eqOutputSlaves = eqOutputFrame.grid_slaves()
+                            scrollbar1 = eqOutputSlaves[0]
+                            scrollbar2 = eqOutputSlaves[1]
+                            eqListBox = eqOutputSlaves[2]
+                            scrollbar1.grid_remove()
+                            scrollbar2.grid_remove()
+                            eqListBox.grid_remove()
+                            eqOutputFrame.grid_remove()
+                        
+                        entriesToSimGame(G, dimensionsFrame, payoffsFrame)
+                        
+                        root.geometry(f"{45 * numStrats[1] + 700}x{25 * numStrats[0] + 490}")
+                        return proceed
                     else:
-                        eqOutputSlaves = eqOutputFrame.grid_slaves()
-                        scrollbar1 = eqOutputSlaves[0]
-                        scrollbar2 = eqOutputSlaves[1]
-                        eqListBox = eqOutputSlaves[2]
-                        scrollbar1.grid_remove()
-                        scrollbar2.grid_remove()
-                        eqListBox.grid_remove()
-                        eqOutputFrame.grid_remove()
-                    
-                    entriesToSimGame(G, dimensionsFrame, payoffsFrame)
-                    
-                    root.geometry(f"{45 * numStrats[1] + 700}x{25 * numStrats[0] + 490}")
-                    return proceed
+                        return
                 else:
                     return
             else:
                 return
         else:
             return
+    else:
+        return
     return
 
 def dimensionsClickNoWarning(G, root, dimensionsFrame, payoffsFrame, equilibriaFrame, numPlayers):
@@ -1142,11 +1153,8 @@ def enterColor(rootFrame, color):
     """
         Makes the root window have a certain color
     """
-    print("HERE")
     try:
-        print("TRYING")
         rootFrame.config(bg=color)
-        print("after")
     except TclError:
         colorNotFound = messagebox.showerror(f"Error", f"Unknown color name \"{color}\". Try entering in a different color.")
     return
@@ -1370,20 +1378,30 @@ def getNumRecords(dbWindow):
 def iesdsStepsClicked(iesdsSteps, value):
     iesdsSteps.set(value)
 
-def numPlayersClick(G, dimensionsFrame, numPlayersButton, dimensionsButton, numPlayers):
-    # FIXME: clear the frame and regrid everything so that the buttons will always be in the right place
-    oldNumPlayers = G.numPlayers
-    numPlayers = numPlayers
-    for x in range(numPlayers - oldNumPlayers):
-        print("x:", x)
-        l = Label(dimensionsFrame, text=f"Number of strategies for player {oldNumPlayers + x + 1}: ")
-        l.grid(row=oldNumPlayers + x + 1, column=0, sticky=E)
-        e = Entry(dimensionsFrame, width=5)
-        e.grid(row=oldNumPlayers + x + 1, column=1, sticky=W)
-        e.insert(0, 2)
-    numPlayersButton.grid(row=numPlayers + 2, column=0)
-    dimensionsButton.grid(row=numPlayers + 2, column=1)
-    return
+def numPlayersClick(G, dimensionsFrame, numPlayersButton, dimensionsButton):
+    dimensionsSlaves = dimensionsFrame.grid_slaves()
+    dimensionsEntries = []
+    for slave in dimensionsSlaves:
+        if type(slave).__name__ == "Entry":
+            dimensionsEntries.append(slave)
+    numPlayers = int(dimensionsEntries[-1].get())
+    
+    numPlayersError = -1
+    if numPlayers < 2:
+        numPlayersError = messagebox.showerror("Error", "dimensionsClick: There must be at least 2 players.")
+        return
+    else:
+        oldNumPlayers = G.numPlayers
+        for x in range(numPlayers - oldNumPlayers):
+            print("x:", x)
+            l = Label(dimensionsFrame, text=f"Number of strategies for player {oldNumPlayers + x + 1}: ")
+            l.grid(row=oldNumPlayers + x + 1, column=0, sticky=E)
+            e = Entry(dimensionsFrame, width=5)
+            e.grid(row=oldNumPlayers + x + 1, column=1, sticky=W)
+            e.insert(0, 2)
+        numPlayersButton.grid(row=numPlayers + 2, column=0)
+        dimensionsButton.grid(row=numPlayers + 2, column=1)
+        return
 
 def openFile(G, root, dimensionsFrame, payoffsFrame, equilibriaFrame, numPlayers):
     """

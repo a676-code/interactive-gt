@@ -50,7 +50,7 @@ numStratsLabels = [Label(dimensionsFrame, text=f"Number of strategies for player
 numStratsEntries = [Entry(dimensionsFrame, width=5) for x in range(G.numPlayers)]
 for x in range(G.numPlayers):
     numStratsEntries[x].insert(0, "2")
-numPlayersButton = Button(dimensionsFrame, text="Enter numPlayers", command=lambda: numPlayersClick(G, dimensionsFrame, numPlayersButton, dimensionsButton, int(numPlayersEntry.get())))
+numPlayersButton = Button(dimensionsFrame, text="Enter numPlayers", command=lambda: numPlayersClick(G, dimensionsFrame, numPlayersButton, dimensionsButton))
 
 # payoffsFrame < payoffsCanvas < mainPayoffsFrame < rootFrame < ...
 # Payoffs Frame
@@ -240,7 +240,7 @@ root.config(menu=menubar)
 # Create a menu item
 file_menu = Menu(menubar)
 menubar.add_cascade(label="File", menu=file_menu)
-file_menu.add_command(label="Open File", command=lambda: openFile(G, root, dimensionsFrame, payoffsFrame, equilibriaFrame, int(numPlayersEntry.get())))
+file_menu.add_command(label="Open File", command=lambda: openFile(G, root, dimensionsFrame, payoffsFrame, equilibriaFrame))
 file_menu.add_separator()
 file_menu.add_command(label="Save As...", command=lambda: saveAs(G, dimensionsFrame, payoffsFrame))
 file_menu.add_command(label="Save as LaTeX", command=saveAsLatex)

@@ -8,7 +8,6 @@ from numpy.polynomial import Polynomial
 import sympy
 from sympy import solve
 from sympy.solvers.solveset import linsolve
-from sympy import srepr
 from sympy import simplify
 import warnings
 from pprint import pprint
