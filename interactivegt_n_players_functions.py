@@ -9,6 +9,7 @@ import sqlite3
 from itertools import combinations
 import pysimultaneous
 from pysimultaneous import SimGame
+from pysimultaneous import Player
 from pprint import pprint
 
 # Function definitions
@@ -590,6 +591,7 @@ def dimensionsClick(G, root, dimensionsFrame, payoffsFrame):
     """
     Resizes the payoff matrix according to the numbers of strategies entered in by the user
     """
+    oldNumPlayers = G.numPlayers
     dimensionsSlaves = dimensionsFrame.grid_slaves()    
     numStratsEntries = []
     for slave in dimensionsSlaves:
@@ -598,9 +600,11 @@ def dimensionsClick(G, root, dimensionsFrame, payoffsFrame):
     numPlayersEntry = numStratsEntries[-1]
     numStratsEntries.pop() # last one will be the numPlayers entry
     numStratsEntries.reverse()
+    numStrats = [int(e.get()) for e in numStratsEntries]
     
     numPlayersError = -1
     numPlayers = int(numPlayersEntry.get())
+    G.numPlayers = numPlayers
     if numPlayers < 2:
         numPlayersError = messagebox.showerror("Error", "dimensionsClick: There must be at least 2 players.")
     
@@ -626,6 +630,12 @@ def dimensionsClick(G, root, dimensionsFrame, payoffsFrame):
                 if negativeStratsError == -1:
                     proceed = messagebox.askokcancel("Clear Payoffs?", "This will reset the payoff matrix. Do you want to proceed?")
                     if (proceed == True):
+                        # Adding new players
+                        if oldNumPlayers < numPlayers:
+                            for x in range(numPlayers - oldNumPlayers):
+                                p = Player(numStrats[x + numPlayers - oldNumPlayers], 0)
+                                G.players.append(p)
+                        
                         # Resetting the number of steps of IESDS that have been computed
                         numIESDSClicks = 0  
                         # clearing the table
@@ -639,6 +649,10 @@ def dimensionsClick(G, root, dimensionsFrame, payoffsFrame):
                         
                         # refilling the table
                         for m in range(numMatrices):
+                            print("m:", m)
+                            player3OnEntry = Entry(payoffsFrame, width=20)
+                            print("profile:", G.toProfile(m))                           
+                            player3OnEntry.grid(row=0, column=numStrats[1] * m + 1, columnspan=2, pady=5, sticky=EW)
                             for j in range(numStrats[1]):
                                 e = Entry(payoffsFrame, width=10)
                                 if j == 0:
@@ -649,7 +663,7 @@ def dimensionsClick(G, root, dimensionsFrame, payoffsFrame):
                                     e.insert(0, "C" + str(j))
                                 else:
                                     e.insert(0, "R")
-                                e.grid(row=0, column=j + (numStrats[1] * m) + 1, pady=5)
+                                e.grid(row=1, column=j + (numStrats[1] * m) + 1, pady=5)
                             
                         for i in range(numStrats[0]):
                             e = Entry(payoffsFrame, width=10)
@@ -661,13 +675,13 @@ def dimensionsClick(G, root, dimensionsFrame, payoffsFrame):
                                 e.insert(0, "M" + str(j))
                             else:
                                 e.insert(0, "D")
-                            e.grid(row=i + 1, column=0, padx=5)
+                            e.grid(row=i + 2, column=0, padx=5)
                         
                         numMatrices = 1
                         for x in range(2, numPlayers):
                             numMatrices *= numStrats[x]
 
-                        defaultPayoffs = [0 for x in range(numPlayers)]
+                        defaultPayoffs = [0.0 for x in range(numPlayers)]
                         stringFormatter = ''
                         for x in range(numPlayers):
                             stringFormatter += '%d'
@@ -679,9 +693,9 @@ def dimensionsClick(G, root, dimensionsFrame, payoffsFrame):
                                 for j in range(numStrats[1]):
                                     e = Entry(payoffsFrame, width=10)
                                     if j < numStrats[1] - 1:
-                                        e.grid(row=i + 1, column=j + 1 + (m * numStrats[1]), sticky=NSEW)
+                                        e.grid(row=i + 1 + 1, column=j + 1 + (m * numStrats[1]), sticky=NSEW)
                                     else:
-                                        e.grid(row=i + 1, column=j + 1 + (m * numStrats[1]), sticky=NSEW, padx=(0, 10))
+                                        e.grid(row=i + 1 + 1, column=j + 1 + (m * numStrats[1]), sticky=NSEW, padx=(0, 10))
                                     e.insert(END, stringFormatter % tuple(defaultPayoffs))
                             
                         # Clearing the equilibria
@@ -1393,7 +1407,6 @@ def numPlayersClick(G, dimensionsFrame, numPlayersButton, dimensionsButton):
     else:
         oldNumPlayers = G.numPlayers
         for x in range(numPlayers - oldNumPlayers):
-            print("x:", x)
             l = Label(dimensionsFrame, text=f"Number of strategies for player {oldNumPlayers + x + 1}: ")
             l.grid(row=oldNumPlayers + x + 1, column=0, sticky=E)
             e = Entry(dimensionsFrame, width=5)

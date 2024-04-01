@@ -203,7 +203,7 @@ for x in range(G.numPlayers):
 
 numPlayersButton.grid(row=3, column=0, padx=(0, 5), pady=5)
 
-dimensionsButton = Button(dimensionsFrame, text="Enter Dimensions", command=lambda: dimensionsClick(G, root, dimensionsFrame, payoffsFrame, int(numPlayersEntry.get())))
+dimensionsButton = Button(dimensionsFrame, text="Enter Dimensions", command=lambda: dimensionsClick(G, root, dimensionsFrame, payoffsFrame))
 dimensionsButton.grid(row=3, column=1, padx=(0, 5), pady=5, sticky=W)
 
 mainPayoffsFrame.grid(row=0, column=1, sticky=W)

@@ -7,7 +7,6 @@ import numpy as np
 from numpy.polynomial import Polynomial
 import sympy
 from sympy import solve
-from sympy.solvers.solveset import linsolve
 from sympy import simplify
 import warnings
 from pprint import pprint
@@ -1066,6 +1065,7 @@ class SimGame:
         choice = 0
         prevValues = 0 # values from players below P_x
         productNumStrats = 1
+        print("numPlayers:", self.numPlayers)
         profile = [-1, -1] + [0 for x in range(2, self.numPlayers)]
         
         for x in range(2, self.numPlayers - 1):
