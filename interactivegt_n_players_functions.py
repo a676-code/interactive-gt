@@ -155,7 +155,7 @@ def clearPayoffs():
         if type(eqLabel).__name__ == "Label":
             eqLabel.grid_remove()
         
-        entriesToSimGame(G, dimensionsFrame, payoffsFrame, numPlayers)
+        entriesToSimGame(G, dimensionsFrame, payoffsFrame)
         root.geometry(f"{45 * numStrats2 + 700}x{25 * numStrats1 + 490}")
     return
     
@@ -197,7 +197,7 @@ def clearPayoffMatrix():
         if type(eqLabel).__name__ == "Label":
             eqLabel.grid_remove()
         
-        entriesToSimGame(G, dimensionsFrame, payoffsFrame, numPlayers)
+        entriesToSimGame(G, dimensionsFrame, payoffsFrame)
         root.geometry(f"{45 * numStrats2 + 700}x{25 * numStrats1 + 490}")
     return
 
@@ -226,7 +226,7 @@ def clearStrategies():
             e = Entry(payoffsFrame, width=10)
             e.grid(row=j + 1, column=0, padx=5)
             
-        entriesToSimGame(G, dimensionsFrame, payoffsFrame, numPlayers)
+        entriesToSimGame(G, dimensionsFrame, payoffsFrame)
     else:
         return
 
@@ -234,7 +234,7 @@ def computeEquilibria(output):
     """
     Computes the equilibria of the current game and formats the output according to whether the output variable is 0 or 1, 
     """
-    entriesToSimGame(G, dimensionsFrame, payoffsFrame, numPlayers)
+    entriesToSimGame(G, dimensionsFrame, payoffsFrame)
     proceed = enterPayoffs()
     if proceed == True:
         numStrats1 = int(numStratsEntries[0].get())
@@ -729,7 +729,7 @@ def dimensionsClick(G, root, dimensionsFrame, payoffsFrame):
         return
     return
 
-def dimensionsClickNoWarning(G, root, dimensionsFrame, payoffsFrame, equilibriaFrame, numPlayers):
+def dimensionsClickNoWarning(G, root, dimensionsFrame, payoffsFrame, equilibriaFrame):
     """
     Resizes the payoff matrix according to the numbers of strategies entered in by the user without prompting the user
     """
@@ -1416,7 +1416,7 @@ def numPlayersClick(G, dimensionsFrame, numPlayersButton, dimensionsButton):
         dimensionsButton.grid(row=numPlayers + 2, column=1)
         return
 
-def openFile(G, root, dimensionsFrame, payoffsFrame, equilibriaFrame, numPlayers):
+def openFile(G, root, dimensionsFrame, payoffsFrame, equilibriaFrame):
     """
         opens a file and reads the data from it into a list
     """
@@ -1441,14 +1441,12 @@ def openFile(G, root, dimensionsFrame, payoffsFrame, equilibriaFrame, numPlayers
                         dimensionsLabels.append(slave)
                     elif type(slave).__name__ == "Entry":
                         dimensionsEntries.append(slave)
-                    
-                numPlayers = len(numStrats)
                 
                 dimensionsLabels.pop()
                 dimensionsLabels.reverse()
                 numStratsLabels = dimensionsLabels
 
-                numPlayersEntry = dimensionsEntries[-1]
+                numPlayers = int(dimensionsEntries[-1])
                 dimensionsEntries.pop()
                 dimensionsEntries.reverse()
                 numStratsEntries = dimensionsEntries
@@ -1456,7 +1454,7 @@ def openFile(G, root, dimensionsFrame, payoffsFrame, equilibriaFrame, numPlayers
                 for x in range(numPlayers):
                     numStratsEntries[x].delete(0, 'end')
                     numStratsEntries[x].insert(0, numStrats[x])
-                dimensionsClickNoWarning(G, root, dimensionsFrame, payoffsFrame, equilibriaFrame, numPlayers)
+                dimensionsClickNoWarning(G, root, dimensionsFrame, payoffsFrame, equilibriaFrame)
                 numStrats = []
                 for x in range(numPlayers):
                     numStrats.append(int(numStratsEntries[x].get()))
@@ -1694,7 +1692,7 @@ def resetPayoffMatrix():
         if type(eqLabel).__name__ == "Label":
             eqLabel.grid_remove()
         
-        entriesToSimGame(G, dimensionsFrame, payoffsFrame, numPlayers)
+        entriesToSimGame(G, dimensionsFrame, payoffsFrame)
         root.geometry(f"{45 * numStrats2 + 700}x{25 * numStrats1 + 490}")
     return
 
@@ -1775,11 +1773,11 @@ def resetStrategies():
                 e.insert(0, "D")
             e.grid(row=j + 1, column=0, padx=5)
             
-        entriesToSimGame(G, dimensionsFrame, payoffsFrame, numPlayers)
+        entriesToSimGame(G, dimensionsFrame, payoffsFrame)
     else:
         return
     
-def revert(G, dimensionsFrame, payoffsFrame, numPlayers):
+def revert(G, dimensionsFrame, payoffsFrame):
     """
         Reverts back to the original game after computing IESDS
     """
@@ -2179,7 +2177,7 @@ def simGameToEntries(G, dimensionsFrame, payoffsFrame, numPlayersEntry):
 def submitRemoveStrategy():
     """Removes the strategy for the player entered in function removeStrategy
     """
-    entriesToSimGame(G, dimensionsFrame, payoffsFrame, numPlayers)
+    entriesToSimGame(G, dimensionsFrame, payoffsFrame)
     
     numStrats1 = int(numStratsEntries[0].get())
     numStrats2 = int(numStratsEntries[1].get())
