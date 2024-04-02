@@ -764,6 +764,7 @@ def dimensionsClickNoWarning(G, root, dimensionsFrame, payoffsFrame, equilibriaF
     for slave in dimensionsSlaves:
         if type(slave).__name__ == "Entry":
             dimensionsEntries.append(slave)
+    numPlayers = int(dimensionsEntries[-1].get())
     dimensionsEntries.pop()
     dimensionsEntries.reverse()
     numStratsEntries = dimensionsEntries
@@ -1221,6 +1222,8 @@ def entriesToSimGame(G, dimensionsFrame, payoffsFrame):
     if G.numPlayers > oldNumPlayers:
         for x in range(oldNumPlayers, G.numPlayers):
             G.players.append(Player(numStrats[x], 0))
+    elif G.numPlayers < oldNumPlayers:
+        G.players = G.players[:G.numPlayers]
     
     # Getting the entries from the payoffs frame
     payoffMatrixSlaves = payoffsFrame.grid_slaves()
@@ -1233,9 +1236,14 @@ def entriesToSimGame(G, dimensionsFrame, payoffsFrame):
     for x in range(numPlayers):
         numOutcomes *= numStrats[x]
     
+    print("numOutcomes:", numOutcomes)
+    
     outcomes = payoffMatrixSlaves[:numOutcomes]
     outcomes.reverse()
     outcomesGet = [outcome.get() for outcome in outcomes]
+    
+    for outcome in outcomesGet:
+        print("outcome:", outcome)
     
     strategyNames = payoffMatrixSlaves[numOutcomes:]
     p1StrategyNameEntries = strategyNames[:numStrats[0]]
@@ -1259,6 +1267,9 @@ def entriesToSimGame(G, dimensionsFrame, payoffsFrame):
     outcomesListList= []
     for outcome in newGroupedOutcomes:
         outcomesListList.append(outcome)
+        
+    print("oLL:")
+    print(outcomesListList)
     
     # Converting from a list of list of entries to a list of list of floats
     newListList = [] 
@@ -1467,7 +1478,7 @@ def openFile(G, root, dimensionsFrame, payoffsFrame, equilibriaFrame):
     if root.filename != '':
         with open(root.filename, 'r') as file:
             # Entering the number of players
-            numPlayers = file.readline().rstrip()
+            numPlayers = int(file.readline().rstrip())
             # Entering the numbers of strategies
             numStrats = file.readline().rstrip().split(" ")
             proceed = messagebox.askokcancel("Clear Payoffs?", "This will reset the payoff matrix. Do you want to proceed?")
@@ -1488,14 +1499,16 @@ def openFile(G, root, dimensionsFrame, payoffsFrame, equilibriaFrame):
                 dimensionsLabels.reverse()
                 numStratsLabels = dimensionsLabels
 
-                numPlayers = int(dimensionsEntries[-1])
+                oldNumPlayers = int(dimensionsEntries[-1].get())
+                dimensionsEntries[-1].delete(0, 'end')
+                dimensionsEntries[-1].insert(0, numPlayers)
                 dimensionsEntries.pop()
                 dimensionsEntries.reverse()
                 numStratsEntries = dimensionsEntries
                 
                 for x in range(numPlayers):
                     numStratsEntries[x].delete(0, 'end')
-                    numStratsEntries[x].insert(0, numStrats[x])
+                    numStratsEntries[x].insert(0, int(numStrats[x]))
                 dimensionsClickNoWarning(G, root, dimensionsFrame, payoffsFrame, equilibriaFrame)
                 numStrats = []
                 for x in range(numPlayers):
@@ -1544,7 +1557,6 @@ def openFile(G, root, dimensionsFrame, payoffsFrame, equilibriaFrame):
                     for i, payoff in enumerate(row):
                         payoff.insert(0, stringPayoffs[i])
 
-                    oldNumPlayers = int(numPlayersEntry.get())
                     # Removing extra numStrats labels and entries from the dimensionsFrame
                     if numPlayers < oldNumPlayers:
                         for x in range(oldNumPlayers - numPlayers):
