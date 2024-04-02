@@ -235,7 +235,8 @@ def computeEquilibria(output):
     Computes the equilibria of the current game and formats the output according to whether the output variable is 0 or 1, 
     """
     entriesToSimGame(G, dimensionsFrame, payoffsFrame)
-    proceed = enterPayoffs()
+    # FIXME
+    proceed = entriesToList()
     if proceed == True:
         numStrats1 = int(numStratsEntries[0].get())
         numStrats2 = int(numStratsEntries[1].get())
@@ -604,7 +605,6 @@ def dimensionsClick(G, root, dimensionsFrame, payoffsFrame):
     
     numPlayersError = -1
     numPlayers = int(numPlayersEntry.get())
-    G.numPlayers = numPlayers
     if numPlayers < 2:
         numPlayersError = messagebox.showerror("Error", "dimensionsClick: There must be at least 2 players.")
     
@@ -629,13 +629,45 @@ def dimensionsClick(G, root, dimensionsFrame, payoffsFrame):
                     return
                 if negativeStratsError == -1:
                     proceed = messagebox.askokcancel("Clear Payoffs?", "This will reset the payoff matrix. Do you want to proceed?")
-                    if (proceed == True):
-                        # Adding new players
+                    if (proceed == True):                        
                         if oldNumPlayers < numPlayers:
-                            for x in range(numPlayers - oldNumPlayers):
-                                p = Player(numStrats[x + numPlayers - oldNumPlayers], 0)
+                            for x in range(oldNumPlayers, numPlayers):
+                                # Adding new players
+                                p = Player(numStrats[x], 0)
                                 G.players.append(p)
+                                # Adding new strategyNames
+                                if G.players[x].numStrats < 3:
+                                    G.strategyNames.append(["L(" + str(x + 1) + ")", "R(" + str(x + 1) + ")"])
+                                else: 
+                                    G.strategyNames.append(["L(" + str(x + 1) + ")"] + ["C(" + str(x + 1) + ", " + str(s + 1) + ")" for s in range(G.players[x].numStrats)] + ["R(" + str(x + 1) + ")"])
                         
+                        # resetting the strategy names
+                        gNumStrats = [G.players[x].numStrats for x in range(G.numPlayers)]
+                        if numStrats != gNumStrats:
+                            G.strategyNames = []
+                            if G.players[0].numStrats < 3:
+                                G.strategyNames.append(["U", "D"])
+                            else:
+                                if G.players[0].numStrats == 3:
+                                    middle = ["M"]
+                                else: # > 3
+                                    middle = ["M" + str(i) for i in range(1, G.players[0].numStrats - 1)]
+                                G.strategyNames.append(["U"] + middle + ["D"])
+                            if G.players[1].numStrats < 3:
+                                G.strategyNames.append(["L", "R"])
+                            else:
+                                if G.players[1].numStrats == 3:
+                                    center = ["C"]
+                                else: # > 3
+                                    center = ["C" + str(j) for j in range(1, G.players[1].numStrats - 1)]
+                                G.strategyNames.append(["L"] + center + ["R"])
+                            if G.numPlayers > 2:
+                                for x in range(2, G.numPlayers):
+                                    if G.players[x].numStrats < 3:
+                                        G.strategyNames.append(["L(" + str(x + 1) + ")", "R(" + str(x + 1) + ")"])
+                                    else:
+                                        G.strategyNames.append(["L(" + str(x + 1) + ")"] + ["C(" + str(x + 1) + ", " + str(s + 1) + ")" for s in range(G.players[x].numStrats)] + ["R(" + str(x + 1) + ")"])
+                            
                         # Resetting the number of steps of IESDS that have been computed
                         numIESDSClicks = 0  
                         # clearing the table
@@ -648,33 +680,27 @@ def dimensionsClick(G, root, dimensionsFrame, payoffsFrame):
                             numMatrices *= numStrats[x]
                         
                         # refilling the table
+                        namesToJoin = [[] for n in range(numMatrices)]
+                        joinedNames = []
                         for m in range(numMatrices):
-                            print("m:", m)
-                            player3OnEntry = Entry(payoffsFrame, width=20)
-                            print("profile:", G.toProfile(m))                           
-                            player3OnEntry.grid(row=0, column=numStrats[1] * m + 1, columnspan=2, pady=5, sticky=EW)
+                            if numPlayers > 2:
+                                player3OnEntry = Entry(payoffsFrame, width=20)
+                                # FIXME
+                                for x in range(2, G.numPlayers):
+                                    namesToJoin[m].append(G.strategyNames[x][G.toProfile(m)[x]])
+                                
+                                print("nTJ[m]:", namesToJoin[m])
+                                joinedNames.append(", ".join(namesToJoin[m]))
+                                player3OnEntry.insert(0, joinedNames[m])                 
+                                player3OnEntry.grid(row=0, column=numStrats[1] * m + 1, columnspan=2, pady=5, sticky=EW)
                             for j in range(numStrats[1]):
                                 e = Entry(payoffsFrame, width=10)
-                                if j == 0:
-                                    e.insert(0, "L")
-                                elif j > 0 and j < numStrats[1] - 1 and numStrats[1] == 3:
-                                    e.insert(0, "C")
-                                elif j > 0 and j < numStrats[1] - 1 and numStrats[1] >= 3:
-                                    e.insert(0, "C" + str(j))
-                                else:
-                                    e.insert(0, "R")
+                                e.insert(0, G.strategyNames[1][j])
                                 e.grid(row=1, column=j + (numStrats[1] * m) + 1, pady=5)
                             
                         for i in range(numStrats[0]):
                             e = Entry(payoffsFrame, width=10)
-                            if i == 0:
-                                e.insert(0, "U")
-                            elif i > 0 and i < numStrats[0] - 1 and numStrats[0] == 3:
-                                e.insert(0, "M")
-                            elif i > 0 and i < numStrats[0] - 1 and numStrats[0] > 3:
-                                e.insert(0, "M" + str(j))
-                            else:
-                                e.insert(0, "D")
+                            e.insert(0, G.strategyNames[0][i])
                             e.grid(row=i + 2, column=0, padx=5)
                         
                         numMatrices = 1
@@ -697,6 +723,8 @@ def dimensionsClick(G, root, dimensionsFrame, payoffsFrame):
                                     else:
                                         e.grid(row=i + 1 + 1, column=j + 1 + (m * numStrats[1]), sticky=NSEW, padx=(0, 10))
                                     e.insert(END, stringFormatter % tuple(defaultPayoffs))
+
+                        entriesToSimGame(G, dimensionsFrame, payoffsFrame)
                             
                         # Clearing the equilibria
                         try:
@@ -712,8 +740,6 @@ def dimensionsClick(G, root, dimensionsFrame, payoffsFrame):
                             scrollbar2.grid_remove()
                             eqListBox.grid_remove()
                             eqOutputFrame.grid_remove()
-                        
-                        entriesToSimGame(G, dimensionsFrame, payoffsFrame)
                         
                         root.geometry(f"{45 * numStrats[1] + 700}x{25 * numStrats[0] + 490}")
                         return proceed
@@ -1175,7 +1201,9 @@ def enterColor(rootFrame, color):
 
 def entriesToSimGame(G, dimensionsFrame, payoffsFrame):
     """Enters the information in the text entries into the SimGame object
-    """    
+    """
+    oldNumStrats = [G.players[x].numStrats for x in range(G.numPlayers)]
+    
     # Getting the numbers of strategies
     numStrats = []
     dimensionsSlaves = dimensionsFrame.grid_slaves()
@@ -1186,6 +1214,14 @@ def entriesToSimGame(G, dimensionsFrame, payoffsFrame):
     numStrats.pop() # last one will be the entry for numPlayers
     numStrats.reverse()
     
+    oldNumPlayers = G.numPlayers
+    # Entering the number of players
+    G.numPlayers = numPlayers
+    # Adding new players if necessary
+    if G.numPlayers > oldNumPlayers:
+        for x in range(oldNumPlayers, G.numPlayers):
+            G.players.append(Player(numStrats[x], 0))
+    
     # Getting the entries from the payoffs frame
     payoffMatrixSlaves = payoffsFrame.grid_slaves()
     
@@ -1193,8 +1229,13 @@ def entriesToSimGame(G, dimensionsFrame, payoffsFrame):
     for x in range(numPlayers):
         numOutcomes *= numStrats[x]
     
+    numOutcomes = 1
+    for x in range(numPlayers):
+        numOutcomes *= numStrats[x]
+    
     outcomes = payoffMatrixSlaves[:numOutcomes]
     outcomes.reverse()
+    outcomesGet = [outcome.get() for outcome in outcomes]
     
     strategyNames = payoffMatrixSlaves[numOutcomes:]
     p1StrategyNameEntries = strategyNames[:numStrats[0]]
@@ -1202,7 +1243,8 @@ def entriesToSimGame(G, dimensionsFrame, payoffsFrame):
     p2StrategyNameEntries = strategyNames[numStrats[1]:]
     p2StrategyNameEntries.reverse()
     
-    outcomesGet = [outcome.get() for outcome in outcomes]
+    for x in range(numPlayers):
+        G.players[x].numStrats = numStrats[x]
     
     # Grouping the outcomes
     matrixGroupedOutcomes = [outcomesGet[n:n + numStrats[0] * numStrats[1]] for n in range(0, numOutcomes, numStrats[0] * numStrats[1])]  
@@ -1234,7 +1276,7 @@ def entriesToSimGame(G, dimensionsFrame, payoffsFrame):
         newListList.append(newMatrix)
     
     # Entering the payoffs
-    G.enterPayoffs(newListList, numPlayers, numStrats)
+    G.enterData(numPlayers, numStrats, newListList)
 
     # FIXME: Finish for games with >= 3 players
     # Entering the strategy names
@@ -1245,7 +1287,7 @@ def entriesToSimGame(G, dimensionsFrame, payoffsFrame):
     G.print()
     return
 
-def enterPayoffs(G, dimensionsFrame, payoffsFrame):
+def entriesToList(G, dimensionsFrame, payoffsFrame):
     """
     Enters the payoffs from the Entries into a list
     """
@@ -1287,7 +1329,7 @@ def enterPayoffs(G, dimensionsFrame, payoffsFrame):
                 numInRow = 0
                 row = []
 
-    G.enterPayoffs(newPayoffs, numPlayers, numStrats)
+    G.enterData(numPlayers, numStrats, newPayoffs)
     return True
 
 def equilibriaOutputStyleClicked(eqOutput, value):
@@ -1889,7 +1931,7 @@ def revert(G, dimensionsFrame, payoffsFrame):
             numStratsEntries[x].insert(0, originalNumStrats[x])
 
         # entering the "new" payoffs into the system
-        enterPayoffs(G, dimensionsFrame, payoffsFrame)
+        entriesToList(G, dimensionsFrame, payoffsFrame)
         return
 
 """

@@ -118,7 +118,7 @@ for p in payoffs:
             row = []
 newPayoffs = [newPayoffs]
 
-G.enterPayoffs(newPayoffs, 2, [2, 2])
+G.enterData(2, [2, 2], newPayoffs)
 
 # Eliminate Strictly Dominated Strategies Frame
 iesdsFrame = LabelFrame(rootFrame, text="IESDS", padx=10, pady=10)
