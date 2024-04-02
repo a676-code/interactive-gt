@@ -593,11 +593,16 @@ def dimensionsClick(G, root, dimensionsFrame, payoffsFrame):
     Resizes the payoff matrix according to the numbers of strategies entered in by the user
     """
     oldNumPlayers = G.numPlayers
-    dimensionsSlaves = dimensionsFrame.grid_slaves()    
+    dimensionsSlaves = dimensionsFrame.grid_slaves()
+    numStratsLabels = []  
     numStratsEntries = []
     for slave in dimensionsSlaves:
+        if type(slave).__name__ == "Label":
+            numStratsLabels.append(slave)
         if type(slave).__name__ == "Entry":
             numStratsEntries.append(slave)
+    numStratsLabels.pop()
+    numStratsLabels.reverse()
     numPlayersEntry = numStratsEntries[-1]
     numStratsEntries.pop() # last one will be the numPlayers entry
     numStratsEntries.reverse()
@@ -607,6 +612,11 @@ def dimensionsClick(G, root, dimensionsFrame, payoffsFrame):
     numPlayers = int(numPlayersEntry.get())
     if numPlayers < 2:
         numPlayersError = messagebox.showerror("Error", "dimensionsClick: There must be at least 2 players.")
+    
+    if numPlayers < oldNumPlayers:
+        for x in range(numPlayers, oldNumPlayers):
+            numStratsLabels.grid_remove()
+            numStratsEntries.grid_remove()
     
     if numPlayersError == -1:
         numStrats = []
