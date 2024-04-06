@@ -517,7 +517,7 @@ def db(clicked1, clicked2):
     selectIDLabel = Label(dbWindow, text="Select ID: ")
     selectIDEntry = Entry(dbWindow, width=20)
     deleteRecordButton = Button(dbWindow, text="Delete Record", command=lambda: deleteRecord(selectIDEntry))
-    updateRecordButton = Button(dbWindow, text="Update Record", command=updateRecord)
+    updateRecordButton = Button(dbWindow, text="Update Record", command=lambda: updateRecord(selectIDEntry))
     resetRecordButton = Button(dbWindow, text="Reset Record", command=lambda: resetRecord(clicked1, clicked2, selectIDEntry, dbClicked1, dbClicked2, dbTurnsEntry))
     clearDBButton = Button(dbWindow, text="Clear DB", command=clearDB)
         
@@ -584,13 +584,14 @@ def deleteRecord(selectIDEntry):
     # Create cursor
     c = conn.cursor()
     
+    id_ = selectIDEntry.get()
     try:
-        id_ = selectIDEntry.get()
-    except sqlite3.OperationalError:
-            IDNotSelectedError = messagebox.showerror("Error", "You must enter an ID to delete a record.")
-    else:
         c.execute("SELECT 1 FROM matches WHERE oid=" + id_)
         records = c.fetchall()
+    except sqlite3.OperationalError:
+            IDNotSelectedError = messagebox.showerror("Error", "You must enter an ID to delete a record.")
+            return
+    else:
         if len(records) == 0:
             recordDNEError = messagebox.showerror("Error", "A record with that ID does not exist in the matches table.")
         else:
@@ -2102,7 +2103,7 @@ def saveAs(G, dimensionsFrame, payoffsFrame):
     entriesToSimGame(G, dimensionsFrame, payoffsFrame)
     G.saveToFile("three_players.txt")
 
-def saveRecord():
+def saveRecord(topUpdate, selectIDEntry, updateClicked1, updateClicked2, numTurnsEntry, outputEntry, score1Entry, score2Entry):
     """
     Saves an updated record into the database
     """
@@ -2131,6 +2132,8 @@ def saveRecord():
     conn.commit()
     conn.close()
     topUpdate.destroy()
+    recordSavedInfo = messagebox.showinfo("Record Saved", "Record successfully saved")
+    return
     
 def searchRecords():    
     topSearch = Toplevel()
@@ -2176,7 +2179,6 @@ def searchRecords():
     
     submitButton = Button(topSearch, text="Submit", command=lambda: submitQuery(topSearch, searchClicked1, searchClicked2, numTurnsSearchEntry, outputSearchEntry, score1SearchEntry, score2SearchEntry, IDEntry))
     submitButton.grid(row=7, column=0, columnspan=2)
-    
     return
 
 def showRecords(dbWindow):
@@ -2494,7 +2496,7 @@ def submitQuery(topSearch, searchClicked1, searchClicked2, numTurnsSearchEntry, 
         conn.close()
     return
 
-def updateRecord():
+def updateRecord(selectIDEntry):
     """
     Allows the user to manually update a record in the matches table
     """    
@@ -2503,71 +2505,72 @@ def updateRecord():
     
     recordID = selectIDEntry.get()
     try:
-        c.execute("SELECT * FROM matches WHERE oid=" + recordID)
+        c.execute("SELECT 1 FROM matches where oid=" + recordID)
     except sqlite3.OperationalError:
         IDNotSelectedError = messagebox.showerror("Error", "You must enter an ID to update a record.")
-        
-        conn.commit()
-        conn.close()
         return
-    
-    topUpdate = Toplevel()
-    topUpdate.title("Update a Record")
-    topUpdate.iconbitmap("knight.ico")
-    topUpdate.geometry("400x170")
-        
-    records = c.fetchall()
-    
-    options = [s() for s in axl.strategies]
-    updateClicked1 = StringVar()
-    updateClicked1.set(options[0])
-    updateClicked2 = StringVar()
-    updateClicked2.set(options[0])
-    
-    # Labels and input fields
-    strategy1Label = Label(topUpdate, text="Strategy 1: ")
-    strategy1Dropdown = ttk.Combobox(topUpdate, textvariable=updateClicked1, values=options)
-    strategy2Label = Label(topUpdate, text="Strategy 2: ")
-    strategy2Dropdown = ttk.Combobox(topUpdate, textvariable=updateClicked2, values=options)
-    numTurnsLabel = Label(topUpdate, text="Number of turns: ")
-    numTurnsEntry = Entry(topUpdate, width=5)
-    outputLabel = Label(topUpdate, text="Output: ")
-    outputEntry = Entry(topUpdate, width=45)
-    score1Label = Label(topUpdate, text="Score 1: ")
-    score1Entry = Entry(topUpdate, width=20)
-    score2Label = Label(topUpdate, text="Score 2: ")
-    score2Entry = Entry(topUpdate, width=20)
-    
-    # Putting everything in the topUpdate window
-    strategy1Label.grid(row=0, column=0, sticky=E)
-    strategy1Dropdown.grid(row=0, column=1, sticky=W)
-    strategy2Label.grid(row=1, column=0, sticky=E)
-    strategy2Dropdown.grid(row=1, column=1, sticky=W)
-    numTurnsLabel.grid(row=2, column=0, padx=(10, 0), sticky=E)
-    numTurnsEntry.grid(row=2, column=1, sticky=W)
-    outputLabel.grid(row=3, column=0, sticky=E)
-    outputEntry.grid(row=3, column=1, sticky=W)
-    score1Label.grid(row=4, column=0, sticky=E)
-    score1Entry.grid(row=4, column=1, sticky=W)
-    score2Label.grid(row=5, column=0, sticky=E)
-    score2Entry.grid(row=5, column=1, sticky=W, pady=(0,5))
-    
-    # Loop through results
-    for record in records:
-        updateClicked1.set(record[0])
-        updateClicked2.set(record[1])
-        numTurnsEntry.insert(0, record[2])
-        outputEntry.insert(0, record[3])
-        score1Entry.insert(0, record[4])
-        score2Entry.insert(0, record[5])
-        
-    saveButton = Button(topUpdate, text="Save Record", command=saveRecord)
-    saveButton.grid(row=6, column=0, columnspan=2)
-    
-    conn.commit()
-    conn.close()
-    
-    return
+    else:
+        records = c.fetchall()
+        if len(records) == 0:
+            recordDNEError = messagebox.showerror("Error", "A record with that ID does not exist in the matches table.")
+        else:
+            # Update the record
+            topUpdate = Toplevel()
+            topUpdate.title("Update a Record")
+            topUpdate.iconbitmap("knight.ico")
+            topUpdate.geometry("400x170")
+                
+            records = c.fetchall()
+            
+            options = [s() for s in axl.strategies]
+            updateClicked1 = StringVar()
+            updateClicked1.set(options[0])
+            updateClicked2 = StringVar()
+            updateClicked2.set(options[0])
+            
+            # Labels and input fields
+            strategy1Label = Label(topUpdate, text="Strategy 1: ")
+            strategy1Dropdown = ttk.Combobox(topUpdate, textvariable=updateClicked1, values=options)
+            strategy2Label = Label(topUpdate, text="Strategy 2: ")
+            strategy2Dropdown = ttk.Combobox(topUpdate, textvariable=updateClicked2, values=options)
+            numTurnsLabel = Label(topUpdate, text="Number of turns: ")
+            numTurnsEntry = Entry(topUpdate, width=5)
+            outputLabel = Label(topUpdate, text="Output: ")
+            outputEntry = Entry(topUpdate, width=45)
+            score1Label = Label(topUpdate, text="Score 1: ")
+            score1Entry = Entry(topUpdate, width=20)
+            score2Label = Label(topUpdate, text="Score 2: ")
+            score2Entry = Entry(topUpdate, width=20)
+            
+            # Putting everything in the topUpdate window
+            strategy1Label.grid(row=0, column=0, sticky=E)
+            strategy1Dropdown.grid(row=0, column=1, sticky=W)
+            strategy2Label.grid(row=1, column=0, sticky=E)
+            strategy2Dropdown.grid(row=1, column=1, sticky=W)
+            numTurnsLabel.grid(row=2, column=0, padx=(10, 0), sticky=E)
+            numTurnsEntry.grid(row=2, column=1, sticky=W)
+            outputLabel.grid(row=3, column=0, sticky=E)
+            outputEntry.grid(row=3, column=1, sticky=W)
+            score1Label.grid(row=4, column=0, sticky=E)
+            score1Entry.grid(row=4, column=1, sticky=W)
+            score2Label.grid(row=5, column=0, sticky=E)
+            score2Entry.grid(row=5, column=1, sticky=W, pady=(0,5))
+            
+            # Loop through results
+            for record in records:
+                updateClicked1.set(record[0])
+                updateClicked2.set(record[1])
+                numTurnsEntry.insert(0, record[2])
+                outputEntry.insert(0, record[3])
+                score1Entry.insert(0, record[4])
+                score2Entry.insert(0, record[5])
+                
+            saveButton = Button(topUpdate, text="Save Record", command=lambda: saveRecord(topUpdate, selectIDEntry, updateClicked1, updateClicked2, numTurnsEntry, outputEntry, score1Entry, score2Entry))
+            saveButton.grid(row=6, column=0, columnspan=2)
+            
+            conn.commit()
+            conn.close()
+        return
 
 def writeToFile(fileName, groupedPayoffs):
     """
