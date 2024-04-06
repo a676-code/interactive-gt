@@ -9,6 +9,7 @@ testnash.py
 testaxelrod.py
 thisisafile.*
 *.csv
+match.db-journal
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

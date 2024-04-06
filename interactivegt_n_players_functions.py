@@ -14,7 +14,7 @@ from pprint import pprint
 import warnings
 
 # Function definitions
-def addAllPairs():
+def addAllPairs(dbTurnsEntry):
     """
     Inserts a match between every possible pair of strategies with a set number of turns. 
     """
@@ -22,33 +22,35 @@ def addAllPairs():
     c = conn.cursor()
 
     options = [s() for s in axl.strategies]
-    Combos = combinations(options, r=2)
+    optionNames = [type(option).__name__ for option in options]
+    Combos = combinations(optionNames, r=2)
     for i, pair in enumerate(Combos):
+        match = dbPlayMatch(pair[0], pair[1], int(dbTurnsEntry.get()))
         print("Inserting pair " + str(i))
         c.execute("INSERT INTO matches VALUES (:strategy1, :strategy2, :numTurns, :output, :score1, :score2)",
             {
                 'strategy1': str(pair[0]),
                 'strategy2': str(pair[1]),
                 'numTurns': dbTurnsEntry.get(),
-                'output': str(dbPlayMatch(pair[0], pair[1], int(dbTurnsEntry.get()))[0]), 
-                'score1': dbPlayMatch(pair[0], pair[1], int(dbTurnsEntry.get()))[1][0], 
-                'score2':dbPlayMatch(pair[0], pair[1], int(dbTurnsEntry.get()))[1][1]
+                'output': match[0], 
+                'score1': match[1][0], 
+                'score2': match[1][1]
             }
         )
-        print("Inserting output " + str(dbPlayMatch(pair[0], pair[1], int(dbTurnsEntry.get()))[0]))
     # Inserting pairs (s, s) for each strategy s
     for strategy in options:
+        match = dbPlayMatch(strategy, strategy, int(dbTurnsEntry.get()))
         c.execute("INSERT INTO matches VALUES (:strategy1, :strategy2, :numTurns, :output, :score1, :score2)",
             {
                 'strategy1': str(strategy),
                 'strategy2': str(strategy),
                 'numTurns': dbTurnsEntry.get(),
-                'output': str(dbPlayMatch(strategy, strategy, int(dbTurnsEntry.get()))[0]), 
-                'score1': dbPlayMatch(strategy, strategy, int(dbTurnsEntry.get()))[1][0], 
-                'score2': dbPlayMatch(strategy, strategy, int(dbTurnsEntry.get()))[1][1]
+                'output': match[0], 
+                'score1': match[1][0], 
+                'score2': match[1][1]
             }
         )
-        print("Inserting output " + str(dbPlayMatch(strategy, strategy, int(dbTurnsEntry.get()))[0]))
+        print("Inserting output " + str(match[0]))
     
     conn.commit()
     conn.close()
@@ -78,19 +80,17 @@ def addRecord(clicked1, clicked2, dbClicked1, dbClicked2, dbTurnsEntry):
             p2 = options[counter]
         counter += 1
     
-    # """
+    match = dbPlayMatch(p1, p2, int(dbTurnsEntry.get()))
     c.execute("INSERT INTO matches VALUES (:strategy1, :strategy2, :numTurns, :output, :score1, :score2)",
         {
             'strategy1': dbClicked1.get(),
             'strategy2': dbClicked2.get(),
             'numTurns': dbTurnsEntry.get(),
-            'output': str(dbPlayMatch(clicked1, clicked2, p1, p2, int(dbTurnsEntry.get()))[0]),
-            'score1': dbPlayMatch(clicked1, clicked2, p1, p2, int(dbTurnsEntry.get()))[1][0],
-            'score2': dbPlayMatch(clicked1, clicked2, p1, p2, int(dbTurnsEntry.get()))[1][1]
+            'output': match[0],
+            'score1': match[1][0],
+            'score2': match[1][1]
         }
     )
-    # """
-    
     conn.commit()
     conn.close()
 
@@ -509,7 +509,7 @@ def db(clicked1, clicked2):
     dbTurnsEntry = Entry(dbWindow, width=5)
     dbTurnsEntry.insert(0, "6")
     addRecordButton = Button(dbWindow, text="Add Record", command=lambda: addRecord(clicked1, clicked2, dbClicked1, dbClicked2, dbTurnsEntry))
-    addAllPairsButton = Button(dbWindow, text="Add All Pairs for a Given Number of Turns", command=addAllPairs)
+    addAllPairsButton = Button(dbWindow, text="Add All Pairs for a Given Number of Turns", command=lambda: addAllPairs(dbTurnsEntry))
     numRecordsButton = Button(dbWindow, text="Get Total Number of Records", command=lambda: getNumRecords(dbWindow))
     showRecordsButton = Button(dbWindow, text="Show Records", command=lambda: showRecords(dbWindow))
     exportButton = Button(dbWindow, text="Export to csv", command=export)
@@ -547,19 +547,21 @@ def db(clicked1, clicked2):
     conn.close()
     return
 
-def dbPlayMatch(clicked1, clicked2, p1, p2, t = 6):    
+def dbPlayMatch(p1Strat, p2Strat, t = 6):    
     """
     Runs an axelrod match between players of type p1 and p2 with t turns and returns a tuple of the match output and scores
-    """    
+    """
+    print("p1Strat:", p1Strat)
+    print("p2Strat:", p2Strat)
     p1 = ""
     p2 = ""
-    clicked1NoSpaces = clicked1.get().replace(" ", "")
-    clicked2NoSpaces = clicked2.get().replace(" ", "")
+    
+    # Getting the strategy object that corresponds to the string p1Strat
     counter = 0
     options = [s() for s in axl.strategies]
     while type(p1).__name__ == "str" and counter <= len(axl.strategies):
         try:
-            if type(options[counter]).__name__ == clicked1NoSpaces:
+            if type(options[counter]).__name__ == p1Strat:
                 p1 = options[counter]
         except IndexError:
             stratNotFoundError = messagebox.showerror("Error", "The strategy you entered for player 1 was not in axelrod's list of strategies. Perhaps you meant to capitalize the individual words?")
@@ -568,13 +570,12 @@ def dbPlayMatch(clicked1, clicked2, p1, p2, t = 6):
     counter = 0
     while type(p2).__name__ == "str" and counter <= len(axl.strategies):
         try:
-            if type(options[counter]).__name__ == clicked2NoSpaces:
+            if type(options[counter]).__name__ == p2Strat:
                 p2 = options[counter]
-                
-                match = axl.Match((p1, p2), turns = t)
         except IndexError:
             stratNotFoundError = messagebox.showerror("Error", "The strategy you entered for player 2 was not in axelrod's list of strategies. Perhaps you meant to capitalize the individual words?")
         counter += 1
+    match = axl.Match((p1, p2), turns = t)
     return (str(match.play()), match.final_score_per_turn())
 
 def deleteRecord(selectIDEntry):
@@ -1851,7 +1852,7 @@ def resetRecord(clicked1, clicked2, selectIDEntry, dbClicked1, dbClicked2, dbTur
     c = conn.cursor()
     
     # Check if an ID was actually selected
-    recordID  = selectIDEntry.get()
+    recordID = selectIDEntry.get()
     if recordID == "":
         emptyRecordIDError = messagebox.showerror("Error", "You must enter an ID to reset a record.")
         conn.commit()
