@@ -1471,7 +1471,7 @@ def exportSearch():
                     str(record[2]) + ",\"" + 
                     str(record[3]) + "\"," + 
                     str(record[4]) + "," + 
-                    str(record[5]) + ", + 
+                    str(record[5]) + "," +
                     str(record[6]))
                 if i < len(records) - 1:
                     file.write("\n")
