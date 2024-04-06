@@ -19,6 +19,8 @@ from interactivegt_n_players_functions import *
 # Creating our SimGame object
 G = SimGame(2)
 
+oldNumPlayers = 2
+
 # Defining the root window
 root = Tk()
 root.title("Interactive GT")
@@ -50,7 +52,7 @@ numStratsLabels = [Label(dimensionsFrame, text=f"Number of strategies for player
 numStratsEntries = [Entry(dimensionsFrame, width=5) for x in range(G.numPlayers)]
 for x in range(G.numPlayers):
     numStratsEntries[x].insert(0, "2")
-numPlayersButton = Button(dimensionsFrame, text="Enter numPlayers", command=lambda: numPlayersClick(G, dimensionsFrame, numPlayersButton, dimensionsButton))
+numPlayersButton = Button(dimensionsFrame, text="Enter numPlayers", command=lambda: numPlayersClick(G, dimensionsFrame, numPlayersButton, dimensionsButton, oldNumPlayers))
 
 # payoffsFrame < payoffsCanvas < mainPayoffsFrame < rootFrame < ...
 # Payoffs Frame
@@ -140,7 +142,7 @@ eqOutput.set("0")
 Radiobutton(equilibriaFrame, text="Standard nashpy Output", variable=eqOutput, value=0, command=lambda: equilibriaOutputStyleClicked(eqOutput, eqOutput.get())).grid(row=0, column=0, sticky=W)
 Radiobutton(equilibriaFrame, text="Named Strategies", variable=eqOutput, value=1, command=lambda: equilibriaOutputStyleClicked(eqOutput, eqOutput.get())).grid(row=1, column=0, sticky=W)
 
-equilibriaButton = Button(equilibriaFrame, text="Compute Equilibria", command=lambda: computeEquilibria(eqOutput.get()))
+equilibriaButton = Button(equilibriaFrame, text="Compute Equilibria", command=lambda: computeEquilibria(G, root, dimensionsFrame, payoffsFrame, equilibriaFrame, eqOutput.get()))
 
 # Axelrod Frame
 axelrodFrame = LabelFrame(rootFrame, text="axelrod" , padx=10, pady=10)
@@ -203,7 +205,7 @@ for x in range(G.numPlayers):
 
 numPlayersButton.grid(row=3, column=0, padx=(0, 5), pady=5)
 
-dimensionsButton = Button(dimensionsFrame, text="Enter Dimensions", command=lambda: dimensionsClick(G, root, dimensionsFrame, payoffsFrame))
+dimensionsButton = Button(dimensionsFrame, text="Enter Dimensions", command=lambda: dimensionsClick(G, root, dimensionsFrame, payoffsFrame, oldNumPlayers))
 dimensionsButton.grid(row=3, column=1, padx=(0, 5), pady=5, sticky=W)
 
 mainPayoffsFrame.grid(row=0, column=1, sticky=W)

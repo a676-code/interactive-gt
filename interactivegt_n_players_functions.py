@@ -11,6 +11,7 @@ import pysimultaneous
 from pysimultaneous import SimGame
 from pysimultaneous import Player
 from pprint import pprint
+import warnings
 
 # Function definitions
 def addAllPairs():
@@ -230,16 +231,24 @@ def clearStrategies():
     else:
         return
 
-def computeEquilibria(output):
+def computeEquilibria(G, root, dimensionsFrame, payoffsFrame, equilibriaFrame, output):
     """
     Computes the equilibria of the current game and formats the output according to whether the output variable is 0 or 1, 
     """
     entriesToSimGame(G, dimensionsFrame, payoffsFrame)
     # FIXME
-    proceed = entriesToList()
+    proceed = entriesToList(G, dimensionsFrame, payoffsFrame)
     if proceed == True:
-        numStrats1 = int(numStratsEntries[0].get())
-        numStrats2 = int(numStratsEntries[1].get())
+        dimensionsSlaves = dimensionsFrame.grid_slaves()
+        numStratsEntries = []
+        for slave in dimensionsSlaves:
+            if type(slave).__name__ == "Entry":
+                numStratsEntries.append(slave)
+        numPlayers = int(numStratsEntries[-1].get())
+        numStratsEntries.pop() # last one will be the numPlayers entry
+        numStratsEntries.reverse()
+        numStrats = [int(e.get()) for e in numStratsEntries]
+        
         if output == 0: # Standard nashpy Output
             eqs = G.computeEquilibria()
             numEquilibria = len(list(eqs))
@@ -262,24 +271,24 @@ def computeEquilibria(output):
 
             # Coloring the equilibria yellow ####################
             payoffMatrixSlaves = payoffsFrame.grid_slaves()
-            outcomes = payoffMatrixSlaves[:numStrats1 * numStrats2]
+            outcomes = payoffMatrixSlaves[:numStrats[0] * numStrats[1]]
             
             # Converting the list of outcomes to a list of lists
             newOutcomes = []
             row = []
             numInRow = 0
             for outcome in outcomes:
-                if numInRow < numStrats2:
+                if numInRow < numStrats[1]:
                     row.insert(0, outcome)
                     numInRow += 1
-                    if numInRow == numStrats2:
+                    if numInRow == numStrats[1]:
                         newOutcomes.insert(0, row)
                         numInRow = 0
                         row = []
             
             # matching the indices to those of the payoff matrix and changing the color
-            for i in range(numStrats1):
-                for j in range(numStrats2):
+            for i in range(numStrats[0]):
+                for j in range(numStrats[1]):
                     if [i, j] in pureEquilibria:
                         newOutcomes[i][j].configure(bg="yellow")
                     else:
@@ -309,7 +318,6 @@ def computeEquilibria(output):
             root.geometry("750x490")
             
         elif output == 1: # Named Strategies
-            numPlayers = int(numPlayersEntry.get())
             eqs = G.computeEquilibria()
             numEquilibria = len(list(eqs))
             if numEquilibria % 2 == 0:
@@ -333,17 +341,17 @@ def computeEquilibria(output):
 
             # Coloring the equilibria yellow
             payoffMatrixSlaves = payoffsFrame.grid_slaves()
-            outcomes = payoffMatrixSlaves[:numStrats1 * numStrats2]
+            outcomes = payoffMatrixSlaves[:numStrats[0] * numStrats[1]]
             
             # converting the list of outcomes to a list of lists
             newOutcomes = []
             row = []
             numInRow = 0
             for outcome in outcomes:
-                if numInRow < numStrats2:
+                if numInRow < numStrats[1]:
                     row.append(outcome)
                     numInRow += 1
-                    if numInRow == numStrats2:
+                    if numInRow == numStrats[1]:
                         newOutcomes.append(row)
                         numInRow = 0
                         row = []
@@ -351,18 +359,12 @@ def computeEquilibria(output):
             # FIXME: Can't finish this until we've implemented strategy names for players past player 2! 
             # Getting list of the strategy names
             payoffMatrixSlaves = payoffsFrame.grid_slaves()
-            strategyNames = payoffMatrixSlaves[numStrats1 * numStrats2:]
+            strategyNames = payoffMatrixSlaves[numStrats[0] * numStrats[1]:]
             
-            p1StrategyNames = strategyNames[:numStrats1]
+            p1StrategyNames = strategyNames[:numStrats[0]]
             p1StrategyNames.reverse()
-            p2StrategyNames = strategyNames[numStrats1:]
+            p2StrategyNames = strategyNames[numStrats[0]:]
             p2StrategyNames.reverse()
-            
-            print("eqs:")
-            for e in eqs:
-                print(e)
-            
-            inp = input("Press Enter")
             
             # Collecting the named equilibria
             namedEquilibria = []
@@ -374,6 +376,7 @@ def computeEquilibria(output):
                     for x in range(numPlayers):
                         if eq[x] == 1.0:
                             stratIndices.append(x)
+                # FIXME
                 namedEquilibria.append(tuple(...))               
             eqs = G.support_enumeration()
             eqList = [str(len(list(eqs))) + " equilibria returned\n"]
@@ -398,17 +401,17 @@ def computeEquilibria(output):
             
             # Coloring the pure equilibria     
             payoffMatrixSlaves = payoffsFrame.grid_slaves()
-            outcomes = payoffMatrixSlaves[:numStrats1 * numStrats2]
+            outcomes = payoffMatrixSlaves[:numStrats[0] * numStrats[1]]
             
             # Converting the list of outcomes to a list of lists
             newOutcomes = []
             row = []
             numInRow = 0
             for outcome in outcomes:
-                if numInRow < numStrats2:
+                if numInRow < numStrats[1]:
                     row.insert(0, outcome)
                     numInRow += 1
-                    if numInRow == numStrats2:
+                    if numInRow == numStrats[1]:
                         newOutcomes.insert(0, row)
                         numInRow = 0
                         row = []
@@ -432,8 +435,8 @@ def computeEquilibria(output):
                 eqIndices.append([index1, index2])
             
             # matching the indices to those of the payoff matrix and changing the color
-            for i in range(numStrats1):
-                for j in range(numStrats2):
+            for i in range(numStrats[0]):
+                for j in range(numStrats[1]):
                     if [i, j] in eqIndices:
                         newOutcomes[i][j].configure(bg="yellow")
                     else:
@@ -444,16 +447,16 @@ def computeEquilibria(output):
             if type(eqSlaves[0]).__name__ == "Listbox":
                 eqSlaves[0].grid_remove()
             
-            myFrame = LabelFrame(equilibriaFrame)
+            eqListBoxFrame = LabelFrame(equilibriaFrame)
     
-            xscrollbar = Scrollbar(myFrame, orient=HORIZONTAL)
-            yscrollbar = Scrollbar(myFrame, orient=VERTICAL)
+            xscrollbar = Scrollbar(eqListBoxFrame, orient=HORIZONTAL)
+            yscrollbar = Scrollbar(eqListBoxFrame, orient=VERTICAL)
             
-            equilibriaOutputListBox = Listbox(myFrame, width=50, xscrollcommand=xscrollbar.set, yscrollcommand=yscrollbar.set, bg="black", fg="white")
+            equilibriaOutputListBox = Listbox(eqListBoxFrame, width=50, xscrollcommand=xscrollbar.set, yscrollcommand=yscrollbar.set, bg="black", fg="white")
             for eq in eqList:
                 equilibriaOutputListBox.insert(0, eq)
             
-            myFrame.grid(row=2, column=0, columnspan=2)
+            eqListBoxFrame.grid(row=2, column=0, columnspan=2)
             equilibriaOutputListBox.grid(row=0, column=0, padx=10, sticky=NSEW)
             xscrollbar.grid(row=1, column=0, columnspan=2, sticky=EW)
             xscrollbar.config(command = equilibriaOutputListBox.xview)
@@ -588,11 +591,10 @@ def deleteRecord():
     conn.close()
     return
 
-def dimensionsClick(G, root, dimensionsFrame, payoffsFrame):
+def dimensionsClick(G, root, dimensionsFrame, payoffsFrame, oldNumPlayers):
     """
     Resizes the payoff matrix according to the numbers of strategies entered in by the user
     """
-    oldNumPlayers = G.numPlayers
     dimensionsSlaves = dimensionsFrame.grid_slaves()
     numStratsLabels = []  
     numStratsEntries = []
@@ -651,6 +653,10 @@ def dimensionsClick(G, root, dimensionsFrame, payoffsFrame):
                                 else: 
                                     G.strategyNames.append(["L(" + str(x + 1) + ")"] + ["C(" + str(x + 1) + ", " + str(s + 1) + ")" for s in range(G.players[x].numStrats)] + ["R(" + str(x + 1) + ")"])
                         
+                        print("old:", oldNumPlayers)
+                        print("nP:", numPlayers)
+                        print("G:", G.numPlayers)
+                        print("len players:", len(G.players))                 
                         # resetting the strategy names
                         gNumStrats = [G.players[x].numStrats for x in range(G.numPlayers)]
                         if numStrats != gNumStrats:
@@ -1455,10 +1461,13 @@ def getNumRecords(dbWindow):
 def iesdsStepsClicked(iesdsSteps, value):
     iesdsSteps.set(value)
 
-def numPlayersClick(G, dimensionsFrame, numPlayersButton, dimensionsButton):
+def numPlayersClick(G, dimensionsFrame, numPlayersButton, dimensionsButton, oldNumPlayerss):
     dimensionsSlaves = dimensionsFrame.grid_slaves()
+    dimensionsLabels = []
     dimensionsEntries = []
     for slave in dimensionsSlaves:
+        if type(slave).__name__ == "Label":
+            dimensionsLabels.append(slave)
         if type(slave).__name__ == "Entry":
             dimensionsEntries.append(slave)
     numPlayers = int(dimensionsEntries[-1].get())
@@ -1468,15 +1477,32 @@ def numPlayersClick(G, dimensionsFrame, numPlayersButton, dimensionsButton):
         numPlayersError = messagebox.showerror("Error", "dimensionsClick: There must be at least 2 players.")
         return
     else:
+        dimensionsLabels.pop()
+        dimensionsLabels.reverse()
+        dimensionsEntries.pop()
+        dimensionsEntries.reverse()
+        numStratsLabels = dimensionsLabels
+        numStratsEntries = dimensionsEntries
+        
         oldNumPlayers = G.numPlayers
-        for x in range(numPlayers - oldNumPlayers):
-            l = Label(dimensionsFrame, text=f"Number of strategies for player {oldNumPlayers + x + 1}: ")
-            l.grid(row=oldNumPlayers + x + 1, column=0, sticky=E)
-            e = Entry(dimensionsFrame, width=5)
-            e.grid(row=oldNumPlayers + x + 1, column=1, sticky=W)
-            e.insert(0, 2)
-        numPlayersButton.grid(row=numPlayers + 2, column=0)
-        dimensionsButton.grid(row=numPlayers + 2, column=1)
+        print("HERE ONP:", oldNumPlayers)
+        G.numPlayers = numPlayers
+        if numPlayers > oldNumPlayers:
+            print("GREATER")
+            for x in range(numPlayers - oldNumPlayers):
+                l = Label(dimensionsFrame, text=f"Number of strategies for player {oldNumPlayers + x + 1}: ")
+                l.grid(row=oldNumPlayers + x + 1, column=0, sticky=E)
+                e = Entry(dimensionsFrame, width=5)
+                e.grid(row=oldNumPlayers + x + 1, column=1, sticky=W)
+                e.insert(0, 2)
+            numPlayersButton.grid(row=numPlayers + 2, column=0)
+            dimensionsButton.grid(row=numPlayers + 2, column=1)
+        elif numPlayers < oldNumPlayers:
+            print("HERE")
+            for x in range(numPlayers, oldNumPlayers):
+                print("removing:", x)
+                numStratsLabels[x].grid_remove()
+                numStratsEntries[x].grid_remove()
         return
 
 def openFile(G, root, dimensionsFrame, payoffsFrame, equilibriaFrame):
