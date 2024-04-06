@@ -516,7 +516,7 @@ def db(clicked1, clicked2):
     searchRecordsButton = Button(dbWindow, text="Search Records", command=searchRecords)
     selectIDLabel = Label(dbWindow, text="Select ID: ")
     selectIDEntry = Entry(dbWindow, width=20)
-    deleteRecordButton = Button(dbWindow, text="Delete Record", command=deleteRecord)
+    deleteRecordButton = Button(dbWindow, text="Delete Record", command=lambda: deleteRecord(selectIDEntry))
     updateRecordButton = Button(dbWindow, text="Update Record", command=updateRecord)
     resetRecordButton = Button(dbWindow, text="Reset Record", command=lambda: resetRecord(clicked1, clicked2, selectIDEntry, dbClicked1, dbClicked2, dbTurnsEntry))
     clearDBButton = Button(dbWindow, text="Clear DB", command=clearDB)
@@ -577,7 +577,7 @@ def dbPlayMatch(clicked1, clicked2, p1, p2, t = 6):
         counter += 1
     return (str(match.play()), match.final_score_per_turn())
 
-def deleteRecord():
+def deleteRecord(selectIDEntry):
     # Create a database or connect to one
     conn = sqlite3.connect('match.db')
     # Create cursor
