@@ -512,7 +512,7 @@ def db(clicked1, clicked2):
     addAllPairsButton = Button(dbWindow, text="Add All Pairs for a Given Number of Turns", command=addAllPairs)
     numRecordsButton = Button(dbWindow, text="Get Total Number of Records", command=lambda: getNumRecords(dbWindow))
     showRecordsButton = Button(dbWindow, text="Show Records", command=lambda: showRecords(dbWindow))
-    exportButton = Button(dbWindow, text="Export to csv", command=exportGetFileName)
+    exportButton = Button(dbWindow, text="Export to csv", command=export)
     searchRecordsButton = Button(dbWindow, text="Search Records", command=searchRecords)
     selectIDLabel = Label(dbWindow, text="Select ID: ")
     selectIDEntry = Entry(dbWindow, width=20)
@@ -1362,71 +1362,119 @@ def entriesToList(G, dimensionsFrame, payoffsFrame):
 def equilibriaOutputStyleClicked(eqOutput, value):
     eqOutput.set(value)
     
-def export(fileName, records):
-    # input validation
-    if ".csv" not in fileName and "." in fileName:
-        wrongExtensionError = messagebox.showerror("Error", f"The file name \"{fileName}\" contains the wrong file extension. The extension should be \".csv\".")
-        return
-    elif ".csv" not in fileName and "." not in fileName:
-        fileName = fileName + ".csv"
-    
-    with open(fileName, 'w') as file:
-        for i, record in enumerate(records):
-            file.write(
-                "\"" + str(record[0]) + "\",\"" + 
-                str(record[1])+ "\",\"" + 
-                str(record[2]) + "\",\"" + 
-                str(record[3]) + "\",\"" + 
-                str(record[4]) + "\",\"" + 
-                str(record[5]) + "\",\"" + 
-                str(record[6]) + "\"")
-            if i < len(records) - 1:
-                file.write("\n")
+def export():
+    fileSave = filedialog.asksaveasfile(defaultextension = ".csv", mode='w', initialdir=".", title="Save As", filetypes=(("CSV files", "*.csv"),))
+    if fileSave:
+        # Create a database or connect to one
+        conn = sqlite3.connect('match.db')
+        # Create cursor
+        c = conn.cursor()
         
-def exportGetFileName():
-     # Create a database or connect to one
-    conn = sqlite3.connect('match.db')
-    # Create cursor
-    c = conn.cursor()
-    
-    c.execute("""SELECT *, oid FROM matches""")
-    records = c.fetchall()
-    
-    top = Toplevel()
-    top.title("Export to csv")
-    top.iconbitmap("knight.ico")
-    top.geometry("250x30")
-    
-    fileNameLabel = Label(top, text="Enter a File Name: ")
-    fileNameEntry = Entry(top, width=15)
-    fileNameButton = Button(top, text="Enter", command=lambda: export(fileNameEntry.get(), records))
-    
-    # Putting everything in the top window
-    fileNameLabel.grid(row=0, column=0)
-    fileNameEntry.grid(row=0, column=1)
-    fileNameButton.grid(row=0, column=2)
-    
-    # Commit changes
-    conn.commit()
-    # Close Connection
-    conn.close()
-    return
+        c.execute("""SELECT *, oid FROM matches""")
+        records = c.fetchall()
+        
+        # Commit changes
+        conn.commit()
+        # Close Connection
+        conn.close()
+        
+        with open(fileSave.name, 'w') as file:
+            for i, record in enumerate(records):
+                file.write(
+                    str(record[0]) + "," + 
+                    str(record[1])+ "," + 
+                    str(record[2]) + ",\"" + 
+                    str(record[3]) + "\"," + 
+                    str(record[4]) + "," + 
+                    str(record[5]) + "," + 
+                    str(record[6]))
+                if i < len(records) - 1:
+                    file.write("\n")
 
-def exportSearchGetFileName(records):
-    top = Toplevel()
-    top.title("Export to csv")
-    top.iconbitmap("knight.ico")
-    top.geometry("250x30")
-    
-    fileNameLabel = Label(top, text="Enter a File Name: ")
-    fileNameEntry = Entry(top, width=15)
-    fileNameButton = Button(top, text="Enter", command=lambda: export(fileNameEntry.get(), records))
-    
-    # Putting everything in the top window
-    fileNameLabel.grid(row=0, column=0)
-    fileNameEntry.grid(row=0, column=1)
-    fileNameButton.grid(row=0, column=2)
-    return
+def exportSearch():
+    file = filedialog.asksaveasfile(defaultextension = ".csv", mode='w', initialdir=".", title="Save As", filetypes=(("CSV files", "*.csv"),))
+    if file:
+        # Create a database or connect to one
+        conn = sqlite3.connect('match.db')
+        # Create cursor
+        c = conn.cursor()
+        
+        # Building the query that we'll search with
+        tupleSize = 0
+        searchQuery = "SELECT *, oid FROM matches"
+        whereAdded = False
+        if searchClicked1.get() != "":
+            if not whereAdded:
+                searchQuery = searchQuery + " WHERE "
+                whereAdded = True
+            searchQuery = searchQuery + "strategy1='" + searchClicked1.get() + "'"
+            searchQuery = searchQuery + " OR strategy2='" + searchClicked1.get() + "'"
+        if searchClicked2.get() != "":
+            if not whereAdded:
+                searchQuery = searchQuery + " WHERE "
+                whereAdded = True
+            else:
+                searchQuery = searchQuery + " AND "
+            searchQuery = searchQuery + "strategy2='" + searchClicked2.get() + "'"
+            searchQuery = searchQuery + "or strategy1='" + searchClicked2.get() + "'"
+        if searchClicked1.get() != "" and searchClicked2.get() != "":
+            searchQuery = searchQuery + " OR strategy1='" + searchClicked2.get() + "' AND strategy2='" + searchClicked1.get() + "'"
+        if numTurnsSearchEntry.get() != "":
+            if not whereAdded:
+                searchQuery = searchQuery + " WHERE "
+                whereAdded = True
+            else: 
+                searchQuery = searchQuery + " AND "
+            searchQuery = searchQuery + "numTurns=" + numTurnsSearchEntry.get()
+        if outputSearchEntry.get() != "":
+            if not whereAdded:
+                searchQuery = searchQuery + " WHERE "
+                whereAdded = True
+            else:
+                searchQuery = searchQuery + " AND "
+            searchQuery = searchQuery + "output='" + outputSearchEntry.get() + "'"
+        if score1SearchEntry.get() != "":
+            if not whereAdded:
+                searchQuery = searchQuery + " WHERE "
+                whereAdded = True
+            else:
+                searchQuery = searchQuery + " AND "
+            searchQuery = searchQuery + "score1='" + score1SearchEntry.get() + "'"
+        if score2SearchEntry.get() != "":
+            if not whereAdded:
+                searchQuery = searchQuery + " WHERE "
+                whereAdded = True
+            else:
+                searchQuery = searchQuery + " AND "
+            searchQuery = searchQuery + "score2='" + score2SearchEntry.get() + "'"
+            tupleSize += 1
+        if IDEntry.get() != "":
+            if not whereAdded:
+                searchQuery = searchQuery + " WHERE "
+                whereAdded = True
+            else:
+                searchQuery = searchQuery + " AND "
+            searchQuery = searchQuery + "oid='" + IDEntry.get() + "'"
+        c.execute(searchQuery)
+        records = c.fetchall()
+        
+        # Commit changes
+        conn.commit()
+        # Close Connection
+        conn.close()
+        
+        with open(fileName, 'w') as file:
+            for i, record in enumerate(records):
+                file.write(
+                    str(record[0]) + "," + 
+                    str(record[1])+ "," + 
+                    str(record[2]) + ",\"" + 
+                    str(record[3]) + "\"," + 
+                    str(record[4]) + "," + 
+                    str(record[5]) + ", + 
+                    str(record[6]))
+                if i < len(records) - 1:
+                    file.write("\n")
 
 def getNumRecords(dbWindow):
     # Create a database or connect to one
@@ -2118,7 +2166,7 @@ def searchRecords():
     IDLabel.grid(row=6, column=0, sticky=E)
     IDEntry.grid(row=6, column=1, sticky=W)
     
-    submitButton = Button(topSearch, text="Submit", command=submitQuery)
+    submitButton = Button(topSearch, text="Submit", command=lambda: submitQuery(topSearch, searchClicked1, searchClicked2, numTurnsSearchEntry, outputSearchEntry, score1SearchEntry, score2SearchEntry, IDEntry))
     submitButton.grid(row=7, column=0, columnspan=2)
     
     return
@@ -2325,7 +2373,7 @@ def submitRemoveStrategy():
     
     return
     
-def submitQuery():
+def submitQuery(topSearch, searchClicked1, searchClicked2, numTurnsSearchEntry, outputSearchEntry, score1SearchEntry, score2SearchEntry, IDEntry):
     """
     Submits the user's query when searching the match database
     """
@@ -2418,7 +2466,7 @@ def submitQuery():
         for record in recordsList:
             showRecordsListBox.insert(0, record)
             
-        exportSearchButton = Button(topSearch, text="Export to csv", command=lambda: exportSearchGetFileName(records))
+        exportSearchButton = Button(topSearch, text="Export to csv", command=export)
         
         searchResultsFrame.grid(row=11, column=0, columnspan=2)
         showRecordsListBox.grid(row=0, column=0, padx=10, sticky=NSEW)

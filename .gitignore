@@ -8,6 +8,7 @@ scrollbar.py
 testnash.py
 testaxelrod.py
 thisisafile.*
+*.csv
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
