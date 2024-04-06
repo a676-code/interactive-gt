@@ -578,17 +578,27 @@ def dbPlayMatch(clicked1, clicked2, p1, p2, t = 6):
     return (str(match.play()), match.final_score_per_turn())
 
 def deleteRecord(selectIDEntry):
+    
     # Create a database or connect to one
     conn = sqlite3.connect('match.db')
     # Create cursor
     c = conn.cursor()
-    try:
-        c.execute("DELETE FROM matches WHERE oid=" + selectIDEntry.get())
-    except sqlite3.OperationalError:
-        IDNotSelectedError = messagebox.showerror("Error", "You must enter an ID to delete a record.")            
     
-    conn.commit()
-    conn.close()
+    try:
+        id_ = selectIDEntry.get()
+    except sqlite3.OperationalError:
+            IDNotSelectedError = messagebox.showerror("Error", "You must enter an ID to delete a record.")
+    else:
+        c.execute("SELECT 1 FROM matches WHERE oid=" + id_)
+        records = c.fetchall()
+        if len(records) == 0:
+            recordDNEError = messagebox.showerror("Error", "A record with that ID does not exist in the matches table.")
+        else:
+            c.execute("DELETE FROM matches WHERE oid=" + id_)
+            recordDeletedInfo = messagebox.showinfo("Record Deleted", f"Record with ID {id_} successfully deleted")     
+        
+        conn.commit()
+        conn.close()
     return
 
 def dimensionsClick(G, root, dimensionsFrame, payoffsFrame, oldNumPlayers):
@@ -889,9 +899,7 @@ def eliminateStrictlyDominatedStrategies(G, dimensionsFrame, payoffsFrame, steps
         for x in range(numPlayers):
             originalNumStrats.append(int(numStratsEntries[x].get()))
     
-    numStrats = []
-    for x in range(numPlayers):
-        numStrats.append(int(numStratsEntries[x].get()))
+    numStrats = [int(e.get()) for e in numStratsEntries]
     payoffMatrixSlaves = payoffsFrame.grid_slaves()
     outcomes = payoffMatrixSlaves[:numStrats[0] * numStrats[1]]
     outcomes.reverse()

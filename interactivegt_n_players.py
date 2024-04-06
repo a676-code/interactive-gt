@@ -58,7 +58,6 @@ def main():
 
     # payoffsFrame < payoffsCanvas < mainPayoffsFrame < rootFrame < ...
     # Payoffs Frame
-
     mainPayoffsFrame = LabelFrame(rootFrame, text="Payoffs", padx=10, pady=10)
     payoffsCanvas = Canvas(mainPayoffsFrame)
     # payoffsCanvas.pack(side=LEFT, fill=BOTH, expand=1)
