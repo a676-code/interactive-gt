@@ -128,7 +128,7 @@ def main():
     iesdsSteps.set("0")
 
     Radiobutton(iesdsFrame, text="Full Computation", variable=iesdsSteps, value=0, command=lambda: iesdsStepsClicked(iesdsSteps, iesdsSteps.get())).grid(row=0, column=0, sticky=W)
-    revertButton = Button(iesdsFrame, text="Revert", command=lambda: revert(G, dimensionsFrame, payoffsFrame, int(numPlayersEntry.get())))
+    revertButton = Button(iesdsFrame, text="Revert", command=lambda: revert(G, dimensionsFrame, payoffsFrame))
     Radiobutton(iesdsFrame, text="Computation in Steps", variable=iesdsSteps, value=1, command=lambda: iesdsStepsClicked(iesdsSteps, iesdsSteps.get())).grid(row=1, column=0, sticky=W)
     iesdsButton = Button(iesdsFrame, text="Eliminate Strictly Dominated Strategies", command=lambda: eliminateStrictlyDominatedStrategies(G, dimensionsFrame, payoffsFrame, iesdsSteps.get()))
 
@@ -213,7 +213,6 @@ def main():
 
     payoffsCanvas.grid(row=0, column=0)
     payoffsFrame.pack(side=TOP)
-
 
     iesdsFrame.grid(row=1, column=1, padx=10, pady=10, sticky=W)
     revertButton.grid(row=0, column=1)
