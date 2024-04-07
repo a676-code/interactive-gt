@@ -14,44 +14,31 @@ from pprint import pprint
 import warnings
 
 # Function definitions
-def addAllPairs(dbTurnsEntry):
+def addAllPairs(dbTurnsEntry, dbClicked1):
     """
     Inserts a match between every possible pair of strategies with a set number of turns. 
     """
     conn = sqlite3.connect('match.db')
     c = conn.cursor()
-
-    options = [s() for s in axl.strategies]
-    optionNames = [type(option).__name__ for option in options]
-    Combos = combinations(optionNames, r=2)
-    for i, pair in enumerate(Combos):
-        match = dbPlayMatch(pair[0], pair[1], int(dbTurnsEntry.get()))
-        print("Inserting pair " + str(i))
-        c.execute("INSERT INTO matches VALUES (:strategy1, :strategy2, :numTurns, :output, :score1, :score2)",
-            {
-                'strategy1': str(pair[0]),
-                'strategy2': str(pair[1]),
-                'numTurns': dbTurnsEntry.get(),
-                'output': match[0], 
-                'score1': match[1][0], 
-                'score2': match[1][1]
-            }
-        )
-    # Inserting pairs (s, s) for each strategy s
-    for strategy in options:
-        match = dbPlayMatch(strategy, strategy, int(dbTurnsEntry.get()))
-        c.execute("INSERT INTO matches VALUES (:strategy1, :strategy2, :numTurns, :output, :score1, :score2)",
-            {
-                'strategy1': str(strategy),
-                'strategy2': str(strategy),
-                'numTurns': dbTurnsEntry.get(),
-                'output': match[0], 
-                'score1': match[1][0], 
-                'score2': match[1][1]
-            }
-        )
-        print("Inserting output " + str(match[0]))
     
+    strategy = dbClicked1.get()
+    print("strategy: ", strategy)
+    print("TYPE: ", type(strategy))
+    options = [s() for s in axl.strategies]    
+    for n, option in enumerate(options):
+        match = dbPlayMatch(strategy, type(option).__name__, int(dbTurnsEntry.get()))
+        print("Inserting pair " + str(n))
+        c.execute("INSERT INTO matches VALUES (:strategy1, :strategy2, :numTurns, :output, :score1, :score2)",
+            {
+                'strategy1': strategy,
+                'strategy2': type(option).__name__,
+                'numTurns': dbTurnsEntry.get(),
+                'output': match[0], 
+                'score1': match[1][0], 
+                'score2': match[1][1]
+            }
+        )
+            
     conn.commit()
     conn.close()
     return
@@ -121,6 +108,8 @@ def clearDB():
     
     if clearDBWarning == True:
         c.execute("DELETE FROM matches")
+        
+    clearDBInfo = messagebox.showinfo("Database Cleared", "The matches table has been cleared.")
     
     conn.commit()
     conn.close()
@@ -476,7 +465,7 @@ def containsDigit(string):
     return any(char.isdigit() for char in string)
 
 def db(clicked1, clicked2):
-    dbWindow = Tk()
+    dbWindow = Toplevel()
     dbWindow.title("Match DB")
     dbWindow.geometry("400x400")
     dbWindow.iconbitmap("knight.ico")
@@ -509,7 +498,7 @@ def db(clicked1, clicked2):
     dbTurnsEntry = Entry(dbWindow, width=5)
     dbTurnsEntry.insert(0, "6")
     addRecordButton = Button(dbWindow, text="Add Record", command=lambda: addRecord(clicked1, clicked2, dbClicked1, dbClicked2, dbTurnsEntry))
-    addAllPairsButton = Button(dbWindow, text="Add All Pairs for a Given Number of Turns", command=lambda: addAllPairs(dbTurnsEntry))
+    addAllPairsButton = Button(dbWindow, text="Add All Pairs for Player 1's Strategy", command=lambda: addAllPairs(dbTurnsEntry, dbClicked1))
     numRecordsButton = Button(dbWindow, text="Get Total Number of Records", command=lambda: getNumRecords(dbWindow))
     showRecordsButton = Button(dbWindow, text="Show Records", command=lambda: showRecords(dbWindow))
     exportButton = Button(dbWindow, text="Export to csv", command=export)
@@ -551,11 +540,10 @@ def dbPlayMatch(p1Strat, p2Strat, t = 6):
     """
     Runs an axelrod match between players of type p1 and p2 with t turns and returns a tuple of the match output and scores
     """
-    print("p1Strat:", p1Strat)
-    print("p2Strat:", p2Strat)
+    p1Strat = p1Strat.replace(" ", "")
+    p2Strat = p2Strat.replace(" ", "")
     p1 = ""
     p2 = ""
-    
     # Getting the strategy object that corresponds to the string p1Strat
     counter = 0
     options = [s() for s in axl.strategies]
@@ -565,8 +553,9 @@ def dbPlayMatch(p1Strat, p2Strat, t = 6):
                 p1 = options[counter]
         except IndexError:
             stratNotFoundError = messagebox.showerror("Error", "The strategy you entered for player 1 was not in axelrod's list of strategies. Perhaps you meant to capitalize the individual words?")
-        counter += 1  
+        counter += 1
     
+    # Getting the strategy object that corresponds to the string p2Strat 
     counter = 0
     while type(p2).__name__ == "str" and counter <= len(axl.strategies):
         try:
@@ -578,8 +567,7 @@ def dbPlayMatch(p1Strat, p2Strat, t = 6):
     match = axl.Match((p1, p2), turns = t)
     return (str(match.play()), match.final_score_per_turn())
 
-def deleteRecord(selectIDEntry):
-    
+def deleteRecord(selectIDEntry): 
     # Create a database or connect to one
     conn = sqlite3.connect('match.db')
     # Create cursor
