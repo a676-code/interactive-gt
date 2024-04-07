@@ -507,7 +507,7 @@ def db(clicked1, clicked2):
     selectIDEntry = Entry(dbWindow, width=20)
     deleteRecordButton = Button(dbWindow, text="Delete Record", command=lambda: deleteRecord(selectIDEntry))
     updateRecordButton = Button(dbWindow, text="Update Record", command=lambda: updateRecord(selectIDEntry))
-    resetRecordButton = Button(dbWindow, text="Reset Record", command=lambda: resetRecord(clicked1, clicked2, selectIDEntry, dbClicked1, dbClicked2, dbTurnsEntry))
+    resetRecordButton = Button(dbWindow, text="Reset Record", command=lambda: resetRecord(selectIDEntry))
     clearDBButton = Button(dbWindow, text="Clear DB", command=clearDB)
         
     # Putting everything in the top window
@@ -518,7 +518,7 @@ def db(clicked1, clicked2):
     dbTurnsLabel.grid(row=2, column=0, padx=(5, 0), pady=(0,5), sticky=E)
     dbTurnsEntry.grid(row=2, column=1, pady=(0, 5), sticky=W)
     addRecordButton.grid(row=3, column=0, columnspan=2, padx=5, pady=(0, 5), ipadx=141)
-    addAllPairsButton.grid(row=4, column=0, columnspan=2, padx=5, pady=(0, 5), ipadx=62)
+    addAllPairsButton.grid(row=4, column=0, columnspan=2, padx=5, pady=(0, 5), ipadx=80)
     numRecordsButton.grid(row=5, column=0, columnspan=2, padx=5, pady=(0, 5), ipadx=96)
     showRecordsButton.grid(row=6, column=0, columnspan=2, padx=5, pady=(0, 5), ipadx=135)
     exportButton.grid(row=7, column=0, columnspan=2, padx=5, pady=(0, 5), ipadx=137)
@@ -1832,41 +1832,44 @@ def resetPayoffMatrix():
         root.geometry(f"{45 * numStrats2 + 700}x{25 * numStrats1 + 490}")
     return
 
-def resetRecord(clicked1, clicked2, selectIDEntry, dbClicked1, dbClicked2, dbTurnsEntry):
+def resetRecord(selectIDEntry):
     """
     Resets or recomputes the values that should be in a record according to the given inputs. 
     """
     conn = sqlite3.connect('match.db')
     c = conn.cursor()
     
-    # Check if an ID was actually selected
     recordID = selectIDEntry.get()
-    if recordID == "":
-        emptyRecordIDError = messagebox.showerror("Error", "You must enter an ID to reset a record.")
+    try:
+        c.execute("SELECT *, oid FROM matches where oid=" + recordID)
+    except sqlite3.OperationalError:
+        IDNotSelectedError = messagebox.showerror("Error", "You must enter an ID to reset a record.")
+        return
+    else:
+        record = c.fetchall()[0]
+        match = dbPlayMatch(record[0], record[1], int(record[2]))
+        c.execute("""UPDATE matches SET
+                strategy1 = :strategy1, 
+                strategy2 = :strategy2, 
+                numTurns = :numTurns, 
+                output = :output,
+                score1 = :score1,
+                score2 = :score2
+                WHERE oid = :oid""",
+                {
+                    'strategy1': record[0], 
+                    'strategy2': record[1], 
+                    'numTurns': record[2],
+                    'output': match[0],
+                    'score1': match[1][0],
+                    'score2': match[1][1],
+                    'oid': recordID
+                })    
+        recordResetInfo = messagebox.showinfo("Record Reset", f"The record with ID {recordID} was successfully reset.")
+        
         conn.commit()
         conn.close()
         return
-    
-    c.execute("""UPDATE matches SET
-              strategy1 = :strategy1, 
-              strategy2 = :strategy2, 
-              numTurns = :numTurns, 
-              output = :output,
-              score1 = :score1,
-              score2 = :score2
-              WHERE oid = :oid""",
-              {
-                  'strategy1': dbClicked1.get(), 
-                  'strategy2': dbClicked2.get(), 
-                  'numTurns': dbTurnsEntry.get(),
-                  'output': dbPlayMatch(clicked1, clicked2, clicked1.get(), clicked2.get(), int(dbTurnsEntry.get()))[0],
-                  'score1': dbPlayMatch(clicked1, clicked2, clicked1.get(), clicked2.get(), int(dbTurnsEntry.get()))[1][0],
-                  'score2': dbPlayMatch(clicked1, clicked2, clicked1.get(), clicked2.get(), int(dbTurnsEntry.get()))[1][1],
-                  'oid': recordID
-              })    
-    
-    conn.commit()
-    conn.close()
 
 def resetStrategies():
     """
