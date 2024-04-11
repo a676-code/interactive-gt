@@ -220,6 +220,7 @@ class SimGame:
     removedCols = []
     removedMatrices = []
     removedRows = []
+    removedStrategies = []
     strategyNames = []
     
     def __init__(self, numPlayers = 2):

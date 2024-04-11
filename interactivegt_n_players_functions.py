@@ -2293,73 +2293,109 @@ def simGameToEntries(G, dimensionsFrame, payoffsFrame):
     # FIXME: group the outcomes by matrix, search "matrixGroupedOutcomes" on line 1285
     # When entries need to be deleted
     # Getting payoffs
-    payoffMatrixSlaves = payoffsFrame.grid_slaves()
-    outcomes = payoffMatrixSlaves[:oldNumStrats[0] * oldNumStrats[1]]
-    outcomes.reverse()
-    # outcomesGet = [outcome.get() for outcome in outcomes]
-    # Grouping them into rows
     numOutcomes = 1
     for x in range(numPlayers):
         numOutcomes *= oldNumStrats[x]
-    
+    payoffMatrixSlaves = payoffsFrame.grid_slaves()
+    outcomes = payoffMatrixSlaves[:numOutcomes]
+    outcomes.reverse()
+    outcomesGet = [outcome.get() for outcome in outcomes]
+    # Grouping them into rows
     matrixGroupedOutcomes = [outcomes[n:n + oldNumStrats[0] * oldNumStrats[1]] for n in range(0, numOutcomes, oldNumStrats[0] * oldNumStrats[1])]
-    groupedOutcomes = [[matrix[n:n + oldNumStrats[1]] for n in range(0, oldNumStrats[0] * oldNumStrats[1], numStrats[1])] for matrix in matrixGroupedOutcomes]
+    groupedOutcomes = [[matrix[n:n + oldNumStrats[1]] for n in range(0, oldNumStrats[0] * oldNumStrats[1], oldNumStrats[1])] for matrix in matrixGroupedOutcomes]
     
-    newGroupedOutcomes = []
-    for outcome in groupedOutcomes:
-        row = []
-        for i in range(numStrats[0]):
-            row.append(outcome[i])
-        newGroupedOutcomes.append(row)
-    outcomesListList= []
-    for outcome in newGroupedOutcomes:
-        outcomesListList.append(outcome)
-
-    strategyNames = payoffMatrixSlaves[oldNumStrats[0] * oldNumStrats[1]:]
+    strategyNames = payoffMatrixSlaves[numOutcomes:]
     strategyNames.reverse()
+    stratNamesGet = [name.get() for name in strategyNames]
+    print("sNG:", stratNamesGet)
     
     numMatrices = 1
     for x in range(2, numPlayers):
         numMatrices *= oldNumStrats[x]
-    
-    print("removedM:", G.removedMatrices)
-    print("removedR:", G.removedRows)
-    print("removedC:", G.removedCols)
+        
+    groupedStrategyNames = []
+    if numPlayers < 3:
+        groupedStrategyNames.append(strategyNames[:oldNumStrats[1]])
+        groupedStrategyNames.append(strategyNames[oldNumStrats[1]:])
+    else:
+        groupedStrategyNames.append(strategyNames[:numMatrices])
+        groupedStrategyNames.append(strategyNames[numMatrices:numMatrices + oldNumStrats[1]])
+        groupedStrategyNames.append(strategyNames[numMatrices + oldNumStrats[1]:])  
+    groupedStrategyNames.reverse()
+
     # Deleting extra matrices
     for m in G.removedMatrices:
-        print("here:", m)
         for i in range(oldNumStrats[0]):
             for j in range(oldNumStrats[1]):
-                outcomesListList[m][i][j].grid_remove()
-        del outcomesListList[m]
+                groupedOutcomes[m][i][j].grid_remove()
+        del groupedOutcomes[m]
         
     numMatrices = 1
     for x in range(2, numPlayers):
         numMatrices *= numStrats[x]
     
-    # Deleting rows and columns in the matrices we're keeping according to what's in removedStrategies
+    # Deleting rows and columns in the matrices we're keeping according to what's in removedRow and removedCols
     # Remove the same row from every array in the front-end payoff matrix
-    print("len1:", len(outcomesListList))
     for m in range(numMatrices):
-        print("\tlen2:", len(outcomesListList[0]))
         for r in G.removedRows:
-            print("\t\tlen3:", len(outcomesListList[0][0]))
-            for j in range(numStrats[1]):
-                print("\t\t\t(m, r, j):", (m, r, j))
-                outcomesListList[m][r][j].grid_remove()
-            del outcomesListList[m][r]
+            for j in range(oldNumStrats[1]):
+                groupedOutcomes[m][r][j].grid_remove()
+            del groupedOutcomes[m][r]
     # Remove the same column from every array in the front-end payoff matrix
     for m in range(numMatrices):
         for c in G.removedCols:
-            for i in range(numStrats[0]):
-                outcomesListList[m][i][c].grid_remove()
-            del outcomesListList[m][i][c]
-            
-    """            
-    print("oLL again:")
-    print(outcomesListList)
-    print(outcomesListList[0][0][0].get())
-    """
+            for i in range(oldNumStrats[0] - len(G.removedRows)):
+                groupedOutcomes[m][i][c].grid_remove()
+                del groupedOutcomes[m][i][c]
+    outcomesToRegrid = groupedOutcomes
+    
+    for r in G.removedRows:
+        groupedStrategyNames[0][r].grid_remove()
+        del groupedStrategyNames[0][r]
+    for c in G.removedCols:
+        groupedStrategyNames[1][c].grid_remove()
+        del groupedStrategyNames[1][c]
+    if numPlayers >= 3:
+        allPast2Have1Strat = True
+        for x in range(2, numPlayers):
+            if numStrats[x] > 1:
+                allPast2Have1Strat = False
+        if allPast2Have1Strat:
+            for m in range(numMatrices):
+                groupedStrategyNames[2][m].grid_remove()
+                del groupedStrategyNames[2][m]
+    stratNamesToRegrid = groupedStrategyNames
+    
+    # clearing the table
+    payoffMatrixSlaves = payoffsFrame.grid_slaves()
+    for slave in payoffMatrixSlaves:
+        slave.grid_remove()
+    
+    if numPlayers >= 3:
+        if allPast2Have1Strat:
+            offset1 = 1
+            offset2 = 0
+        else:
+            offset1 = 2
+            offset2 = 1
+    else:
+        offset1 = 1
+        offset2 = 0
+    # Regridding the strategy names
+    for p, player in enumerate(stratNamesToRegrid):
+        for n, name in enumerate(player):
+            if p == 0:
+                name.grid(row=n + offset1, column=0)
+            elif p == 1:
+                name.grid(row=offset2, column=n + 1)
+            else: # p == 2
+                name.grid(row=0, column=n + 1)
+    
+    # Regridding the remaining entries
+    for m in range(len(outcomesToRegrid)):
+        for i in range(len(outcomesToRegrid[0])):
+            for j in range(len(outcomesToRegrid[0][0])):
+                outcomesToRegrid[m][i][j].grid(row=i + 1, column=j + m * numStrats[1] + 1, sticky=NSEW)
         
     # When entries need to be added
     
