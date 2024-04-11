@@ -216,7 +216,6 @@ class SimGame:
     players = []
     pureEquilibria = []
     rationalityProbabilities = [0.0 for i in range(4)] # probability a player is L_i, i = 0, 1, 2, 3
-    removedStrategies = []
     removedCols = []
     removedMatrices = []
     removedRows = []
@@ -1219,8 +1218,7 @@ class SimGame:
                     else:
                         product = 1
                 m += product
-        self.players[player].numStrats -= 1  
-        self.removedStrategies.append([player, s])
+        self.players[player].numStrats -= 1
     
     def saveToFile(self, fileName):
         """Saves the data of a game to a text file
