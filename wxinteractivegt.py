@@ -4,7 +4,7 @@ from pysimultaneous import SimGame
 
 class MyFrame(wx.Frame):
     def __init__(self, parent, title):
-        super(MyFrame, self).__init__(parent, title=title, size=(500, 400))
+        super(MyFrame, self).__init__(parent, title=title, size=(800, 600))
         
         root = MyPanel(self)
         numStratsPanel = NumStratsPanel(root)
@@ -183,7 +183,7 @@ class AxelrodPanel(wx.Panel):
         
 class MyApp(wx.App):
     def OnInit(self):
-        self.frame = MyFrame(parent=None, title="wxLinAlg")
+        self.frame = MyFrame(parent=None, title="Interactive GT")
         self.frame.Show()
         return True
 

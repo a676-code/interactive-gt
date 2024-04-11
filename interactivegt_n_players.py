@@ -248,7 +248,7 @@ def main():
     edit_menu = Menu(menubar)
     menubar.add_cascade(label="Edit", menu=edit_menu)
     edit_menu.add_command(label="Enter Values into SimGame Object", command=lambda: entriesToSimGame(G, dimensionsFrame, payoffsFrame, int(numPlayersEntry.get())))
-    edit_menu.add_command(label="Load Values from SimGame Object", command=lambda: simGameToEntries(G, dimensionsFrame, payoffsFrame, int(numPlayersEntry.get()), numPlayersEntry))
+    edit_menu.add_command(label="Load Values from SimGame Object", command=lambda: simGameToEntries(G, dimensionsFrame, payoffsFrame))
     edit_menu.add_separator()
     edit_menu.add_command(label="Remove a Strategy", command=removeStrategy)
     edit_menu.add_separator()

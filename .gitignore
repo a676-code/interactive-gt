@@ -10,6 +10,7 @@ testaxelrod.py
 thisisafile.*
 *.csv
 match.db-journal
+three_players.txt
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

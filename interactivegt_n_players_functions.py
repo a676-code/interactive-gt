@@ -907,22 +907,26 @@ def eliminateStrictlyDominatedStrategies(G, dimensionsFrame, payoffsFrame, steps
             row.append(outcome[i])
         newGroupedOutcomes.append(row)
     
-    outcomesListList= []
+    outcomesListList = []
     for outcome in newGroupedOutcomes:
         outcomesListList.append(outcome)
 
     strategies = payoffMatrixSlaves[numStrats[0] * numStrats[1]:]
     strategies.reverse()
-    p1Strategies = [i for i in range(numStrats[0])] # = [0, 1, 2,...]
-    p2Strategies = [i for i in range(numStrats[1])] # = [0, 1, 2,...]
+    # strategyIndices[x] is the set of indices (0, 1, 2,...,numStrats[x] - 1) for the x-th player
+    # strategyIndices[x][k] is the k-th strategy index for the x-th player
+    strategyIndices = [[k for k in range(numStrats[x])] for x in range(numPlayers)]
     
     if steps == 0: # perform full IESDS computation with one click
-        pairs1 = combinations(p1Strategies, r=2) # pairs of p1's strategies to compare; indices
-        pairs2 = combinations(p2Strategies, r=2) # pairs of p2's strategies to compare; indices
-        numCombos1 = sum(1 for pair in pairs1)
-        numCombos2 = sum(1 for pair in pairs2)
-        pairs1 = combinations(p1Strategies, r=2) # pairs of p1's strategies to compare; indices
-        pairs2 = combinations(p2Strategies, r=2) # pairs of p2's strategies to compare; indices
+        G.eliminateStrictlyDominatedStrategies_full()
+        simGameToEntries(G, dimensionsFrame, payoffsFrame)
+        
+        
+        """
+        # pairs[x] contains numPlayers-long tuples of strategy indices
+        # pairs[x][0] and pairs[x][1] are the strategies being compared
+        pairs = [combinations(strategyIndices[x], r=2) for x in range(numPlayers)]
+        numCombos = [sum(1 for pair in pairs[x]) for x in range(numPlayers)]
         greaterThanFound1 = False
         lessThanFound1 = False
         equalFound1 = False
@@ -938,120 +942,129 @@ def eliminateStrictlyDominatedStrategies(G, dimensionsFrame, payoffsFrame, steps
             stratRemoved1 = False
             stratRemoved2 = False
             
-            # recomputing the pairs that need to be checked because the number of strategies may have changed
-            pairs1 = combinations(p1Strategies, r=2) # pairs of p1's strategies to compare; indices
-            pairs2 = combinations(p2Strategies, r=2) # pairs of p2's strategies to compare; indices
-            numCombos1 = sum(1 for pair in pairs1)
-            numCombos2 = sum(1 for pair in pairs2)
-            pairs1 = combinations(p1Strategies, r=2) # pairs of p1's strategies to compare; indices
-            pairs2 = combinations(p2Strategies, r=2) # pairs of p2's strategies to compare; indices
-            # eliminating strategies for player 1 #####################################################################
-            for pair in pairs1:
-                greaterThanFound1 = False
-                lessThanFound1 = False
-                equalFound1 = False
-                # searching for < or > among the payoffs
-                for j in range(numStrats[1]):
-                    if len(outcomesListList) == 1: # if p1 has only one strategy left
-                        multipleStrats1 = False
+            for x in range(numPlayers):
+                # recomputing the pairs that need to be checked because the number of strategies may have changed
+                strategyIndices = [[k for k in range(numStrats[x])] for x in range(numPlayers)]
+                pairs = [combinations(strategyIndices[x], r=2) for x in range(numPlayers)]
+                numCombos = [sum(1 for pair in pairs[x]) for x in range(numPlayers)]
+                pairs = [combinations(strategyIndices[x], r=2) for x in range(numPlayers)]
+                if x == 0:
+                    # eliminating strategies for player 1 #####################################################################
+                    for pair in pairs[x]:
+                        greaterThanFound1 = False
+                        lessThanFound1 = False
+                        equalFound1 = False
+                        # searching for < or > among the payoffs
+                        for j in range(numStrats[1]):
+                            if len(outcomesListList) == 1: # if p1 has only one strategy left
+                                multipleStrats1 = False
+                                break
+                            if int(outcomesListList[pair[0]][j].get().split(", ")[0]) < int(outcomesListList[pair[1]][j].get().split(", ")[0]):
+                                lessThanFound1 = True
+                            elif int(outcomesListList[pair[0]][j].get().split(", ")[0]) > int(outcomesListList[pair[1]][j].get().split(", ")[0]):
+                                greaterThanFound1 = True
+                            else: # equal payoffs found
+                                equalFound1 = True
+                                break
+                        
+                        # Removing strategies based on the results
+                        if lessThanFound1 and not greaterThanFound1 and not equalFound1: # remove strategy pair[0]
+                            numStrats[0] -= 1
+                            numStratsEntries[0].delete(0, END)
+                            numStratsEntries[0].insert(0, numStrats[0])
+                            p1StrategyNameEntries[pair[0]].grid_remove()
+                            for j in range(numStrats[1]):
+                                outcomesListList[pair[0]][j].grid_remove()
+                                outcomesListList[pair[0]].pop(j)
+                            strategyIndices[0].pop()
+                            stratRemoved1 = True
+                        elif greaterThanFound1 and not lessThanFound1 and not equalFound1: # remove strategy pair[1]
+                            numStrats[0] -= 1
+                            numStratsEntries[0].delete(0, END)
+                            numStratsEntries[0].insert(0, numStrats[0])
+                            p1StrategyNameEntries[pair[1]].grid_remove()
+                            numDeleted = 0
+                            for j in range(numStrats[1]):
+                                j -= numDeleted
+                                outcomesListList[pair[1]][j].grid_remove()
+                                outcomesListList[pair[1]].pop(j)
+                                numDeleted += 1
+                            strategyIndices[0].pop()
+                            stratRemoved1 = True
+                        else: # (not lessThanFound1 and not greaterThanFound1)(all equal) or (lessThanFound1 and greaterThanFound1)(no dominance)
+                            stratRemoved1 = False
+                        
+                        if stratRemoved1:
+                            break
+                elif x == 1:
+                    # eliminating strategies for player 2 ######################################################################
+                    for pair in pairs[x]:
+                        greaterThanFound2 = False
+                        lessThanFound2 = False
+                        equalFound2 = False
+                        # searching for < or > among the payoffs
+                        for i in range(numStrats[0]):
+                            if len(outcomesListList[pair[0]]) == 1: # if p2 only has one strategy left
+                                multipleStrats2 = False
+                                break
+                            if int(outcomesListList[i][pair[0]].get().split(", ")[1]) < int(outcomesListList[i][pair[1]].get().split(", ")[1]):
+                                lessThanFound2 = True
+                            elif int(outcomesListList[i][pair[0]].get().split(", ")[1]) > int(outcomesListList[i][pair[1]].get().split(", ")[1]):
+                                greaterThanFound2 = True
+                            else: # equal payoffs were found
+                                equalFound2 = True
+                                break
+                        
+                        # Removing strategies based on the results
+                        if lessThanFound2 and not greaterThanFound2 and not equalFound2: # remove strategy pair[0]
+                            numStrats[1] -= 1
+                            numStratsEntries[1].delete(0, END)
+                            numStratsEntries[1].insert(0, numStrats[1])
+                            p2StrategyNameEntries[pair[0]].grid_remove()
+                            for i in range(numStrats[0]):
+                                outcomesListList[i][pair[0]].grid_remove()
+                                outcomesListList[i].pop(pair[0])
+                            strategyIndices[1].pop()
+                            stratRemoved2 = True
+                        elif greaterThanFound2 and not lessThanFound2 and not equalFound2: # remove strategy pair[1]
+                            numStrats[1] -= 1
+                            numStratsEntries[1].delete(0, END)
+                            numStratsEntries[1].insert(0, numStrats[1])
+                            p2StrategyNameEntries[pair[1]].grid_remove()
+                            for i in range(numStrats[0]):
+                                outcomesListList[i][pair[1]].grid_remove()
+                                outcomesListList[i].pop(pair[1])
+                            strategyIndices[1].pop()
+                            stratRemoved2 = True
+                        else: # (not lessThanFound2 and not greaterThanFound2) or (lessThanFound2 and greaterThanFound2)
+                            stratRemoved2 = False
+                        
+                        if stratRemoved2:
+                            break
+                    if not stratRemoved1 and not stratRemoved2:
                         break
-                    if int(outcomesListList[pair[0]][j].get().split(", ")[0]) < int(outcomesListList[pair[1]][j].get().split(", ")[0]):
-                        lessThanFound1 = True
-                    elif int(outcomesListList[pair[0]][j].get().split(", ")[0]) > int(outcomesListList[pair[1]][j].get().split(", ")[0]):
-                        greaterThanFound1 = True
-                    else: # equal payoffs found
-                        equalFound1 = True
-                        break
-                
-                # Removing strategies based on the results
-                if lessThanFound1 and not greaterThanFound1 and not equalFound1: # remove strategy pair[0]
-                    numStrats[0] -= 1
-                    numStratsEntries[0].delete(0, END)
-                    numStratsEntries[0].insert(0, numStrats[0])
-                    p1StrategyNameEntries[pair[0]].grid_remove()
-                    for j in range(numStrats[1]):
-                        outcomesListList[pair[0]][j].grid_remove()
-                        outcomesListList[pair[0]].pop(j)
-                    p1Strategies.pop()
-                    stratRemoved1 = True
-                elif greaterThanFound1 and not lessThanFound1 and not equalFound1: # remove strategy pair[1]
-                    numStrats[0] -= 1
-                    numStratsEntries[0].delete(0, END)
-                    numStratsEntries[0].insert(0, numStrats[0])
-                    p1StrategyNameEntries[pair[1]].grid_remove()
-                    numDeleted = 0
-                    for j in range(numStrats[1]):
-                        j -= numDeleted
-                        outcomesListList[pair[1]][j].grid_remove()
-                        outcomesListList[pair[1]].pop(j)
-                        numDeleted += 1
-                    p1Strategies.pop()
-                    stratRemoved1 = True
-                else: # (not lessThanFound1 and not greaterThanFound1)(all equal) or (lessThanFound1 and greaterThanFound1)(no dominance)
-                    stratRemoved1 = False
-                
-                if stratRemoved1:
-                    break
-                    
-            # eliminating strategies for player 2 ######################################################################
-            for pair in pairs2:
-                greaterThanFound2 = False
-                lessThanFound2 = False
-                equalFound2 = False
-                # searching for < or > among the payoffs
-                for i in range(numStrats[0]):
-                    if len(outcomesListList[pair[0]]) == 1: # if p2 only has one strategy left
-                        multipleStrats2 = False
-                        break
-                    if int(outcomesListList[i][pair[0]].get().split(", ")[1]) < int(outcomesListList[i][pair[1]].get().split(", ")[1]):
-                        lessThanFound2 = True
-                    elif int(outcomesListList[i][pair[0]].get().split(", ")[1]) > int(outcomesListList[i][pair[1]].get().split(", ")[1]):
-                        greaterThanFound2 = True
-                    else: # equal payoffs were found
-                        equalFound2 = True
-                        break
-                
-                # Removing strategies based on the results
-                if lessThanFound2 and not greaterThanFound2 and not equalFound2: # remove strategy pair[0]
-                    numStrats[1] -= 1
-                    numStratsEntries[1].delete(0, END)
-                    numStratsEntries[1].insert(0, numStrats[1])
-                    p2StrategyNameEntries[pair[0]].grid_remove()
-                    for i in range(numStrats[0]):
-                        outcomesListList[i][pair[0]].grid_remove()
-                        outcomesListList[i].pop(pair[0])
-                    p2Strategies.pop()
-                    stratRemoved2 = True
-                elif greaterThanFound2 and not lessThanFound2 and not equalFound2: # remove strategy pair[1]
-                    numStrats[1] -= 1
-                    numStratsEntries[1].delete(0, END)
-                    numStratsEntries[1].insert(0, numStrats[1])
-                    p2StrategyNameEntries[pair[1]].grid_remove()
-                    for i in range(numStrats[0]):
-                        outcomesListList[i][pair[1]].grid_remove()
-                        outcomesListList[i].pop(pair[1])
-                    p2Strategies.pop()
-                    stratRemoved2 = True
-                else: # (not lessThanFound2 and not greaterThanFound2) or (lessThanFound2 and greaterThanFound2)
-                    stratRemoved2 = False
-                
-                if stratRemoved2:
-                    break
-            if not stratRemoved1 and not stratRemoved2:
-                break
+                else: # x > 1
+                    # FIXME
+                    for pair in pairs[x]:
+                        greaterThanFound2 = False
+                        lessThanFound2 = False
+                        equalFound2 = False
+                        # searching for < or > among the payoffs
+                        
+                        # Removing strategies based on the results
+                    return
+                    """
     elif steps == 1: # perform IESDS computation step by step
         numIESDSClicks += 1
-        pairs1 = combinations(p1Strategies, r=2) # pairs of p1's strategies to compare; indices
-        pairs2 = combinations(p2Strategies, r=2) # pairs of p2's strategies to compare; indices
-        numCombos1 = sum(1 for pair in pairs1)
-        numCombos2 = sum(1 for pair in pairs2)
-        pairs1 = combinations(p1Strategies, r=2) # pairs of p1's strategies to compare; indices
-        pairs2 = combinations(p2Strategies, r=2) # pairs of p2's strategies to compare; indices
+        pairs[0] = combinations(strategyIndices[0], r=2) # pairs of p1's strategies to compare; indices
+        pairs[1] = combinations(strategyIndices[1], r=2) # pairs of p2's strategies to compare; indices
+        numCombos1 = sum(1 for pair in pairs[0])
+        numCombos2 = sum(1 for pair in pairs[1])
         oneStratEliminated = False
         
         if numIESDSClicks == 1:
             # eliminating strategies for player 1
-            for pair in pairs1:
+            for pair in pairs[0]:
                 greaterThanFound1 = False
                 lessThanFound1 = False
                 equalFound1 = False
@@ -1090,7 +1103,7 @@ def eliminateStrictlyDominatedStrategies(G, dimensionsFrame, payoffsFrame, steps
                         numDeleted += 1
             if not oneStratEliminated:
                 # eliminating strategies for player 2
-                for pair in pairs2:
+                for pair in pairs[1]:
                     greaterThanFound2 = False
                     lessThanFound2 = False
                     equalFound2 = False
@@ -1130,7 +1143,7 @@ def eliminateStrictlyDominatedStrategies(G, dimensionsFrame, payoffsFrame, steps
         else: # numIESDSClicks > 1
             if numIESDSClicks % 2 == 1: # check player 1's strategies
                 # eliminating strategies for player 1
-                for pair in pairs1:
+                for pair in pairs[0]:
                     greaterThanFound1 = False
                     lessThanFound1 = False
                     equalFound1 = False
@@ -1166,7 +1179,7 @@ def eliminateStrictlyDominatedStrategies(G, dimensionsFrame, payoffsFrame, steps
                             numDeleted += 1
             else: # numIESDSClicks % 2 == 0; check player 2's strategies
                 # eliminating strategies for player 2
-                for pair in pairs2:
+                for pair in pairs[1]:
                     greaterThanFound2 = False
                     lessThanFound2 = False
                     equalFound2 = False
@@ -2218,15 +2231,18 @@ def showRecords(dbWindow):
     conn.close()
     return
 
-def simGameToEntries(G, dimensionsFrame, payoffsFrame, numPlayersEntry):
+def simGameToEntries(G, dimensionsFrame, payoffsFrame):
     """Loads the data from the SimGame object into the entries.
     """
+    G.print()
     # Getting numStrats
     dimensionsSlaves = dimensionsFrame.grid_slaves()
     numStratsEntries = []
     for slave in dimensionsSlaves:
         if type(slave).__name__ == "Entry":
             numStratsEntries.append(slave)
+    numPlayersEntry = numStratsEntries[-1]
+    numPlayers = int(numPlayersEntry.get())
     numStratsEntries.pop() # last one will be the numPlayers entry
     numStratsEntries.reverse()
     
@@ -2274,22 +2290,78 @@ def simGameToEntries(G, dimensionsFrame, payoffsFrame, numPlayersEntry):
     numStrats = [int(numStratsEntries[x].get()) for x in range(numPlayers)]
         
     # FIXME: handle cases where entries need to be added or deleted
+    # FIXME: group the outcomes by matrix, search "matrixGroupedOutcomes" on line 1285
+    # When entries need to be deleted
     # Getting payoffs
     payoffMatrixSlaves = payoffsFrame.grid_slaves()
     outcomes = payoffMatrixSlaves[:oldNumStrats[0] * oldNumStrats[1]]
-    groupedOutcomes = [outcomes[i:i + numStrats[1]] for i in range(0, len(outcomes), numStrats[1])] # entries
-    strategyNames = payoffMatrixSlaves[oldNumStrats[0] * oldNumStrats[1]:]
+    outcomes.reverse()
+    # outcomesGet = [outcome.get() for outcome in outcomes]
+    # Grouping them into rows
+    numOutcomes = 1
+    for x in range(numPlayers):
+        numOutcomes *= oldNumStrats[x]
+    
+    matrixGroupedOutcomes = [outcomes[n:n + oldNumStrats[0] * oldNumStrats[1]] for n in range(0, numOutcomes, oldNumStrats[0] * oldNumStrats[1])]
+    groupedOutcomes = [[matrix[n:n + oldNumStrats[1]] for n in range(0, oldNumStrats[0] * oldNumStrats[1], numStrats[1])] for matrix in matrixGroupedOutcomes]
     
     newGroupedOutcomes = []
     for outcome in groupedOutcomes:
         row = []
-        for i in range(oldNumStrats[1]):
+        for i in range(numStrats[0]):
             row.append(outcome[i])
         newGroupedOutcomes.append(row)
-    
     outcomesListList= []
     for outcome in newGroupedOutcomes:
         outcomesListList.append(outcome)
+
+    strategyNames = payoffMatrixSlaves[oldNumStrats[0] * oldNumStrats[1]:]
+    strategyNames.reverse()
+    
+    numMatrices = 1
+    for x in range(2, numPlayers):
+        numMatrices *= oldNumStrats[x]
+    
+    print("removedM:", G.removedMatrices)
+    print("removedR:", G.removedRows)
+    print("removedC:", G.removedCols)
+    # Deleting extra matrices
+    for m in G.removedMatrices:
+        print("here:", m)
+        for i in range(oldNumStrats[0]):
+            for j in range(oldNumStrats[1]):
+                outcomesListList[m][i][j].grid_remove()
+        del outcomesListList[m]
+        
+    numMatrices = 1
+    for x in range(2, numPlayers):
+        numMatrices *= numStrats[x]
+    
+    # Deleting rows and columns in the matrices we're keeping according to what's in removedStrategies
+    # Remove the same row from every array in the front-end payoff matrix
+    print("len1:", len(outcomesListList))
+    for m in range(numMatrices):
+        print("\tlen2:", len(outcomesListList[0]))
+        for r in G.removedRows:
+            print("\t\tlen3:", len(outcomesListList[0][0]))
+            for j in range(numStrats[1]):
+                print("\t\t\t(m, r, j):", (m, r, j))
+                outcomesListList[m][r][j].grid_remove()
+            del outcomesListList[m][r]
+    # Remove the same column from every array in the front-end payoff matrix
+    for m in range(numMatrices):
+        for c in G.removedCols:
+            for i in range(numStrats[0]):
+                outcomesListList[m][i][c].grid_remove()
+            del outcomesListList[m][i][c]
+            
+    """            
+    print("oLL again:")
+    print(outcomesListList)
+    print(outcomesListList[0][0][0].get())
+    """
+        
+    # When entries need to be added
     
     # FIXME: handle cases where entries need to be added or deleted
     # Getting strategy names
