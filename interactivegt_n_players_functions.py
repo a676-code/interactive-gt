@@ -917,6 +917,7 @@ def eliminateStrictlyDominatedStrategies(G, dimensionsFrame, payoffsFrame, steps
     # strategyIndices[x][k] is the k-th strategy index for the x-th player
     strategyIndices = [[k for k in range(numStrats[x])] for x in range(numPlayers)]
     
+    # FIXME: freezes when run on the all-zeros game and on the free money game
     if steps == 0: # perform full IESDS computation with one click
         G.eliminateStrictlyDominatedStrategies_full()
         simGameToEntries(G, dimensionsFrame, payoffsFrame)
@@ -1282,27 +1283,13 @@ def entriesToSimGame(G, dimensionsFrame, payoffsFrame):
         G.players[x].numStrats = numStrats[x]
     
     # Grouping the outcomes
-    matrixGroupedOutcomes = [outcomesGet[n:n + numStrats[0] * numStrats[1]] for n in range(0, numOutcomes, numStrats[0] * numStrats[1])]  
-    groupedOutcomes = [[matrix[n:n + numStrats[1]] for n in range(0, numStrats[0] * numStrats[1], numStrats[1])] for matrix in matrixGroupedOutcomes]
+    matrixGroupedOutcomes = [outcomesGet[n:n + numStrats[0] * numStrats[1]] for n in range(0, numOutcomes, numStrats[0] * numStrats[1])]
     
-    # FIXME: is this garbage? 
-    # FIXME: I think this is garbage :/
-    newGroupedOutcomes = []
-    for outcome in groupedOutcomes:
-        row = []
-        for i in range(numStrats[0]):
-            row.append(outcome[i])
-        newGroupedOutcomes.append(row)
-    outcomesListList= []
-    for outcome in newGroupedOutcomes:
-        outcomesListList.append(outcome)
-        
-    print("oLL:")
-    print(outcomesListList)
+    groupedOutcomes = [[matrix[n:n + numStrats[1]] for n in range(0, numStrats[0] * numStrats[1], numStrats[1])] for matrix in matrixGroupedOutcomes]
     
     # Converting from a list of list of entries to a list of list of floats
     newListList = [] 
-    for matrix in outcomesListList:
+    for matrix in groupedOutcomes:
         newMatrix = []
         for row in matrix:
             tempRow = []
@@ -2302,6 +2289,7 @@ def simGameToEntries(G, dimensionsFrame, payoffsFrame):
     outcomesGet = [outcome.get() for outcome in outcomes]
     # Grouping them into rows
     matrixGroupedOutcomes = [outcomes[n:n + oldNumStrats[0] * oldNumStrats[1]] for n in range(0, numOutcomes, oldNumStrats[0] * oldNumStrats[1])]
+    
     groupedOutcomes = [[matrix[n:n + oldNumStrats[1]] for n in range(0, oldNumStrats[0] * oldNumStrats[1], oldNumStrats[1])] for matrix in matrixGroupedOutcomes]
     
     strategyNames = payoffMatrixSlaves[numOutcomes:]
