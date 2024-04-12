@@ -1285,6 +1285,8 @@ def entriesToSimGame(G, dimensionsFrame, payoffsFrame):
     matrixGroupedOutcomes = [outcomesGet[n:n + numStrats[0] * numStrats[1]] for n in range(0, numOutcomes, numStrats[0] * numStrats[1])]  
     groupedOutcomes = [[matrix[n:n + numStrats[1]] for n in range(0, numStrats[0] * numStrats[1], numStrats[1])] for matrix in matrixGroupedOutcomes]
     
+    # FIXME: is this garbage? 
+    # FIXME: I think this is garbage :/
     newGroupedOutcomes = []
     for outcome in groupedOutcomes:
         row = []
@@ -2288,9 +2290,7 @@ def simGameToEntries(G, dimensionsFrame, payoffsFrame):
         numStratsEntries[x].insert(0, G.players[x].numStrats)
     
     numStrats = [int(numStratsEntries[x].get()) for x in range(numPlayers)]
-        
-    # FIXME: handle cases where entries need to be added or deleted
-    # FIXME: group the outcomes by matrix, search "matrixGroupedOutcomes" on line 1285
+    
     # When entries need to be deleted
     # Getting payoffs
     numOutcomes = 1
@@ -2306,8 +2306,6 @@ def simGameToEntries(G, dimensionsFrame, payoffsFrame):
     
     strategyNames = payoffMatrixSlaves[numOutcomes:]
     strategyNames.reverse()
-    stratNamesGet = [name.get() for name in strategyNames]
-    print("sNG:", stratNamesGet)
     
     numMatrices = 1
     for x in range(2, numPlayers):
@@ -2349,6 +2347,7 @@ def simGameToEntries(G, dimensionsFrame, payoffsFrame):
                 del groupedOutcomes[m][i][c]
     outcomesToRegrid = groupedOutcomes
     
+    # removing and deleting strategy names
     for r in G.removedRows:
         groupedStrategyNames[0][r].grid_remove()
         del groupedStrategyNames[0][r]
@@ -2366,11 +2365,12 @@ def simGameToEntries(G, dimensionsFrame, payoffsFrame):
                 del groupedStrategyNames[2][m]
     stratNamesToRegrid = groupedStrategyNames
     
-    # clearing the table
+    # Clearing the table
     payoffMatrixSlaves = payoffsFrame.grid_slaves()
     for slave in payoffMatrixSlaves:
         slave.grid_remove()
     
+    # Offsets for gridding
     if numPlayers >= 3:
         if allPast2Have1Strat:
             offset1 = 1
@@ -2397,9 +2397,8 @@ def simGameToEntries(G, dimensionsFrame, payoffsFrame):
             for j in range(len(outcomesToRegrid[0][0])):
                 outcomesToRegrid[m][i][j].grid(row=i + 1, column=j + m * numStrats[1] + 1, sticky=NSEW)
         
-    # When entries need to be added
+    # FIXME: When entries need to be added
     
-    # FIXME: handle cases where entries need to be added or deleted
     # Getting strategy names
     p1StrategyNames = strategyNames[:oldNumStrats[0]]
     p1StrategyNames = [name.get() for name in p1StrategyNames]
