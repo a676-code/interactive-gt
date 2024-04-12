@@ -663,8 +663,18 @@ class SimGame:
                 break
         x = -1
         k = 0
-        # stop when you can't eliminate a strategy for either player or when only one strategy is left for each players
-        while oneWithMultipleStrats and oneNotChecked:
+        """FIXME: iesds game works when oneStratRemoved is gone, but infinite loop on all-zeros game and free money. 
+        OTOH, iesds game doesn't work when oneStratRemoved is there, but all-zeros and free money games work. 
+        """
+        # Stop when you can't eliminate a strategy for either player or when only one strategy is left for each players or when all players have been checked
+        # Stop when all players have only one strat or when all players' strategies have been checked...or when there isn't a strat that can be removed? No, when we remove a strat, we should check all other player's strategies. 
+        # Continue if one player has multiple strategies and one player hasn't been checked and you can eliminate a strategy for one player
+        oneWithMultipleStratsAndNotChecked = False
+        for x in range(self.numPlayers):
+            if multipleStrats[x] and not checked[x]:
+                oneWithMultipleStratsAndNotChecked = True
+                break
+        while oneWithMultipleStratsAndNotChecked:
             k += 1
             x += 1
             for y in range(self.numPlayers):
@@ -685,9 +695,10 @@ class SimGame:
                     multipleStrats[y] = False
             stratRemoved = [False for x in range(self.numPlayers)]
             oneNotChecked = True
-            checked = [False for x in range(self.numPlayers)]
+            # checked = [False for x in range(self.numPlayers)]
             
-            if multipleStrats[x % self.numPlayers]:
+            # if the player has multiple strats and hasn't been checked
+            if multipleStrats[x % self.numPlayers] and not checked[x % self.numPlayers]:
                 checked[x % self.numPlayers] = True
                 if x % self.numPlayers == 0:
                     for pair in pairs[x % self.numPlayers]:
@@ -716,10 +727,16 @@ class SimGame:
                             self.removeStrategy(x % self.numPlayers, pair[0])
                             strategyIndices[x % self.numPlayers].pop()
                             stratRemoved[x % self.numPlayers] = True
+                            for y in range(self.numPlayers):
+                                if y != x % self.numPlayers:
+                                    checked[y] = False
                         elif greaterThanFound[x % self.numPlayers] and not lessThanFound[x % self.numPlayers] and not equalFound[x % self.numPlayers]: # remove strategy pair[1]
                             self.removeStrategy(x % self.numPlayers, pair[1])
                             strategyIndices[x % self.numPlayers].pop()
                             stratRemoved[x % self.numPlayers] = True
+                            for y in range(self.numPlayers):
+                                if y != x % self.numPlayers:
+                                    checked[y] = False
                         else: # (not lessThanFound[x % self.numPlayers] and not greaterThanFound[x % self.numPlayers])(all equal) or (lessThanFound[x % self.numPlayers] and greaterThanFound[x % self.numPlayers])(no dominance)
                             stratRemoved[x % self.numPlayers] = False
                         
@@ -751,10 +768,16 @@ class SimGame:
                             self.removeStrategy(x % self.numPlayers, pair[0])
                             strategyIndices[x % self.numPlayers].pop()
                             stratRemoved[x % self.numPlayers] = True
+                            for y in range(self.numPlayers):
+                                if y != x % self.numPlayers:
+                                    checked[y] = False
                         elif greaterThanFound[x % self.numPlayers] and not lessThanFound[x % self.numPlayers] and not equalFound[x % self.numPlayers]: # remove strategy pair[1]
                             self.removeStrategy(x % self.numPlayers, pair[1])
                             strategyIndices[x % self.numPlayers].pop()
                             stratRemoved[x % self.numPlayers] = True
+                            for y in range(self.numPlayers):
+                                if y != x % self.numPlayers:
+                                    checked[y] = False
                         else: # (not lessThanFound[1] and not greaterThanFound[1]) or (lessThanFound[1] and greaterThanFound[1])
                             stratRemoved[x % self.numPlayers] = False
                         
@@ -837,10 +860,16 @@ class SimGame:
                             self.removeStrategy(x % self.numPlayers, pair[0])
                             strategyIndices[x % self.numPlayers].pop()
                             stratRemoved[x % self.numPlayers] = True
+                            for y in range(self.numPlayers):
+                                if y != x % self.numPlayers:
+                                    checked[y] = False
                         elif greaterThanFound[x % self.numPlayers] and not lessThanFound[x % self.numPlayers] and not equalFound[x % self.numPlayers]: # remove strategy pair[1]
                             self.removeStrategy(x % self.numPlayers, pair[1])
                             strategyIndices[x % self.numPlayers].pop()
                             stratRemoved[x % self.numPlayers] = True
+                            for y in range(self.numPlayers):
+                                if y != x % self.numPlayers:
+                                    checked[y] = False
                         else: # (not lessThanFound[1] and not greaterThanFound[1]) or (lessThanFound[1] and greaterThanFound[1])
                             stratRemoved[x % self.numPlayers] = False
                         
@@ -848,24 +877,29 @@ class SimGame:
                             break
                 if self.players[x % self.numPlayers].numStrats == 1:
                     multipleStrats[x % self.numPlayers] = False
-                oneWithMultipleStrats = False
-                oneStratRemoved = False
-                oneNotChecked = False
-                for ms in multipleStrats:
-                    if ms:
-                        oneWithMultipleStrats = True
+                oneWithMultipleStratsAndNotChecked = False
+                for x in range(self.numPlayers):
+                    if multipleStrats[x] and not checked[x]:
+                        oneWithMultipleStratsAndNotChecked = True
                         break
-                for sr in stratRemoved:
-                    if sr:
-                        oneStratRemoved = True
-                        break
-                for p in checked:
-                    if not p:
-                        oneNotChecked = True
-                        break
-                if not oneWithMultipleStrats:
-                    oneStratRemoved = False
-                    oneNotChecked = False            
+                # oneWithMultipleStrats = False
+                # oneStratRemoved = False
+                # oneNotChecked = False
+                # for ms in multipleStrats:
+                #     if ms:
+                #         oneWithMultipleStrats = True
+                #         break
+                # for sr in stratRemoved:
+                #     if sr:
+                #         oneStratRemoved = True
+                #         break
+                # for p in checked:
+                #     if not p:
+                #         oneNotChecked = True
+                #         break
+                # if not oneWithMultipleStrats:
+                #     oneStratRemoved = False
+                #     oneNotChecked = False            
         return
     
     def eliminateStrictlyDominatedStrategies_step(self):
@@ -1570,13 +1604,20 @@ iesds_3 = [
     ]
 ]
 
-# G = SimGame(2)
-# G.enterData(2, [3, 3], iesds)
+freeMoney = [
+    [
+        [[1, 0], [0, 0]],
+        [[0, 0], [0, 0]]
+    ]
+]
+
+G = SimGame(2)
+G.enterData(2, [3, 3], iesds)
 # G.saveToFile("text files/rps.txt")
-# G.print()
-# G.eliminateStrictlyDominatedStrategies_full()
-# print("AFTER:")
-# G.print()
+G.print()
+G.eliminateStrictlyDominatedStrategies_full()
+print("AFTER:")
+G.print()
 # G.computeBestResponses()
 # eqs = G.computePureEquilibria()
 # G.printBestResponses()
