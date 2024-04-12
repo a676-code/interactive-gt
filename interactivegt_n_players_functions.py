@@ -1260,30 +1260,53 @@ def entriesToSimGame(G, dimensionsFrame, payoffsFrame):
     for x in range(numPlayers):
         numOutcomes *= numStrats[x]
     
-    numOutcomes = 1
-    for x in range(numPlayers):
-        numOutcomes *= numStrats[x]
-    
-    print("numOutcomes:", numOutcomes)
-    
     outcomes = payoffMatrixSlaves[:numOutcomes]
     outcomes.reverse()
     outcomesGet = [outcome.get() for outcome in outcomes]
     
-    for outcome in outcomesGet:
-        print("outcome:", outcome)
-    
     strategyNames = payoffMatrixSlaves[numOutcomes:]
-    p1StrategyNameEntries = strategyNames[:numStrats[0]]
-    p1StrategyNameEntries.reverse()
-    p2StrategyNameEntries = strategyNames[numStrats[1]:]
-    p2StrategyNameEntries.reverse()
+    if numPlayers < 3:
+        p1StrategyNameEntries = strategyNames[:numStrats[0]]
+        p1StrategyNameEntries.reverse()
+        p2StrategyNameEntries = strategyNames[numStrats[1]:]
+        p2StrategyNameEntries.reverse()
+    else:
+        p1StrategyNameEntries = strategyNames[:numStrats[0]]
+        p1StrategyNameEntries.reverse()
+        p2StrategyNameEntries = strategyNames[numStrats[0]:numStrats[1]]
+        p2StrategyNameEntries.reverse()
+        
+        # Removing the duplicated instances of player 2's strategy names
+        firstParenthesisFound = False
+        firstParenthesis = -1
+        numDeleted = 0
+        for n, name in enumerate(strategyNames):
+            if not firstParenthesisFound:
+                if "(" in name.get():
+                    firstParenthesisFound = True
+                    firstParenthesis = n
+        n = firstParenthesis + 1
+        moreParentheses = True
+        while moreParentheses:
+            j = 0
+            while j < numStrats[1]:
+                deleted = strategyNames.pop(n + j - numDeleted)
+                numDeleted += 1
+                j += 1
+            moreParentheses = False
+            for name in strategyNames[n:]:
+                if "(" in name.get():
+                    moreParentheses = True
+            n += numStrats[1] + 1
+        strategyNamesGet = [name.get() for name in strategyNames]
+        
+        # FIXME: Finish processing strategy names for players 3 and on
     
     for x in range(numPlayers):
         G.players[x].numStrats = numStrats[x]
     
     # Grouping the outcomes
-    matrixGroupedOutcomes = [outcomesGet[n:n + numStrats[0] * numStrats[1]] for n in range(0, numOutcomes, numStrats[0] * numStrats[1])]
+    matrixGroupedOutcomes = [outcomes[n:n + numStrats[0] * numStrats[1]] for n in range(0, numOutcomes, numStrats[0] * numStrats[1])]
     
     groupedOutcomes = [[matrix[n:n + numStrats[1]] for n in range(0, numStrats[0] * numStrats[1], numStrats[1])] for matrix in matrixGroupedOutcomes]
     
