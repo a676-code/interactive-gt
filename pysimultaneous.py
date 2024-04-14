@@ -663,9 +663,6 @@ class SimGame:
                 break
         x = -1
         k = 0
-        """FIXME: iesds game works when oneStratRemoved is gone, but infinite loop on all-zeros game and free money. 
-        OTOH, iesds game doesn't work when oneStratRemoved is there, but all-zeros and free money games work. 
-        """
         # Stop when you can't eliminate a strategy for either player or when only one strategy is left for each players or when all players have been checked
         # Stop when all players have only one strat or when all players' strategies have been checked...or when there isn't a strat that can be removed? No, when we remove a strat, we should check all other player's strategies. 
         # Continue if one player has multiple strategies and one player hasn't been checked and you can eliminate a strategy for one player
@@ -881,33 +878,17 @@ class SimGame:
                 for x in range(self.numPlayers):
                     if multipleStrats[x] and not checked[x]:
                         oneWithMultipleStratsAndNotChecked = True
-                        break
-                # oneWithMultipleStrats = False
-                # oneStratRemoved = False
-                # oneNotChecked = False
-                # for ms in multipleStrats:
-                #     if ms:
-                #         oneWithMultipleStrats = True
-                #         break
-                # for sr in stratRemoved:
-                #     if sr:
-                #         oneStratRemoved = True
-                #         break
-                # for p in checked:
-                #     if not p:
-                #         oneNotChecked = True
-                #         break
-                # if not oneWithMultipleStrats:
-                #     oneStratRemoved = False
-                #     oneNotChecked = False            
+                        break      
         return
     
     def eliminateStrictlyDominatedStrategies_step(self):
         return
     
     def enterData(self, numPlayers = 2, numStrats = [2, 2], payoffs = [
-        [[1, 5], [2, 6]],
-        [[3, 7], [4, 8]]
+        [
+            [[1, 5], [2, 6]],
+            [[3, 7], [4, 8]]
+        ]
     ]):        
         oldNumPlayers = self.numPlayers
         oldNumStrats = [self.players[x].numStrats for x in range(oldNumPlayers)]
