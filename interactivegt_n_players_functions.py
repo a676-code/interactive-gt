@@ -641,51 +641,17 @@ def dimensionsClick(G, root, dimensionsFrame, payoffsFrame, oldNumPlayers):
                     return
                 if negativeStratsError == -1:
                     proceed = messagebox.askokcancel("Clear Payoffs?", "This will reset the payoff matrix. Do you want to proceed?")
-                    if (proceed == True):                        
+                    if (proceed == True):
                         if oldNumPlayers < numPlayers:
                             for x in range(oldNumPlayers, numPlayers):
                                 # Adding new players
                                 p = Player(numStrats[x], 0)
                                 G.players.append(p)
-                                # Adding new strategyNames
-                                if G.players[x].numStrats < 3:
-                                    G.strategyNames.append(["L(" + str(x + 1) + ")", "R(" + str(x + 1) + ")"])
-                                else: 
-                                    center = []
-                                    if G.players[x].numStrats == 3:
-                                        center = ["C(" + str(x + 1) + ")"]
-                                    else:
-                                        center = ["C(" + str(x + 1) + ", " + str(s + 1) + ")" for s in range(1, G.players[x].numStrats - 1)]
-                                    G.strategyNames.append(["L(" + str(x + 1) + ")"] + center + ["R(" + str(x + 1) + ")"])
-                                        
-                        # resetting the strategy names
-                        gNumStrats = [G.players[x].numStrats for x in range(G.numPlayers)]
-                        if numStrats != gNumStrats:
-                            G.strategyNames = []
-                            if G.players[0].numStrats < 3:
-                                G.strategyNames.append(["U", "D"])
-                            else:
-                                if G.players[0].numStrats == 3:
-                                    middle = ["M"]
-                                else: # > 3
-                                    middle = ["M" + str(i) for i in range(1, G.players[0].numStrats - 1)]
-                                G.strategyNames.append(["U"] + middle + ["D"])
-                            if G.players[1].numStrats < 3:
-                                G.strategyNames.append(["L", "R"])
-                            else:
-                                if G.players[x].numStrats == 3:
-                                    center = ["C"]
-                                elif G.players[x].numStrats > 3:
-                                    center = ["C(" + str(x + 1) + ", " + str(s + 1) + ")" for s in range(1, G.players[x].numStrats - 1)]
-                                else:
-                                    center = []
-                                G.strategyNames.append(["L"] + center + ["R"])
-                            if G.numPlayers > 2:
-                                for x in range(2, G.numPlayers):
-                                    if G.players[x].numStrats < 3:
-                                        G.strategyNames.append(["L(" + str(x + 1) + ")", "R(" + str(x + 1) + ")"])
-                                    else:
-                                        G.strategyNames.append(["L(" + str(x + 1) + ")"] + ["C(" + str(x + 1) + ", " + str(s + 1) + ")" for s in range(1, G.players[x].numStrats - 1)] + ["R(" + str(x + 1) + ")"])
+                        elif oldNumPlayers > numPlayers:
+                            for x in range(numPlayers, oldNumPlayers):
+                                # Removing players
+                                G.players.pop()
+                        G.resetStrategyNames()
                         
                         # Resetting the number of steps of IESDS that have been computed
                         numIESDSClicks = 0  
@@ -823,48 +789,15 @@ def dimensionsClickNoWarning(G, root, dimensionsFrame, payoffsFrame, equilibriaF
                     return
                 if negativeStratsError == -1:               
                     if oldNumPlayers < numPlayers:
-                        for x in range(oldNumPlayers, numPlayers):
-                            # Adding new players
-                            p = Player(numStrats[x], 0)
-                            G.players.append(p)
-                            # Adding new strategyNames
-                            if G.players[x].numStrats < 3:
-                                G.strategyNames.append(["L(" + str(x + 1) + ")", "R(" + str(x + 1) + ")"])
-                            else: 
-                                if G.players[x].numStrats == 3:
-                                    center = ["C"]
-                                elif G.players[x].numStrats > 3:
-                                    center = ["C(" + str(x + 1) + ", " + str(s + 1) + ")" for s in range(1, G.players[x].numStrats - 1)]
-                                else:
-                                    center = []
-                                G.strategyNames.append(["L(" + str(x + 1) + ")"] + center + ["R(" + str(x + 1) + ")"])
-                                    
-                    # resetting the strategy names
-                    gNumStrats = [G.players[x].numStrats for x in range(G.numPlayers)]
-                    if numStrats != gNumStrats:
-                        G.strategyNames = []
-                        if G.players[0].numStrats < 3:
-                            G.strategyNames.append(["U", "D"])
-                        else:
-                            if G.players[0].numStrats == 3:
-                                middle = ["M"]
-                            else: # > 3
-                                middle = ["M" + str(i) for i in range(1, G.players[0].numStrats - 1)]
-                            G.strategyNames.append(["U"] + middle + ["D"])
-                        if G.players[1].numStrats < 3:
-                            G.strategyNames.append(["L", "R"])
-                        else:
-                            if G.players[1].numStrats == 3:
-                                center = ["C"]
-                            else: # > 3
-                                center = ["C" + str(j) for j in range(1, G.players[1].numStrats - 1)]
-                            G.strategyNames.append(["L"] + center + ["R"])
-                        if G.numPlayers > 2:
-                            for x in range(2, G.numPlayers):
-                                if G.players[x].numStrats < 3:
-                                    G.strategyNames.append(["L(" + str(x + 1) + ")", "R(" + str(x + 1) + ")"])
-                                else:
-                                    G.strategyNames.append(["L(" + str(x + 1) + ")"] + ["C(" + str(x + 1) + ", " + str(s + 1) + ")" for s in range(1, G.players[x].numStrats - 1)] + ["R(" + str(x + 1) + ")"])
+                            for x in range(oldNumPlayers, numPlayers):
+                                # Adding new players
+                                p = Player(numStrats[x], 0)
+                                G.players.append(p)
+                        elif oldNumPlayers > numPlayers:
+                            for x in range(numPlayers, oldNumPlayers):
+                                # Removing players
+                                G.players.pop()
+                        G.resetStrategyNames()
                     
                     # Resetting the number of steps of IESDS that have been computed
                     numIESDSClicks = 0  
@@ -2012,48 +1945,15 @@ def resetRecord(selectIDEntry):
         conn.close()
         return
 
-def resetStrategies():
+def resetStrategies(dimensionsFrame, payoffsFrame):
     """
     Resets p1's strategy names to U M1 M2 ... D and p2's strategy names to L C1 C2 ... R
     """
     resetStrategiesWarning = messagebox.askokcancel("Clear Strategy Names", "Are you sure you want to reset the strategy names?") 
     
     if resetStrategiesWarning == True:
-        numStrats1 = int(numStratsEntries[0].get())
-        numStrats2 = int(numStratsEntries[1].get())
-        
-        # clearing the strategies
-        payoffMatrixSlaves = payoffsFrame.grid_slaves()
-        strategies = payoffMatrixSlaves[numStrats1 * numStrats2:]
-        for slave in strategies:
-            slave.grid_remove()
-        
-        # refilling the table
-        for i in range(numStrats2):
-            e = Entry(payoffsFrame, width=10)
-            if i == 0:
-                e.insert(0, "L")
-            elif i > 0 and i < numStrats2 - 1 and numStrats2 == 3:
-                e.insert(0, "C")
-            elif i > 0 and i < numStrats2 - 1 and numStrats2 >= 3:
-                e.insert(0, "C" + str(i))
-            else:
-                e.insert(0, "R")
-            e.grid(row=0, column=i + 1, pady=5)
-            
-        for j in range(numStrats1):
-            e = Entry(payoffsFrame, width=10)
-            if j == 0:
-                e.insert(0, "U")
-            elif j > 0 and j < numStrats1 - 1 and numStrats1 == 3:
-                e.insert(0, "M")
-            elif j > 0 and j < numStrats1 - 1 and numStrats1 > 3:
-                e.insert(0, "M" + str(j))
-            else:
-                e.insert(0, "D")
-            e.grid(row=j + 1, column=0, padx=5)
-            
-        entriesToSimGame(G, dimensionsFrame, payoffsFrame)
+        G.resetStrategyNames()
+        simGameToEntries(G, dimensionsFrame, payoffsFrame)
     else:
         return
     

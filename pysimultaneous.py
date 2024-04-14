@@ -242,7 +242,7 @@ class SimGame:
         else:
             if self.players[0].numStrats == 3:
                 middle = ["M"]
-            else: # > 3
+            else: # [0].numStrats > 3
                 middle = ["M" + str(i) for i in range(1, self.players[0].numStrats - 1)]
             self.strategyNames.append(["U"] + middle + ["D"])
         if self.players[1].numStrats < 3:
@@ -250,15 +250,19 @@ class SimGame:
         else:
             if self.players[1].numStrats == 3:
                 center = ["C"]
-            else: # > 3
+            else: # [1].numStrats > 3
                 center = ["C" + str(j) for j in range(1, self.players[1].numStrats - 1)]
             self.strategyNames.append(["L"] + center + ["R"])
         if self.numPlayers > 2:
             for x in range(2, self.numPlayers):
+                center = []
                 if self.players[x].numStrats < 3:
-                    self.strategyNames.append(["L(" + str(x + 1) + ")", "R(" + str(x + 1) + ")"])
-                else: 
-                    self.strategyNames.append(["L(" + str(x + 1) + ")"] + ["C(" + str(x + 1) + ", " + str(s + 1) + ")" for s in range(self.players[x].numStrats)] + ["R(" + str(x + 1) + ")"])
+                    center = []
+                elif self.players[x].numStrats == 3:
+                    center = ["C(" + str(x + 1) + ")"]
+                else:
+                    center = ["C(" + str(x + 1) + ", " + str(s) + ")" for s in range(1, self.players[x].numStrats - 1)]
+                self.strategyNames.append(["L(" + str(x + 1) + ")"] + center + ["R(" + str(x + 1) + ")"])
         
         self.numPlayers = numPlayers
         
@@ -663,6 +667,9 @@ class SimGame:
                 break
         x = -1
         k = 0
+        """FIXME: iesds game works when oneStratRemoved is gone, but infinite loop on all-zeros game and free money. 
+        OTOH, iesds game doesn't work when oneStratRemoved is there, but all-zeros and free money games work. 
+        """
         # Stop when you can't eliminate a strategy for either player or when only one strategy is left for each players or when all players have been checked
         # Stop when all players have only one strat or when all players' strategies have been checked...or when there isn't a strat that can be removed? No, when we remove a strat, we should check all other player's strategies. 
         # Continue if one player has multiple strategies and one player hasn't been checked and you can eliminate a strategy for one player
@@ -878,17 +885,33 @@ class SimGame:
                 for x in range(self.numPlayers):
                     if multipleStrats[x] and not checked[x]:
                         oneWithMultipleStratsAndNotChecked = True
-                        break      
+                        break
+                # oneWithMultipleStrats = False
+                # oneStratRemoved = False
+                # oneNotChecked = False
+                # for ms in multipleStrats:
+                #     if ms:
+                #         oneWithMultipleStrats = True
+                #         break
+                # for sr in stratRemoved:
+                #     if sr:
+                #         oneStratRemoved = True
+                #         break
+                # for p in checked:
+                #     if not p:
+                #         oneNotChecked = True
+                #         break
+                # if not oneWithMultipleStrats:
+                #     oneStratRemoved = False
+                #     oneNotChecked = False            
         return
     
     def eliminateStrictlyDominatedStrategies_step(self):
         return
     
     def enterData(self, numPlayers = 2, numStrats = [2, 2], payoffs = [
-        [
-            [[1, 5], [2, 6]],
-            [[3, 7], [4, 8]]
-        ]
+        [[1, 5], [2, 6]],
+        [[3, 7], [4, 8]]
     ]):        
         oldNumPlayers = self.numPlayers
         oldNumStrats = [self.players[x].numStrats for x in range(oldNumPlayers)]
@@ -1234,6 +1257,36 @@ class SimGame:
                         product = 1
                 m += product
         self.players[player].numStrats -= 1
+    
+    def resetStrategyNames(self):
+        self.strategyNames = []
+        if self.players[0].numStrats < 3:
+            self.strategyNames.append(["U", "D"])
+        else:
+            if self.players[0].numStrats == 3:
+                middle = ["M"]
+            else: # [0].numStrats > 3
+                middle = ["M" + str(i) for i in range(1, self.players[0].numStrats - 1)]
+            self.strategyNames.append(["U"] + middle + ["D"])
+        if self.players[1].numStrats < 3:
+            self.strategyNames.append(["L", "R"])
+        else:
+            if self.players[1].numStrats == 3:
+                center = ["C"]
+            else: # [1].numStrats > 3
+                center = ["C" + str(j) for j in range(1, self.players[1].numStrats - 1)]
+            self.strategyNames.append(["L"] + center + ["R"])
+        if self.numPlayers > 2:
+            for x in range(2, self.numPlayers):
+                center = []
+                if self.players[x].numStrats < 3:
+                    center = []
+                elif self.players[x].numStrats == 3:
+                    center = ["C(" + str(x + 1) + ")"]
+                else:
+                    center = ["C(" + str(x + 1) + ", " + str(s) + ")" for s in range(1, self.players[x].numStrats - 1)]
+                self.strategyNames.append(["L(" + str(x + 1) + ")"] + center + ["R(" + str(x + 1) + ")"])
+        return
     
     def saveToFile(self, fileName):
         """Saves the data of a game to a text file
@@ -1592,13 +1645,13 @@ freeMoney = [
     ]
 ]
 
-G = SimGame(2)
-G.enterData(2, [3, 3], iesds)
+# G = SimGame(2)
+# G.enterData(2, [3, 3], iesds)
 # G.saveToFile("text files/rps.txt")
-G.print()
-G.eliminateStrictlyDominatedStrategies_full()
-print("AFTER:")
-G.print()
+# G.print()
+# G.eliminateStrictlyDominatedStrategies_full()
+# print("AFTER:")
+# G.print()
 # G.computeBestResponses()
 # eqs = G.computePureEquilibria()
 # G.printBestResponses()

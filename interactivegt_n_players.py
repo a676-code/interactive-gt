@@ -257,7 +257,7 @@ def main():
     edit_menu.add_command(label="Clear Strategy Names", command=clearStrategies)
     edit_menu.add_separator()
     edit_menu.add_command(label="Reset Payoff Matrix", command=resetPayoffMatrix)
-    edit_menu.add_command(label="Reset Strategy Names", command=resetStrategies)
+    edit_menu.add_command(label="Reset Strategy Names", command=lambda: resetStrategies(dimensionsFrame, payoffsFrame))
 
     option_menu = Menu(menubar)
     menubar.add_cascade(label="Options", menu=option_menu)
