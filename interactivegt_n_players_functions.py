@@ -789,15 +789,15 @@ def dimensionsClickNoWarning(G, root, dimensionsFrame, payoffsFrame, equilibriaF
                     return
                 if negativeStratsError == -1:               
                     if oldNumPlayers < numPlayers:
-                            for x in range(oldNumPlayers, numPlayers):
-                                # Adding new players
-                                p = Player(numStrats[x], 0)
-                                G.players.append(p)
-                        elif oldNumPlayers > numPlayers:
-                            for x in range(numPlayers, oldNumPlayers):
-                                # Removing players
-                                G.players.pop()
-                        G.resetStrategyNames()
+                        for x in range(oldNumPlayers, numPlayers):
+                            # Adding new players
+                            p = Player(numStrats[x], 0)
+                            G.players.append(p)
+                    elif oldNumPlayers > numPlayers:
+                        for x in range(numPlayers, oldNumPlayers):
+                            # Removing players
+                            G.players.pop()
+                    G.resetStrategyNames()
                     
                     # Resetting the number of steps of IESDS that have been computed
                     numIESDSClicks = 0  
