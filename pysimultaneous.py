@@ -885,25 +885,7 @@ class SimGame:
                 for x in range(self.numPlayers):
                     if multipleStrats[x] and not checked[x]:
                         oneWithMultipleStratsAndNotChecked = True
-                        break
-                # oneWithMultipleStrats = False
-                # oneStratRemoved = False
-                # oneNotChecked = False
-                # for ms in multipleStrats:
-                #     if ms:
-                #         oneWithMultipleStrats = True
-                #         break
-                # for sr in stratRemoved:
-                #     if sr:
-                #         oneStratRemoved = True
-                #         break
-                # for p in checked:
-                #     if not p:
-                #         oneNotChecked = True
-                #         break
-                # if not oneWithMultipleStrats:
-                #     oneStratRemoved = False
-                #     oneNotChecked = False            
+                        break        
         return
     
     def eliminateStrictlyDominatedStrategies_step(self):
@@ -1260,9 +1242,15 @@ class SimGame:
     
     def resetStrategyNames(self):
         self.strategyNames = []
+        
+        print("numStrats:")
+        for x in range(self.numPlayers):
+            print(self.players[x].numStrats)
+        
         if self.players[0].numStrats < 3:
             self.strategyNames.append(["U", "D"])
         else:
+            middle = []
             if self.players[0].numStrats == 3:
                 middle = ["M"]
             else: # [0].numStrats > 3
@@ -1271,6 +1259,7 @@ class SimGame:
         if self.players[1].numStrats < 3:
             self.strategyNames.append(["L", "R"])
         else:
+            center = []
             if self.players[1].numStrats == 3:
                 center = ["C"]
             else: # [1].numStrats > 3
@@ -1286,6 +1275,7 @@ class SimGame:
                 else:
                     center = ["C(" + str(x + 1) + ", " + str(s) + ")" for s in range(1, self.players[x].numStrats - 1)]
                 self.strategyNames.append(["L(" + str(x + 1) + ")"] + center + ["R(" + str(x + 1) + ")"])
+        print("HERE:", self.strategyNames)
         return
     
     def saveToFile(self, fileName):

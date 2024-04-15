@@ -651,7 +651,10 @@ def dimensionsClick(G, root, dimensionsFrame, payoffsFrame, oldNumPlayers):
                             for x in range(numPlayers, oldNumPlayers):
                                 # Removing players
                                 G.players.pop()
+                        enterNumPlayersAndNumStrats(G, dimensionsFrame)
                         G.resetStrategyNames()
+                        
+                        print("stratNames 2:", G.strategyNames)
                         
                         # Resetting the number of steps of IESDS that have been computed
                         numIESDSClicks = 0  
@@ -708,7 +711,7 @@ def dimensionsClick(G, root, dimensionsFrame, payoffsFrame, oldNumPlayers):
                                         e.grid(row=i + 1 + 1, column=j + 1 + (m * numStrats[1]), sticky=NSEW, padx=(0, 10))
                                     e.insert(END, stringFormatter % tuple(defaultPayoffs))
 
-                        entriesToSimGame(G, dimensionsFrame, payoffsFrame)
+                        entriesToSimGame(G, dimensionsFrame, payoffsFrame, oldNumPlayers)
                             
                         # Clearing the equilibria
                         try:
@@ -820,7 +823,6 @@ def dimensionsClickNoWarning(G, root, dimensionsFrame, payoffsFrame, equilibriaF
                             for x in range(2, G.numPlayers):
                                 namesToJoin[m].append(G.strategyNames[x][G.toProfile(m)[x]])
                             
-                            print("nTJ[m]:", namesToJoin[m])
                             joinedNames.append(", ".join(namesToJoin[m]))
                             player3OnEntry.insert(0, joinedNames[m])                 
                             player3OnEntry.grid(row=0, column=numStrats[1] * m + 1, columnspan=2, pady=5, sticky=EW)
@@ -1252,10 +1254,37 @@ def enterColor(rootFrame, color):
         colorNotFound = messagebox.showerror(f"Error", f"Unknown color name \"{color}\". Try entering in a different color.")
     return
 
-def entriesToSimGame(G, dimensionsFrame, payoffsFrame):
+def enterNumPlayersAndNumStrats(G, dimensionsFrame):
+    dimensionsSlaves = dimensionsFrame.grid_slaves()
+    dimensionsEntries = []
+    for slave in dimensionsSlaves:
+        if type(slave).__name__ == "Entry":
+            dimensionsEntries.append(slave)
+    oldNumPlayers = G.numPlayers
+    G.numPlayers = int(dimensionsEntries[-1].get())
+    dimensionsEntries.pop() # last entry is numPlayers entry
+    numStrats = [int(e.get()) for e in dimensionsEntries]
+    if oldNumPlayers < G.numPlayers:
+        for x in range(oldNumPlayers, G.numPlayers):
+            G.players.append(Player(numStrats[x], 0))
+    elif oldNumPlayers > G.numPlayers:
+        for x in range(G.numPlayers, oldNumPlayers):
+            G.players.pop()
+        for x in range(G.numPlayers):
+            G.players[x].numStrats = numStrats[x]
+    else: # oldNumPlayers == G.numPlayers
+        print("np1:", oldNumPlayers)
+        print("np2:", G.numPlayers)
+        print("players:", G.players)
+        print("nS:", numStrats)
+        for x in range(G.numPlayers):
+            G.players[x].numStrats = numStrats[x]
+    return
+
+def entriesToSimGame(G, dimensionsFrame, payoffsFrame, oldNumPlayers):
     """Enters the information in the text entries into the SimGame object
     """
-    oldNumStrats = [G.players[x].numStrats for x in range(G.numPlayers)]
+    oldNumStrats = [G.players[x].numStrats for x in range(oldNumPlayers)]
     
     # Getting the numbers of strategies
     numStrats = []
@@ -1283,12 +1312,15 @@ def entriesToSimGame(G, dimensionsFrame, payoffsFrame):
     numOutcomes = 1
     for x in range(numPlayers):
         numOutcomes *= numStrats[x]
+    print("numOutcomes:", numOutcomes)
+    print("num slaves:", len(payoffMatrixSlaves))
     
     outcomes = payoffMatrixSlaves[:numOutcomes]
     outcomes.reverse()
     outcomesGet = [outcome.get() for outcome in outcomes]
     
     strategyNames = payoffMatrixSlaves[numOutcomes:]
+    print("HEREHERE:", strategyNames)
     if numPlayers < 3:
         p1StrategyNameEntries = strategyNames[:numStrats[0]]
         p1StrategyNameEntries.reverse()
@@ -1314,6 +1346,7 @@ def entriesToSimGame(G, dimensionsFrame, payoffsFrame):
         while moreParentheses:
             j = 0
             while j < numStrats[1]:
+                print("HERE:", strategyNames)
                 deleted = strategyNames.pop(n + j - numDeleted)
                 numDeleted += 1
                 j += 1
@@ -1336,7 +1369,6 @@ def entriesToSimGame(G, dimensionsFrame, payoffsFrame):
                 stratNamesPast2SplitNames.append(names[x])
         print("sNP2SN:", stratNamesPast2SplitNames)
         stratNames = [[] for x in range(numPlayers)]
-        # numDeleted = 0
         for n, name in enumerate(stratNamesPast2SplitNames):
             print("n:", n)
             print("name:", name)
@@ -1344,10 +1376,6 @@ def entriesToSimGame(G, dimensionsFrame, payoffsFrame):
                 print("\tx:", x)
                 if str(x + 1) in name:
                     stratNames[x].append(name)
-                    # print("\t\tn - numDel:", n - numDeleted)
-                    # del_ = stratNamesPast2SplitNames.pop(n - numDeleted)
-                    # print("\t\tdel:", del_)
-                    # numDeleted += 1
                     break
         print("SN:", stratNames)      
 
