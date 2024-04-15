@@ -130,7 +130,7 @@ def main():
     Radiobutton(iesdsFrame, text="Full Computation", variable=iesdsSteps, value=0, command=lambda: iesdsStepsClicked(iesdsSteps, iesdsSteps.get())).grid(row=0, column=0, sticky=W)
     revertButton = Button(iesdsFrame, text="Revert", command=lambda: revert(G, dimensionsFrame, payoffsFrame))
     Radiobutton(iesdsFrame, text="Computation in Steps", variable=iesdsSteps, value=1, command=lambda: iesdsStepsClicked(iesdsSteps, iesdsSteps.get())).grid(row=1, column=0, sticky=W)
-    iesdsButton = Button(iesdsFrame, text="Eliminate Strictly Dominated Strategies", command=lambda: eliminateStrictlyDominatedStrategies(G, dimensionsFrame, payoffsFrame, iesdsSteps.get()))
+    iesdsButton = Button(iesdsFrame, text="Eliminate Strictly Dominated Strategies", command=lambda: eliminateStrictlyDominatedStrategies(G, dimensionsFrame, payoffsFrame, iesdsSteps.get(), int(numPlayersEntry.get())))
 
     # Equilibria Frame
     equilibriaFrame = LabelFrame(rootFrame, text="Equilibria" , padx=10, pady=10)
@@ -240,7 +240,7 @@ def main():
     # Create a menu item
     file_menu = Menu(menubar)
     menubar.add_cascade(label="File", menu=file_menu)
-    file_menu.add_command(label="Open File", command=lambda: openFile(G, root, dimensionsFrame, payoffsFrame, equilibriaFrame))
+    file_menu.add_command(label="Open File", command=lambda: openFile(G, root, dimensionsFrame, payoffsFrame, equilibriaFrame, int(numPlayersEntry.get())))
     file_menu.add_separator()
     file_menu.add_command(label="Save As...", command=lambda: saveAs(G, dimensionsFrame, payoffsFrame))
     file_menu.add_command(label="Save as LaTeX", command=saveAsLatex)

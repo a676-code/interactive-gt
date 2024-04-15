@@ -742,7 +742,7 @@ def dimensionsClick(G, root, dimensionsFrame, payoffsFrame, oldNumPlayers):
         return
     return
 
-def dimensionsClickNoWarning(G, root, dimensionsFrame, payoffsFrame, equilibriaFrame):
+def dimensionsClickNoWarning(G, root, dimensionsFrame, payoffsFrame, equilibriaFrame, oldNumPlayers):
     """
     Resizes the payoff matrix according to the numbers of strategies entered in by the user without prompting the user
     """
@@ -800,7 +800,10 @@ def dimensionsClickNoWarning(G, root, dimensionsFrame, payoffsFrame, equilibriaF
                         for x in range(numPlayers, oldNumPlayers):
                             # Removing players
                             G.players.pop()
+                    enterNumPlayersAndNumStrats(G, dimensionsFrame)
                     G.resetStrategyNames()
+                    
+                    print("stratNames 2:", G.strategyNames)
                     
                     # Resetting the number of steps of IESDS that have been computed
                     numIESDSClicks = 0  
@@ -857,7 +860,7 @@ def dimensionsClickNoWarning(G, root, dimensionsFrame, payoffsFrame, equilibriaF
                                     e.grid(row=i + 1 + 1, column=j + 1 + (m * numStrats[1]), sticky=NSEW, padx=(0, 10))
                                 e.insert(END, stringFormatter % tuple(defaultPayoffs))
 
-                    entriesToSimGame(G, dimensionsFrame, payoffsFrame)
+                    entriesToSimGame(G, dimensionsFrame, payoffsFrame, oldNumPlayers)
                         
                     # Clearing the equilibria
                     try:
@@ -886,7 +889,7 @@ def dimensionsClickNoWarning(G, root, dimensionsFrame, payoffsFrame, equilibriaF
         return
     return
 
-def eliminateStrictlyDominatedStrategies(G, dimensionsFrame, payoffsFrame, steps):
+def eliminateStrictlyDominatedStrategies(G, dimensionsFrame, payoffsFrame, steps, oldNumPlayers):
     """
     Compares all payoffs of all pairs of strategies for both players and eliminates strategies that are strictly dominated.    
     """
@@ -908,7 +911,7 @@ def eliminateStrictlyDominatedStrategies(G, dimensionsFrame, payoffsFrame, steps
     
     # saving the original game in case the user wants to revert back to it
     if steps == 0 or numIESDSClicks == 0:
-        entriesToSimGame(G, dimensionsFrame, payoffsFrame)
+        entriesToSimGame(G, dimensionsFrame, payoffsFrame, oldNumPlayers)
         global originalGame
         global originalNumStrats
         originalGame = payoffsFrame.grid_slaves()
@@ -1653,7 +1656,7 @@ def numPlayersClick(G, dimensionsFrame, numPlayersButton, dimensionsButton, oldN
                 numStratsEntries[x].grid_remove()
         return
 
-def openFile(G, root, dimensionsFrame, payoffsFrame, equilibriaFrame):
+def openFile(G, root, dimensionsFrame, payoffsFrame, equilibriaFrame, oldNumPlayers):
     """
         opens a file and reads the data from it into a list
     """
@@ -1693,7 +1696,7 @@ def openFile(G, root, dimensionsFrame, payoffsFrame, equilibriaFrame):
                 for x in range(numPlayers):
                     numStratsEntries[x].delete(0, 'end')
                     numStratsEntries[x].insert(0, int(numStrats[x]))
-                dimensionsClickNoWarning(G, root, dimensionsFrame, payoffsFrame, equilibriaFrame)
+                dimensionsClickNoWarning(G, root, dimensionsFrame, payoffsFrame, equilibriaFrame, oldNumPlayers)
                 numStrats = []
                 for x in range(numPlayers):
                     numStrats.append(int(numStratsEntries[x].get()))
