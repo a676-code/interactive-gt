@@ -141,7 +141,7 @@ def main():
     Radiobutton(equilibriaFrame, text="Standard nashpy Output", variable=eqOutput, value=0, command=lambda: equilibriaOutputStyleClicked(eqOutput, eqOutput.get())).grid(row=0, column=0, sticky=W)
     Radiobutton(equilibriaFrame, text="Named Strategies", variable=eqOutput, value=1, command=lambda: equilibriaOutputStyleClicked(eqOutput, eqOutput.get())).grid(row=1, column=0, sticky=W)
 
-    equilibriaButton = Button(equilibriaFrame, text="Compute Equilibria", command=lambda: computeEquilibria(G, root, dimensionsFrame, payoffsFrame, equilibriaFrame, eqOutput.get()))
+    equilibriaButton = Button(equilibriaFrame, text="Compute Equilibria", command=lambda: computeEquilibria(G, root, dimensionsFrame, payoffsFrame, equilibriaFrame, eqOutput.get(), int(numPlayersEntry.get())))
 
     # Axelrod Frame
     axelrodFrame = LabelFrame(rootFrame, text="axelrod" , padx=10, pady=10)
