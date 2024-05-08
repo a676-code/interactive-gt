@@ -21,36 +21,22 @@ def addAllPairs():
     conn = sqlite3.connect('match.db')
     c = conn.cursor()
 
+    strategy = dbClicked1.get()
     options = [s() for s in axl.strategies]
-    C = combinations(options, r=2)
-    for i, pair in enumerate(C):
+    for i, option in options:
+        match = dbPlayMatch(strategy, type(option).__name__, int(dbTurnsEntry.get()))
         print("Inserting pair " + str(i))
         c.execute("INSERT INTO matches VALUES (:strategy1, :strategy2, :numTurns, :output, :score1, :score2)",
             {
                 'strategy1': str(pair[0]),
                 'strategy2': str(pair[1]),
                 'numTurns': dbTurnsEntry.get(),
-                'output': str(dbPlayMatch(pair[0], pair[1], int(dbTurnsEntry.get()))[0]), 
-                'score1': dbPlayMatch(pair[0], pair[1], int(dbTurnsEntry.get()))[1][0], 
-                'score2':dbPlayMatch(pair[0], pair[1], int(dbTurnsEntry.get()))[1][1]
+                'output': match[0], 
+                'score1': match[1][0], 
+                'score2':match[1][1]
             }
         )
-        print("Inserting output " + str(dbPlayMatch(pair[0], pair[1], int(dbTurnsEntry.get()))[0]))
-    # Inserting pairs (s, s) for each strategy s
-    for strategy in options:
-        c.execute("INSERT INTO matches VALUES (:strategy1, :strategy2, :numTurns, :output, :score1, :score2)",
-            {
-                'strategy1': str(strategy),
-                'strategy2': str(strategy),
-                'numTurns': dbTurnsEntry.get(),
-                'output': str(dbPlayMatch(strategy, strategy, int(dbTurnsEntry.get()))[0]), 
-                'score1': dbPlayMatch(strategy, strategy, int(dbTurnsEntry.get()))[1][0], 
-                'score2': dbPlayMatch(strategy, strategy, int(dbTurnsEntry.get()))[1][1]
-            }
-        )
-        print("Inserting output " + str(dbPlayMatch(strategy, strategy, int(dbTurnsEntry.get()))[0]))
-    
-
+        
     conn.commit()
     conn.close()
     return
@@ -77,20 +63,18 @@ def addRecord():
         if type(options[counter]).__name__ == clicked2NoSpaces:
             p2 = options[counter]
         counter += 1
-    
-    # """
+
+    match = dbPlayMatch(p1, p2, int(dbTurnsEntry.get()))
     c.execute("INSERT INTO matches VALUES (:strategy1, :strategy2, :numTurns, :output, :score1, :score2)",
         {
             'strategy1': dbClicked1.get(),
             'strategy2': dbClicked2.get(),
             'numTurns': dbTurnsEntry.get(),
-            'output': str(dbPlayMatch(p1, p2, int(dbTurnsEntry.get()))[0]),
-            'score1': dbPlayMatch(p1, p2, int(dbTurnsEntry.get()))[1][0],
-            'score2': dbPlayMatch(p1, p2, int(dbTurnsEntry.get()))[1][1]
+            'output': match[0],
+            'score1': match[1][0],
+            'score2': match[1][1]
         }
     )
-    # """
-    
     conn.commit()
     conn.close()
 
@@ -591,33 +575,35 @@ def db():
     conn.close()
     return
 
-def dbPlayMatch(p1, p2, t = 6):    
+def dbPlayMatch(p1Strat, p2Strat, t = 6):    
     """
     Runs an axelrod match between players of type p1 and p2 with t turns and returns a tuple of the match output and scores
-    """    
+    """
+    p1Strat = p1Strat.replace(" ", "")
+    p2Strat = p2Strat.replace(" ", "")
     p1 = ""
     p2 = ""
-    clicked1NoSpaces = clicked1.get().replace(" ", "")
-    clicked2NoSpaces = clicked2.get().replace(" ", "")
-    counter= 0
+    # Getting the strategy object that corresponds to the string p1Strat
+    counter = 0
+    options = [s() for s in axl.strategies]
     while type(p1).__name__ == "str" and counter <= len(axl.strategies):
         try:
-            if type(options[counter]).__name__ == clicked1NoSpaces:
+            if type(options[counter]).__name__ == p1Strat:
                 p1 = options[counter]
         except IndexError:
             stratNotFoundError = messagebox.showerror("Error", "The strategy you entered for player 1 was not in axelrod's list of strategies. Perhaps you meant to capitalize the individual words?")
-        counter += 1  
+        counter += 1
     
+    # Getting the strategy object that corresponds to the string p2Strat 
     counter = 0
     while type(p2).__name__ == "str" and counter <= len(axl.strategies):
         try:
-            if type(options[counter]).__name__ == clicked2NoSpaces:
+            if type(options[counter]).__name__ == p2Strat:
                 p2 = options[counter]
-                
-                match = axl.Match((p1, p2), turns = t)
         except IndexError:
             stratNotFoundError = messagebox.showerror("Error", "The strategy you entered for player 2 was not in axelrod's list of strategies. Perhaps you meant to capitalize the individual words?")
         counter += 1
+    match = axl.Match((p1, p2), turns = t)
     return (str(match.play()), match.final_score_per_turn())
 
 def deleteRecord():

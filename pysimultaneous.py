@@ -10,6 +10,23 @@ from sympy import solve
 from sympy import simplify
 import warnings
 from pprint import pprint
+import colorama
+from colorama import init, Fore, Style
+
+init()
+
+def checkIfFloats(myList):
+    allFloats = True
+    t = ""
+    for i in range(len(myList)):
+        if not isinstance(myList[i], float):
+            t = type(myList[i]).__name__
+            if t != "float" or "int":
+                allFloats = False
+                break
+            if t == "int":
+                myList[i] = float(myList[i])
+    return (allFloats, t, myList) 
 
 class ListNode:
     head = None
@@ -41,6 +58,29 @@ class ListNode:
             curNode = curNode.next
         
         curNode.next = newNode
+        return
+    
+    def checkIfFloats(self):
+        allFloats = True
+        curNode = self.head
+        t = ""
+        while curNode:
+            if not isinstance(curNode.payoff, float):
+                t = type(curNode.payoff).__name__
+                if t != "float" or "int":
+                    allFloats = False
+                    break
+                if t == "int":
+                    curNode.payoff = float(curNode.payoff)
+        return (allFloats, t, self)
+    
+    def decapitate(self):
+        """Removes the head ListNode
+        """
+        if self.head == None:
+            return
+        
+        self.head = self.head.next
         return
         
     def getListNode(self, index):
@@ -97,6 +137,12 @@ class ListNode:
             else:
                 print("Index not present")
         return
+    
+    def load(self, payoffs):
+        self = ListNode(payoffs[0], False)
+        for payoff in payoffs[1:]:
+            self.append(payoff, False)
+        return self
         
     def pop(self):
         """Removes the last node from the linked list
@@ -115,7 +161,7 @@ class ListNode:
         curNode = self.head
         size = self.size()
         x = 0
-        while(curNode):
+        while curNode:
             if x < size - 1:
                 print(curNode.payoff, end=", ")
             else:
@@ -159,15 +205,6 @@ class ListNode:
             else:
                 print("Index not present")
         return
-                
-    def decapitate(self):
-        """Removes the head ListNode
-        """
-        if self.head == None:
-            return
-        
-        self.head = self.head.next
-        return
     
     def size(self):
         size = 0
@@ -197,10 +234,12 @@ class ListNode:
         return
 
 class Player:
+    kChoice = -1
     numStrats = -1
     rationality = -1
     
     def __init__(self,numStrats = 2, rationality = 0):
+        self.kChoice = -1
         self.numStrats = numStrats
         self.rationality = rationality
 
@@ -215,7 +254,7 @@ class SimGame:
     originalNumPlayers = -1 
     originalNumStrats = []
     originalPayoffMatrix = []
-    outcomeProbabilities = [] # probability of each outcome in kMatrix stored in kOutcomes; P(s_i, s_j)
+    outcomeProbabilities = [] # probability of each outcome in kMatrix stored in kOutcomes; P(i, j)
     payoffMatrix = []
     players = []
     pureEquilibria = []
@@ -239,6 +278,19 @@ class SimGame:
             else:
                 self.kStrategies[r] = self.kStrategies[r][:numPlayers]
             self.rationalityProbabilities[r] = 0.0
+            
+        # maximum rationality is 3, meaning there are 4 rationality levels
+        numMatrices = 1
+        if numPlayers > 2:
+            numMatrices = 4 ** self.numPlayers
+        
+        for m in range(numMatrices):
+            self.kMatrix.append([])
+            for i in range(4):
+                self.kMatrix[m].append([])
+                for j in range(4):
+                    ell = [-1 for x in range(self.numPlayers)]
+                    self.kMatrix[m][i].append(ell)
         
         # Initializing strategy names
         if self.players[0].numStrats < 3:
@@ -303,78 +355,385 @@ class SimGame:
         self.originalPayoffMatrix = self.payoffMatrix
         return
     
-    def computeBestResponses(self):
-        for x in range(self.numPlayers):
-            if x == 0:
-                for m in range(len(self.payoffMatrix)):
-                    for j in range(self.players[1].numStrats):
-                        maxValue = -1000000
-                        # finding the max value
-                        for i in range(self.players[0].numStrats):
-                            curList = self.payoffMatrix[m][i][j]
-                            if curList.getListNode(0).payoff > maxValue:
-                                maxValue = curList.getListNode(0).payoff
-                        # comparing the payoffs to the max value
-                        for i in range(self.players[0].numStrats):
-                            curList = self.payoffMatrix[m][i][j]
-                            if curList.getListNode(0).payoff == maxValue: # don't need >= because it's the max
-                                curList.getListNode(0).bestResponse = True
+    def appendStrategy(self, x, payoffs):
+        """Appends a strategy to player x + 1's list of strategies
+
+        Args:
+            x (int): the index of the player
+            payoffs (list of lists of ListNodes or list of lists of lists of ListNodes): the payoffs of the strategy to be appended, lists of outcomes
+        """
+        if not isinstance(x, int):
+            print(Fore.RED + f"appendStrategy: invalid input. Expected an integer player index, but received {x} instead." + Style.RESET_ALL)
+            return
+        #################################################################
+        if x == 0: # add a new row to every matrix
+            # if list of list of lists, convert to list of list of ListNodes
+            if isinstance(payoffs[0][0], list):
+                newPayoffs = []
+                for row in payoffs:
+                    newRow = []
+                    for ell in row:
+                        if isinstance(ell, list):
+                            outcome = ListNode()
+                            outcome = outcome.load(ell)
+                            newRow.append(outcome)
+                        elif isinstance(ell, ListNode):
+                            newRow.append(ell)
+                        else:
+                            print(Fore.RED + f"appendStrategy: invalid input. The outcomes must be either lists or ListNodes. Received {type(ell).__name__} instead." + Style.RESET_ALL)
+                            return
+                    newPayoffs.append(newRow)
+                payoffs = newPayoffs
+            
+            # payoffs will be a list of list of ListNodes that should be numPlayers-long.
+            inputValid = True
+            numMatrices = 1
+            for y in range(2, self.numPlayers):
+                numMatrices *= self.players[y].numStrats
+            correctNumRows = True
+            if len(payoffs) != numMatrices:
+                correctNumRows = False
+                
+            correctNumOutcomes = True
+            for row in payoffs:
+                if len(row) != self.players[x].numStrats:
+                    wrongNumOutcomes = len(row)
+                    correctNumOutcomes = False
+                    break
+                
+            correctNumPayoffs = True
+            for row in payoffs:
+                for outcome in row:
+                    if outcome.size() != self.numPlayers:
+                        wrongSize = outcome.size()
+                        correctNumPayoffs = False
+                        
+            allFloats = True
+            broke = False
+            wrongType = ""
+            for row in payoffs:
+                for outcome in row:
+                    triple = outcome.checkIfFloats()
+                    if not triple[0]:
+                        wrongType = triple[1]
+                        # if wrongType is integer, we can simply convert it to a float
+                        if wrongType == "int":
+                            outcome = triple[2]
+                        else:
+                            allFloats = False
+                            broke = True
+                            break
+                if broke:
+                    break
+                    
+            if correctNumRows and correctNumOutcomes and correctNumPayoffs and isinstance(x, int) and x > -1 and x < self.numPlayers and isinstance(payoffs, list) and len(payoffs) > 0 and allFloats:
+                inputValid = True
+            else:
+                inputValid = False
+            if inputValid:
+                self.players[x].numStrats += 1
+                for m in range(numMatrices):
+                    self.payoffMatrix[m].append(payoffs[m])
+            elif not correctNumRows:
+                if numMatrices == 1:
+                    if len(payoffs) == 1:
+                        print(Fore.RED + f"appendStrategy: invalid input. Expected {numMatrices} row, but {len(payoffs)} was provided." + Style.RESET_ALL)
+                    else: 
+                        print(Fore.RED + f"appendStrategy: invalid input. Expected {numMatrices} row, but {len(payoffs)} were provided." + Style.RESET_ALL)
+                else:
+                    if len(payoffs) == 1:
+                        print(Fore.RED + f"appendStrategy: invalid input. Expected {numMatrices} rows, but {len(payoffs)} was provided." + Style.RESET_ALL)
+                    else:
+                        print(Fore.RED + f"appendStrategy: invalid input. Expected {numMatrices} rows, but {len(payoffs)} were provided." + Style.RESET_ALL)
+            elif not correctNumOutcomes:
+                if wrongNumOutcomes == 1:
+                    print(Fore.RED + f"appendStrategy: invalid input. Expected {self.players[x].numStrats} outcomes. Received a row with {wrongNumOutcomes} outcome." + Style.RESET_ALL)
+                else:
+                    print(Fore.RED + f"appendStrategy: invalid input. Expected {self.players[x].numStrats} outcomes. Received a row with {wrongNumOutcomes} outcomes." + Style.RESET_ALL)
+            elif not correctNumPayoffs:
+                if wrongSize == 1:
+                    print(Fore.RED + f"appendStrategy: invalid input. expected outcomes with {self.numPlayers} payoffs. An outcome with {wrongSize} payoff was provided." + Style.RESET_ALL)
+                else:
+                    print(Fore.RED + f"appendStrategy: invalid input. expected outcomes with {self.numPlayers} payoffs. An outcome with {wrongSize} payoffs was provided." + Style.RESET_ALL)
+            elif not isinstance(x, int):
+                print(Fore.RED + f"appendStrategy: invalid input. Expected an integer player index, but received {x} instead." + Style.RESET_ALL)
+            elif x < 0 or x >= self.numPlayers:
+                print(Fore.RED + f"appendStrategy: invalid input. Expected a player index between 0 and {self.numPlayers - 1}, but received {x} instead." + Style.RESET_ALL)
+            elif not isinstance(payoffs, list):
+                print(Fore.RED + f"appendStrategy: invalid input. Expected a list of payoffs, but received a {type(payoffs).__name__} instead" + Style.RESET_ALL)
+            elif len(payoffs) == 0:
+                print(Fore.RED + f"appendStrategy: invalid input. The payoffs parameter must be a nonempty list." + Style.RESET_ALL)
+            elif not allFloats:
+                print(Fore.RED + f"appendStrategy: invalid input. The payoffs must be floats. Received {wrongType} instead." + Style.RESET_ALL)      
+        #################################################################
+        elif x == 1: # add a new column to every matrix
+            # if list of list of lists, convert to list of list of ListNodes
+            if isinstance(payoffs[0][0], list):
+                newPayoffs = []
+                for col in payoffs:
+                    newCol = []
+                    for ell in col:
+                        if isinstance(ell, list):
+                            outcome = ListNode()
+                            outcome = outcome.load(ell)
+                            newCol.append(outcome)
+                        elif isinstance(ell, ListNode):
+                            newCol.append(ell)
+                        else:
+                            print(Fore.RED + f"appendStrategy: invalid input. The outcomes must be either lists or ListNodes. Received {type(ell).__name__} instead." + Style.RESET_ALL)
+                            return
+                    newPayoffs.append(newCol)
+                payoffs = newPayoffs
+            
+            inputValid = True
+            numMatrices = 1
+            for y in range(2, self.numPlayers):
+                numMatrices *= self.players[y].numStrats
+            correctNumCols = True
+            if len(payoffs) != numMatrices:
+                correctNumRows = False
+            
+            correctNumOutcomes = True
+            for col in payoffs:
+                if len(col) != self.players[x].numStrats:
+                    wrongNumOutcomes = len(col)
+                    correctNumOutcomes = False
+                    break
+                
+            correctNumPayoffs = True
+            for row in payoffs:
+                for outcome in row:
+                    if isinstance(outcome, ListNode):
+                        if outcome.size() != self.numPlayers:
+                            wrongSize = outcome.size()
+                            correctNumPayoffs = False
+                    elif isinstance(outcome, list):
+                        if len(outcome) != self.numPlayers:
+                            wrongSize = outcome.size()
+                            correctNumPayoffs = False
+                    else:
+                        print(Fore.RED + f"appendStrategy: invalid input. Outcomes must be either lists or ListNodes. Received {type(outcome).__name__} instead." + Style.RESET_ALL) 
+                        
+            allFloats = True
+            broke = False
+            wrongType = ""
+            for row in payoffs:
+                for outcome in row:
+                    if isinstance(outcome, ListNode): 
+                        triple = outcome.checkIfFloats()
+                        if not triple[0]:
+                            wrongType = triple[1]
+                            if wrongType == "int":
+                                outcome = triple[2]
                             else:
-                                curList.getListNode(0).bestResponse = False
-            elif x == 1:
-                for m in range(len(self.payoffMatrix)):
-                    for i in range(self.players[0].numStrats):
-                        maxValue = -1000000
-                        # finding the max value
-                        for j in range(self.players[1].numStrats):
-                            curList = self.payoffMatrix[m][i][j]
-                            if curList.getListNode(1).payoff > maxValue:
-                                maxValue = curList.getListNode(1).payoff
-                        # comparing the payoffs to the max value
-                        for j in range(self.players[1].numStrats):
-                            curList = self.payoffMatrix[m][i][j]
-                            if curList.getListNode(1).payoff == maxValue:
-                                curList.getListNode(1).bestResponse = True
+                                allFloats = False
+                                broke = True
+                                break
+                    elif isinstance(outcome, list):
+                        triple = checkIfFloats(outcome)
+                        if not triple[0]:
+                            wrongType = triple[1]
+                            if wrongType == "int":
+                                outcome = triple[2]
                             else:
-                                curList.getListNode(1).bestResponse = False
-            else: # x > 1
-                m = 0
-                product = 1
-                profile = [0 for x in range(self.numPlayers)]
-                while m < len(self.payoffMatrix):
-                    profile = self.toProfile(m)
-                    for i in range(self.players[0].numStrats):
-                        for j in range(self.players[1].numStrats):
-                            maxValue = -1000000
-                            
-                            # Comparing player x's strategies with each other, keeping player x's strategy the same, so we vary over player x's strategies (?)
-                            
-                            # FIXME?
-                            # finding maxValue
-                            profile[x] = 0
-                            while profile[x] < self.players[x].numStrats:
-                                curList = self.payoffMatrix[self.toIndex(profile)][i][j]
-                                if curList.getListNode(x).payoff > maxValue:
-                                    maxValue = curList.getListNode(x).payoff
-                                profile[x] += 1
-                            
-                            # check through ij-entries in each section
-                            profile[x] = 0
-                            while profile[x] < self.players[x].numStrats:
-                                curList = self.payoffMatrix[self.toIndex(profile)][i][j]
-                                if curList.getListNode(x).payoff == maxValue:
-                                    curList.getListNode(x).bestResponse = True        
-                                else:        
-                                    curList.getListNode(x).bestResponse = False
-                                profile[x] += 1
-                    # move to the next m
-                    if x > 2 and x < self.numPlayers - 1 and product == 1:
-                        for y in range(2, x):
-                            product *= self.players[y].numStrats
-                    m += product
-                return
+                                allFloats = False
+                                broke = True
+                                break
+                if broke:
+                    break
+                        
+            if correctNumCols and correctNumOutcomes and correctNumPayoffs and isinstance(x, int) and x > -1 and x < self.numPlayers and isinstance(payoffs, list) and len(payoffs) > 0 and allFloats:
+                inputValid = True
+            else:
+                inputValid = False
+            if inputValid:
+                self.players[x].numStrats += 1
+                
+                for m in range(numMatrices):
+                    # FIXME
+                    print("len 1: ", len(self.payoffMatrix[m]))
+                    print("len 2: ", len(payoffs[m]))
+                    for j in range(len(payoffs[0])):
+                        print("\tj: ", j)
+                        self.payoffMatrix[m][j].append(payoffs[m][j])
+            elif not correctNumCols:
+                if numMatrices == 1:
+                    if len(payoffs) == 1:
+                        print(Fore.RED + f"appendStrategy: invalid input. Expected {numMatrices} column, but {len(payoffs)} was provided." + Style.RESET_ALL)
+                    else:
+                        print(Fore.RED + f"appendStrategy: invalid input. Expected {numMatrices} column, but {len(payoffs)} were provided." + Style.RESET_ALL)
+                else:
+                    if len(payoffs) == 1:
+                        print(Fore.RED + f"appendStrategy: invalid input. Expected {numMatrices} columns, but {len(payoffs)} was provided." + Style.RESET_ALL)
+                    else:
+                        print(Fore.RED + f"appendStrategy: invalid input. Expected {numMatrices} columns, but {len(payoffs)} were provided." + Style.RESET_ALL)
+            elif not correctNumOutcomes:
+                if wrongNumOutcomes == 1:
+                    print(Fore.RED + f"appendStrategy: invalid input. Expected {self.players[x].numStrats} outcomes. Received a column with {wrongNumOutcomes} outcome." + Style.RESET_ALL)
+                else:
+                    print(Fore.RED + f"appendStrategy: invalid input. Expected {self.players[x].numStrats} outcomes. Received a column with {wrongNumOutcomes} outcomes." + Style.RESET_ALL)
+            elif not correctNumPayoffs:
+                if wrongSize == 1:
+                    print(Fore.RED + f"appendStrategy: invalid input. expected outcomes with {self.numPlayers} payoffs. An outcome with {wrongSize} payoff was provided." + Style.RESET_ALL)
+                else:
+                    print(Fore.RED + f"appendStrategy: invalid input. expected outcomes with {self.numPlayers} payoffs. An outcome with {wrongSize} payoffs was provided." + Style.RESET_ALL)
+            elif not isinstance(x, int):
+                print(Fore.RED + f"appendStrategy: invalid input. Expected an integer player index, but received {x} instead." + Style.RESET_ALL)
+            elif x < 0 or x >= self.numPlayers:
+                print(Fore.RED + f"appendStrategy: invalid input. Expected a player index between 0 and {self.numPlayers - 1}, but received {x} instead." + Style.RESET_ALL)
+            elif not isinstance(payoffs, list):
+                print(Fore.RED + f"appendStrategy: invalid input. Expected a list of payoffs, but received a {type(payoffs).__name__} instead" + Style.RESET_ALL)
+            elif len(payoffs) == 0:
+                print(Fore.RED + f"appendStrategy: invalid input. The payoffs parameter must be a nonempty list." + Style.RESET_ALL)
+            elif not allFloats:
+                print(Fore.RED + f"appendStrategy: invalid input. The payoffs must be floats. Received {wrongType} instead." + Style.RESET_ALL)  
+        #################################################################
+        else: # x > 1 add new matrices
+            # if list of list of lists, convert to list of list of ListNodes
+            if isinstance(payoffs[0][0][0], list):
+                newPayoffs = []
+                for matrix in payoffs:
+                    newMatrix = []
+                    for col in matrix:
+                        newCol = []
+                        for ell in col:
+                            if isinstance(ell, list):
+                                outcome = ListNode()
+                                outcome = outcome.load(ell)
+                                newCol.append(outcome)
+                            elif isinstance(ell, ListNode):
+                                newCol.append(ell)
+                            else:
+                                print(Fore.RED + f"appendStrategy: invalid input. The outcomes must be either lists or ListNodes. Received {type(ell).__name__} instead." + Style.RESET_ALL)
+                                return
+                        newMatrix.append(newCol)
+                    newPayoffs.append(newMatrix)
+                payoffs = newPayoffs
+            # We want to insert after the product of numStrats *below* player x + 1 for each number 1, 2,...,prodNumStratsAboveX, *plus* the number of matrices we've added
+            inputValid = True
+            numMatricesToAdd = 1
+            for y in range(2, self.numPlayers):
+                if y != x:
+                    numMatricesToAdd *= self.players[y].numStrats
+            correctNumMatrices = True
+            if len(payoffs) != numMatricesToAdd:
+                correctNumMatrices = False
+            
+            # Ensuring the arrays have the correct dimensions
+            correctNumRows = True
+            correctNumCols = True
+            broke = False
+            for matrix in payoffs:
+                if len(matrix) != self.players[0].numStrats:
+                    wrongNumRows = len(matrix)
+                    correctNumRows = False
+                for row in matrix:
+                    if len(row) != self.players[1].numStrats:
+                        wrongNumCols = len(row)
+                        correctNumCols = False
+                        broke = True
+                        break
+                if broke:
+                    break
+            
+            correctNumPayoffs = True
+            for matrix in payoffs:
+                for row in matrix:
+                    for outcome in row:
+                        if outcome.size() != self.numPlayers:
+                            wrongSize = outcome.size()
+                            correctNumPayoffs = False
+            
+            # Ensuring all the payoffs are floats
+            allFloats = True
+            broke = False
+            wrongType = ""
+            for matrix in payoffs:
+                for row in matrix:
+                    for outcome in row:
+                        triple = outcome.checkIfFloats()
+                        if not triple[0]:
+                            wrongType = triple[1]
+                            if wrongType == "int":
+                                outcome = triple[2]
+                            else:
+                                allFloats = False
+                                broke = True
+                                break
+                    if broke:
+                        if not broke:
+                            broke = True
+                        break   
+                if broke:
+                    break
+            
+            # Input validation
+            if correctNumMatrices and correctNumRows and correctNumCols and correctNumPayoffs and isinstance(x, int) and x > -1 and x < self.numPlayers and isinstance(payoffs, list) and len(payoffs) > 0 and allFloats:
+                inputValid = True
+            else:
+                inputValid = False
+            if inputValid:
+                numMatricesBeforeX = 1
+                for y in range(2, x):
+                    numMatricesBeforeX *= self.players[y].numStrats
+                numMatricesUpToX = 1
+                for y in range(2, x + 1):
+                    numMatricesUpToX *= self.players[y].numStrats
+                productNumStratsAboveX = 1
+                for y in range(x + 1, self.numPlayers):
+                    productNumStratsAboveX *= self.players[y].numStrats
+                numMatricesAdded = 0
+                multiplicand = 1
+                while len(payoffs) > 0:
+                    # Inserting the new matrix
+                    self.payoffMatrix.insert(numMatricesUpToX * multiplicand + numMatricesAdded, payoffs[0])
+                    payoffs.pop(0)
+                    numMatricesAdded += 1
+                    if numMatricesAdded % numMatricesBeforeX == 0:
+                        multiplicand += 1
+                self.players[x].numStrats += 1
+            elif not correctNumMatrices:
+                if numMatricesToAdd == 1:
+                    if len(payoffs) == 1:
+                        print(Fore.RED + f"appendStrategy: invalid input. Expected {numMatricesToAdd} array. Payoffs with {len(payoffs)} array were provided." + Style.RESET_ALL)
+                    else: 
+                        print(Fore.RED + f"appendStrategy: invalid input. Expected {numMatricesToAdd} array. Payoffs with {len(payoffs)} arrays were provided." + Style.RESET_ALL)
+                else:
+                    print(Fore.RED + f"appendStrategy: invalid input. Expected {numMatricesToAdd} arrays. Payoffs with {len(payoffs)} arrays were provided." + Style.RESET_ALL)
+            elif not correctNumRows and not correctNumCols:
+                print(Fore.RED + f"appendStrategy: invalid input. Expected arrays with {self.players[0].numStrats} rows and {self.players[1].numStrats} columns. An array with {wrongNumRows} rows and {wrongNumCols} columns was provided." + Style.RESET_ALL)
+            elif not correctNumRows and correctNumCols:
+                print(Fore.RED + f"appendStrategy: invalid input. Expected arrays with {self.players[0].numStrats} rows and {self.players[1].numStrats} columns. An array with {wrongNumRows} rows was provided." + Style.RESET_ALL)
+            elif correctNumRows and not correctNumCols:
+                print(Fore.RED + f"appendStrategy: invalid input. Expected arrays with {self.players[0].numStrats} rows and {self.players[1].numStrats} columns. An array with {wrongNumCols} columns was provided." + Style.RESET_ALL)
+            elif not correctNumRows:
+                if wrongNumRows == 1:
+                    print(Fore.RED + f"appendStrategy: invalid input. Expected arrays with {self.players[0].numStrats} rows. Received a matrix with {wrongNumRows} row.")
+                else:
+                    print(Fore.RED + f"appendStrategy: invalid input. Expected arrays with {self.players[0].numStrats} rows. Received a matrix with {wrongNumRows} rows.")
+            elif not correctNumCols:
+                if wrongNumRows == 1:
+                    print(Fore.RED + f"appendStrategy: invalid input. Expected arrays with {self.players[0].numStrats} columns. Received a matrix with {wrongNumCols} colum.")
+                else:
+                    print(Fore.RED + f"appendStrategy: invalid input. Expected arrays with {self.players[0].numStrats} rows. Received a matrix with {wrongNumCols} columns.")
+            elif not correctNumPayoffs:
+                if wrongSize == 1:
+                    print(Fore.RED + f"appendStrategy: invalid input. expected outcomes with {self.numPlayers} payoffs. An outcome with {wrongSize} payoff was provided." + Style.RESET_ALL)
+                else:
+                    print(Fore.RED + f"appendStrategy: invalid input. expected outcomes with {self.numPlayers} payoffs. An outcome with {wrongSize} payoffs was provided." + Style.RESET_ALL)
+            elif not isinstance(x, int):
+                print(Fore.RED + f"appendStrategy: invalid input. Expected an integer player index, but received {x} instead." + Style.RESET_ALL)
+            elif x < 0 or x >= self.numPlayers:
+                print(Fore.RED + f"appendStrategy: invalid input. Expected a player index between 0 and {self.numPlayers - 1}, but received {x} instead." + Style.RESET_ALL)
+            elif not isinstance(payoffs, list):
+                print(Fore.RED + f"appendStrategy: invalid input. Expected a list of payoffs, but received a {type(payoffs).__name__} instead" + Style.RESET_ALL)
+            elif len(payoffs) == 0:
+                print(Fore.RED + f"appendStrategy: invalid input. The payoffs parameter must be a nonempty list." + Style.RESET_ALL)
+            elif not allFloats:
+                print(Fore.RED + f"appendStrategy: invalid input. The payoffs must be floats. Received {wrongType} instead." + Style.RESET_ALL)
+        return
     
-    def computeBestResponses2(self):
+    def computeBestResponses(self):
         if self.numPlayers < 3:
             for i in range(self.players[0].numStrats):
                 for j in range(self.players[1].numStrats):
@@ -388,6 +747,7 @@ class SimGame:
                         br = self.isBestResponse([i, j] + self.toProfile(m)[2:])
                         for x in range(self.numPlayers):
                             self.payoffMatrix[m][i][j].getListNode(x).bestResponse = br[x]
+        return
 
     def computeEquilibria(self):
         equilibria = self.computePureEquilibria() + self.computeMixedEquilibria()
@@ -395,6 +755,128 @@ class SimGame:
         if numEquilibria % 2 == 0:
             warnings.warn(f"An even number ({numEquilibria}) of equilibria was returned. This indicates that the game is degenerate. Consider using another algorithm to investigate.", RuntimeWarning)
         return equilibria
+    
+    def computeKChoices(self):
+        computeKStrategies()
+        return
+    
+    def computeKExpectedUtilities(self):
+        EU = [0.0 for x in range(self.numPlayers)]
+        for x in range(self.numPlayers):
+            EU[x] = 0.0
+            for num in range(len(self.kOutcomes)):
+                if self.numPlayers < 3:
+                    curList = self.payoffMatrix[0][self.kOutcomes[num][0]][self.kOutcomes[num][1]]
+                else:
+                    curList = payoffMatrix[self.toIndex(self.kOutcomes[num])][self.kOutcomes[num][0]][self.kOutcomes[num][1]]
+                EU[x] += curList.getListNode(x).payoff * self.outcomeProbabilities[num]
+        return EU
+    
+    def computeKMatrix(self, probabilities):
+        """Computes the kMatrix as well as kOutcomes in the process
+        """
+        curEntry = []
+        temp = []
+        inOutcomes = False
+        probability = -1.0
+        self.kOutcomes = []
+        self.computeKStrategies()
+        for m in range(len(self.kMatrix)):
+            for r1 in range(4):
+                for r2 in range(4):
+                    temp.append(self.kStrategies[r1][0])
+                    temp.append(self.kStrategies[r2][1])
+                    for x in range(2, self.numPlayers):
+                        temp.append(kStrategies[kToProfile(m)[x]][x])
+                        
+                    self.kMatrix[m][r1][r2] = temp
+                    
+                    inOutcomes = False
+                    for n in range(len(self.kOutcomes)):
+                        if self.kOutcomes[n] == temp:
+                            inOutcomes = True
+                    if not inOutcomes:
+                        self.kOutcomes.append(temp)
+                    temp = []
+        
+        self.computeOutcomeProbabilities()
+        
+        EU = self.computeKExpectedUtilities()
+                
+        self.probabilizeKChoices()
+        print()
+        for x in range(self.numPlayers):
+            print("EU_" + str(x) + " = " + str(EU[x]))
+        
+    def computeKOutcomes(self):
+        """Computes kOutcomes
+        """
+        curEntry = []
+        temp = []
+        inOutcomes = False
+        probability = -1.0
+        EU = [0.0 for x in range(self.numPlayers)]
+        self.kOutcomes = []
+        self.computeKStrategies()
+        for m in range(len(self.kMatrix)):
+            for r1 in range(4):
+                for r2 in range(4):
+                    temp.append(self.kStrategies[r1][0])
+                    temp.append(self.kStrategies[r2][1])
+                    for x in range(2, self.numPlayers):
+                        temp.append(kStrategies[kToProfile(m)[x]][x])
+                    
+                    inOutcomes = False
+                    for n in range(len(self.kOutcomes)):
+                        if self.kOutcomes[n] == temp:
+                            inOutcomes = True
+                    if not inOutcomes:
+                        self.kOutcomes.append(temp)
+                    temp = []
+    
+    def computeKStrategies(self):
+        """Computes the strategies that would be chosen for each rationality level
+        """
+        self.computeBestResponses()
+        maxStrat = -10000000
+        num = -1
+        others = []
+        
+        for r in range(4):
+            for x in range(self.numPlayers):
+                maxStrat = -10000000
+                
+                if r == 0:
+                    num = self.maxStrat(x) # num is what player x will do at L_0
+                    self.kStrategies[0][x] = num
+                else:
+                    # FIXME: finish after writing maxStrat function
+                    others = [0 for y in range(self.numPlayers)]
+                    for y in range(self.numPlayers):
+                        if y == x:
+                            others[y] = -1
+                        else:
+                            others[y] = self.kStrategies[r - 1][y]
+                            
+                    # Finding the maximum in each row/column/array that has already been chosen
+                    if x == 0:
+                        for i in range(self.players[x].numStrats):
+                            if self.payoffMatrix[self.toIndex(others)][i][others[1]].getListNode(x).bestResponse:
+                                maxStrat = i
+                    elif x == 1:
+                        for j in range(self.players[x].numStrats):
+                            if self.payoffMatrix[self.toIndex(others)][others[0]][j].getListNode(x).bestResponse:
+                                maxStrat = j
+                    else: # x > 1
+                        for m in range(len(self.payoffMatrix)):
+                            for i in range(self.players[0].numStrats):
+                                for j in range(self.players[1].numStrats):
+                                    if self.payoffMatrix[m][others[0]][others[1]].getListNode(x).bestResponse:
+                                        maxStrat = self.toProfile(m)[x]
+                    self.kStrategies[r][x] = maxStrat
+                if r == self.players[x].rationality:
+                    self.players[x].kChoice = self.kStrategies[r][x]
+        return
 
     def computeMixedEquilibria(self):       
         if self.numPlayers < 3:
@@ -623,6 +1105,25 @@ class SimGame:
                 print(f"Error: not enough letters to have variables for all {self.numPlayers} players")
             return []
         return []
+    
+    def computeOutcomeProbabilities(self):
+        self.computeKStrategies()
+        self.computeKOutcomes()
+
+        self.outcomeProbabilities = [0.0 for n in range(len(self.kOutcomes))]
+        
+        for r1 in range(4):
+            for r2 in range(4):
+                probability = 0.0
+                
+                # find which outcome the kMatrix entry corresponds to
+                index = 0 
+                while self.kOutcomes[index][0] != self.kStrategies[r1][0] or self.kOutcomes[index][1] != self.kStrategies[r2][1]:
+                    index += 1
+                
+                probability += self.rationalityProbabilities[r1] * self.rationalityProbabilities[r2]
+                
+                self.outcomeProbabilities[index] += probability
  
     def computePureEquilibria(self):
         self.computeBestResponses()
@@ -897,10 +1398,10 @@ class SimGame:
             self.originalNumPlayers = self.numPlayers
             self.originalNumStrats = [self.players[x].numStrats for x in range(self.numPlayers)]
             self.originalPayoffMatrix = self.payoffMatrix
-            
+        
         self.removedMatrices = []
         self.removedRows = []
-        self.removedCols = []        
+        self.removedCols = []
         self.numIESDSSteps += 1
         # strategyIndices[x] is the set of indices (0, 1, 2,...,numStrats[x] - 1) for the x-th player
         # strategyIndices[x][k] is the k-th strategy index for the x-th player
@@ -1171,8 +1672,8 @@ class SimGame:
         
         self.payoffMatrix = []
         numMatrices = 1
-        for x in range(2, oldNumPlayers):
-            numMatrices *= oldNumStrats[x]
+        for x in range(2, numPlayers):
+            numMatrices *= numStrats[x]
         for m in range(numMatrices):
             matrix = []
             for i in range(self.players[0].numStrats):
@@ -1214,8 +1715,7 @@ class SimGame:
         """Checks whether p1Strat and p2Strat are best responses relative to each other
 
         Args:
-            p1Strat (int): p1's strategy
-            p2Strat (int): p2's strategy
+            profile (int): the strategies to be checked
         """
         br = [True for x in range(self.numPlayers)]
         if self.numPlayers < 3:
@@ -1224,7 +1724,7 @@ class SimGame:
                     br[0] = False
             
             for j in chain(range(profile[1]), range(profile[1] + 1, self.players[1].numStrats)):
-                if self.payoffMatrix[0][profile[0]][profile[1]].getListNode(1).payoff < self.payoffMatrix[0][profile[1]][j].getListNode(1).payoff:
+                if self.payoffMatrix[0][profile[0]][profile[1]].getListNode(1).payoff < self.payoffMatrix[0][profile[0]][j].getListNode(1).payoff:
                     br[1] = False
         else:
             for player in range(self.numPlayers):
@@ -1264,6 +1764,149 @@ class SimGame:
                         m += product
         return br
     
+    def kToProfile(self, m):
+        """Converts an index in a list of payoff arrays into the strategy profile that produces that index
+        """
+        rationality = 0
+        previousValues = 0
+        product = 1
+        rationalityProfile = [-1, -1] + [0 for x in range(2, self.numPlayers)]
+        
+        product = 4 ** (self.numPlayers - 3)
+        
+        for x in range(self.numPlayers - 1, 1, -1):
+            rationality = 0
+            while product * rationality + previousValues < m and rationality != 4:
+                rationality += 1
+                
+            if product * rationality + previousValues > m:
+                rationality -= 1
+                
+            previousValues += product * rationality
+            rationalityProfile[x] = rationality
+            product = product / 4
+            
+        return rationalityProfile
+    
+    def maxStrat(self, x):
+        """Returns the strategy that gives player x + 1's maximum payoff over all outcomes
+        
+        Args:
+            x (int): the player index        
+        """
+        maxStrat = 0
+        maxVal = -10000000
+        curList = ListNode()
+        
+        if x == 0:
+            for m in range(len(self.payoffMatrix)):
+                for i in range(self.players[0].numStrats):
+                    for j in range(self.players[1].numStrats):
+                        curList = self.payoffMatrix[m][i][j]
+                        if curList.getListNode(x).payoff > maxVal:
+                            maxVal = curList.getListNode(x).payoff
+                            maxStrat = i
+        elif x == 1:
+            for m in range(len(self.payoffMatrix)):
+                for i in range(self.players[0].numStrats):
+                    for j in range(self.players[1].numStrats):
+                        curList = self.payoffMatrix[m][i][j]
+                        if curList.getListNode(x).payoff > maxVal:
+                            maxVal = curList.getListNode(x).payoff
+                            maxStrat = j
+        else: # x > 1
+            for m in range(len(self.payoffMatrix)):
+                for i in range(self.players[0].numStrats):
+                    for j in range(self.players[1].numStrats):
+                        curList = self.payoffMatrix[m][i][j]
+                        if curList.getListNode(x).payoff > maxVal:
+                            maxVal = curList.getListNode(x).payoff
+                            maxStrat = self.toProfile(m)[x]
+        return maxStrat
+    
+    def paretoOptimal(self, profile):
+        """Checks if an outcome is Pareto optimal
+        
+        Args:
+            profile (list): the strategy profile for the outcome in question
+        """
+        curList = ListNode()
+        curProfile = self.payoffMatrix[self.toIndex(profile)][profile[0]][profile[1]]
+        # (-->)
+        onePlayerWorseOff = True
+        # (<--)
+        # onePlayerBetterOff = True
+        # count = 0
+        # (-->)
+        betterOutcomes = []
+        betterOffPlayers = []
+        worseOff = []
+        # (<--)
+        worseOutcomes = []
+        worseOffPlayers = []
+        betterOff = []
+        
+        comparing = [0 for x in range(self.numPlayers)]
+        for m in range(len(self.payoffMatrix)):
+            comparing = self.toProfile(m)
+            for i in range(self.players[0].numStrats):
+                comparing[0] = i
+                for j in range(self.players[1].numStrats):
+                    comparing[1] = j
+                    if comparing != profile:
+                        foundOneBetter = False
+                        foundOneWorse = False
+                        x = 0
+                        while (not foundOneBetter or not foundOneWorse) and x < self.numPlayers:
+                            curList = self.payoffMatrix[m][i][j]
+                            curProfile = self.payoffMatrix[self.toIndex(profile)][profile[0]][profile[1]]
+                        
+                            if curProfile.getListNode(x).payoff < curList.getListNode(x).payoff:
+                                foundOneBetter = True
+                                betterOffPlayers.append(x)
+                                betterOutcomes.append(self.toProfile(m))
+                                # first two are -1
+                                betterOutcomes[len(betterOutcomes) - 1][0] = i
+                                betterOutcomes[len(betterOutcomes) - 1][1] = j
+                                worseOff.append(False)
+                            elif curProfile.getListNode(x).payoff > curList.getListNode(x).payoff:
+                                foundOneWorse = True
+                                worseOffPlayers.append(x)
+                                worseOutcomes.append(self.toProfile(m))
+                                # first two are -1
+                                worseOutcomes[len(worseOutcomes) - 1][0] = i
+                                worseOutcomes[len(worseOutcomes) - 1][1] = j
+                                betterOff.append(False)
+                            x += 1
+        
+        # determine if at least one other player is worse off at each outcome found
+        if len(betterOutcomes) > 0:
+            if len(worseOutcomes) <= 0:
+                return False
+            
+            n = 0
+            while n < len(worseOff) and not worseOff[n]:
+                for x in range(self.numPlayers):
+                    if betterOffPlayers[n] != x:
+                        curList = self.payoffMatrix[self.toIndex(betterOutcomes[n])][betterOutcomes[n][0]][betterOutcomes[n][1]]
+                        curProfile = self.payoffMatrix[self.toIndex(profile)][profile[0]][profile[1]]
+
+                        if curList.getListNode(x).payoff < curProfile.getListNode(x).payoff:
+                            worseOff[n] = True
+                n += 1
+            n = 0
+            while n < len(worseOff) and onePlayerWorseOff:
+                if not worseOff[n]:
+                    onePLayersWorseOff = False
+                n += 1
+            
+            if onePlayerWorseOff:
+                return True
+            else:
+                return False
+        else:
+            return True
+    
     def print(self):
         """Prints the payoff matrix
         """
@@ -1277,10 +1920,35 @@ class SimGame:
                         print()
             if m < len(self.payoffMatrix) - 1:
                 print()
+                
+    def printKMatrix(self, probabilities = [0.25, 0.25, 0.25, 0.25]):
+        self.rationalityProbabilities = probabilities
+        curEntry = []
+        temp = []
+        inOutcomes = False
+        self.kOutcomes = []
+        self.outcomeProbabilities = []        
+        self.computeKMatrix(probabilities)
+        print()
+        for m in range(len(self.kMatrix)):            
+            for r1 in range(4):
+                for r2 in range(4):
+                    curEntry = self.kMatrix[m][r1][r2]
+                    print("(", end="")
+                    for x in range(self.numPlayers):
+                        print(curEntry[x], end="")
+                        if x < self.numPlayers - 1:
+                            print(", ", end="")
+                    print(")", end="")
+                    if r2 < 3:
+                        print(" ", end="")
+                print()
+            print()
 
     def printBestResponses(self):
         """Prints the payoff matrix
         """
+        self.computeBestResponses()
         if self.numPlayers < 3:
             for i in range(self.players[0].numStrats):
                 for j in range(self.players[1].numStrats):
@@ -1301,6 +1969,25 @@ class SimGame:
                         else:
                             print()
                 print()
+    
+    def probabilizeKChoices(self):
+        self.computeKStrategies()    
+        self.computeOutcomeProbabilities()
+
+        choices = [0 for x in range(self.numPlayers)]
+        for x in range(self.numPlayers):
+            choices[x] = self.kStrategies[self.players[x].rationality][x]
+            self.players[x].kChoice = choices[x]
+        
+        for n in range(len(self.kOutcomes)):
+            print("P(", end="")
+            for x in range(self.numPlayers):
+                print(self.kOutcomes[n][x], end="")
+                if x < self.numPlayers - 1:
+                    print(", ", end="")
+            print(") = " + str(self.outcomeProbabilities[n]))
+        
+        return
 
     def readFromFile(self, fileName):
         addMoreOutcomesPast2 = False # kMatrix
@@ -1888,52 +2575,145 @@ freeMoney = [
     ]
 ]
 
-# G = SimGame(2)
-# G.enterData(2, [3, 3], iesds)
-# G.saveToFile("text files/rps.txt")
-# G.print()
-# G.eliminateStrictlyDominatedStrategies_step()
-# print("after 1:")
-# G.print()
-# G.eliminateStrictlyDominatedStrategies_step()
-# print("after 2:")
-# G.print()
-# G.eliminateStrictlyDominatedStrategies_step()
-# print("after 3:")
-# G.print()
-# G.eliminateStrictlyDominatedStrategies_step()
-# print("after 4:")
-# G.print()
-# G.eliminateStrictlyDominatedStrategies_step()
-# print("after 5:")
-# G.print()
-# G.computeBestResponses()
-# eqs = G.computePureEquilibria()
-# G.printBestResponses()
-# print("EQS:", G.computeEquilibria())
+krmodel = [
+    [
+        [[2, 12], [5, 6], [9, 0]],
+        [[0, 24], [19, 5], [10, 10]],
+        [[1, 3], [7, 5], [5, 25]],
+    ]
+]
 
-# for eq in eqs:
-#     print(eq)
+# o1 = ListNode()
+# o2 = ListNode()
+# o1 = o1.load([10, 10])
+# o2 = o2.load([20, 20])
+# append_2 = [
+#     [[10, 10], [20, 20]]
+# ]
+
+# G = SimGame(2)
+# G.enterData(2, [3, 3], krmodel)
+# G.print()
+# print()
+# G.printKMatrix(probabilities=[0.1, 0.4, 0.4, 0.1])
+
+# o1 = ListNode()
+# o2 = ListNode()
+# o3 = ListNode()
+# o4 = ListNode()
+# o5 = ListNode()
+# o6 = ListNode()
+# o7 = ListNode()
+# o8 = ListNode()
+# o9 = ListNode()
+# o1 = o1.load([1, 1, 1])
+# o2 = o2.load([2, 2, 2])
+# o3 = o3.load([3, 3, 3])
+# o4 = o4.load([4, 4, 4])
+# o5 = o5.load([5, 5, 5])
+# o6 = o6.load([6, 6, 6])
+# o7 = o7.load([7, 7, 7])
+# o8 = o8.load([8, 8, 8])
+# o9 = o9.load([9, 9, 9])
+
+# append_3 = [
+#     [o1, o2],
+#     [o3, o4]
+# ]
+
+# append_3_player3 = [
+#     [
+#         [o2, o2, o3],
+#         [o4, o5, o6], 
+#         [o7, o8, o9]
+#     ]
+# ]
+
+# second = [
+#     [
+#         [[1, 1, 1], [2, 2, 2], [3, 3, 3]],
+#         [[4, 4, 4], [5, 5, 5], [6, 6, 6]],
+#         [[7, 7, 7], [8, 8, 8], [9, 9, 9]]
+#     ]
+# ]
 
 # H = SimGame(3)
+# H.appendStrategy(2, second)
 # H.print()
-# H.enterData(3, [2, 2, 2], iesds_3)
-# print("br test:")
-# H.print()
-# H.eliminateStrictlyDominatedStrategies_full()
-# H.print()
-# H.computeBestResponses()
-# H.printBestResponses()
-# print(H.computePureEquilibria())
-# print(H.computeEquilibria())
+
+# o1 = ListNode()
+# o2 = ListNode()
+# o1 = o1.load([1, 1, 1, 1, 1])
+# o2 = o2.load([2, 2, 2, 2, 2])
+# o3 = ListNode()
+# o4 = ListNode()
+# o3 = o3.load([3, 3, 3, 3, 3])
+# o4 = o4.load([4, 4, 4, 4, 4])
+# o5 = ListNode()
+# o6 = ListNode()
+# o7 = ListNode()
+# o8 = ListNode()
+# o9 = ListNode()
+# o10 = ListNode()
+# o11 = ListNode()
+# o12 = ListNode()
+# o13 = ListNode()
+# o14 = ListNode()
+# o15 = ListNode()
+# o16 = ListNode()
+# o5 = o5.load([5, 5, 5, 5, 5])
+# o6 = o5.load([6, 6, 6, 6, 6])
+# o7 = o5.load([7, 7, 7, 7, 7])
+# o8 = o5.load([8, 8, 8, 8, 8])
+# o9 = o9.load([9, 9, 9, 9, 9])
+# o10 = o10.load([10, 10, 10, 10, 10])
+# o11 = o11.load([11, 11, 11, 11, 11])
+# o12 = o12.load([12, 12, 12, 12, 12])
+# o13 = o13.load([13, 13, 13, 13, 13])
+# o14 = o14.load([14, 14, 14, 14, 14])
+# o15 = o15.load([15, 15, 15, 15, 15])
+# o16 = o16.load([16, 16, 16, 16, 16])
+
+# append_4 = [
+#     [
+#         [o1, o2],
+#         [o3, o4]
+#     ],
+#     [
+#         [o5, o6],
+#         [o7, o8]
+#     ],
+#     [
+#         [o9, o10],
+#         [o11, o12]
+#     ]
+# ]
 
 # I = SimGame(4)
-# I.enterData(arr_4players, 4, [2, 2, 3, 3])
-# I.removeStrategy(0, 1)
+# I.enterData(4, [2, 2, 3, 3], arr_4players)
+# I.appendStrategy(3, append_4)
 # I.print()
 
+# append_5 = [
+#     [
+#         [o1, o2],
+#         [o3, o4]
+#     ],
+#     [
+#         [o5, o6],
+#         [o7, o8]
+#     ],
+#     [
+#         [o9, o10],
+#         [o11, o12]
+#     ],
+#     [
+#         [o13, o14],
+#         [o15, o16]
+#     ]
+# ]
+
 # J = SimGame(5)
-# J.enterData(arr_5players, 5, [2, 2, 3, 3, 3])
-# J.removeStrategy(2, 0)
-# print("J:")
+# J.enterData(5, [2, 2, 2, 2, 2], arr_5players)
+# J.appendStrategy(2, append_5)
 # J.print()

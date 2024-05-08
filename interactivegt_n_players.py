@@ -242,7 +242,7 @@ def main():
     menubar.add_cascade(label="File", menu=file_menu)
     file_menu.add_command(label="Open File", command=lambda: openFile(G, root, dimensionsFrame, payoffsFrame, equilibriaFrame, int(numPlayersEntry.get())))
     file_menu.add_separator()
-    file_menu.add_command(label="Save As...", command=lambda: saveAs(G, dimensionsFrame, payoffsFrame))
+    file_menu.add_command(label="Save As...", command=lambda: saveAs(G, dimensionsFrame, payoffsFrame, int(numPlayersEntry.get())))
     file_menu.add_command(label="Save as LaTeX", command=saveAsLatex)
 
     edit_menu = Menu(menubar)
@@ -250,6 +250,7 @@ def main():
     edit_menu.add_command(label="Enter Values into SimGame Object", command=lambda: entriesToSimGame(G, dimensionsFrame, payoffsFrame, int(numPlayersEntry.get())))
     edit_menu.add_command(label="Load Values from SimGame Object", command=lambda: simGameToEntries(G, dimensionsFrame, payoffsFrame))
     edit_menu.add_separator()
+    edit_menu.add_command(label="Append a Strategy", command=appendStrategy)
     edit_menu.add_command(label="Remove a Strategy", command=removeStrategy)
     edit_menu.add_separator()
     edit_menu.add_command(label="Clear Payoffs", command=clearPayoffs)
@@ -257,7 +258,7 @@ def main():
     edit_menu.add_command(label="Clear Strategy Names", command=clearStrategies)
     edit_menu.add_separator()
     edit_menu.add_command(label="Reset Payoff Matrix", command=resetPayoffMatrix)
-    edit_menu.add_command(label="Reset Strategy Names", command=lambda: resetStrategies(dimensionsFrame, payoffsFrame))
+    edit_menu.add_command(label="Reset Strategy Names", command=lambda: resetStrategies(G, dimensionsFrame, payoffsFrame))
 
     option_menu = Menu(menubar)
     menubar.add_cascade(label="Options", menu=option_menu)

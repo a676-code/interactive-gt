@@ -11,6 +11,8 @@ thisisafile.*
 *.csv
 match.db-journal
 three_players.txt
+so_scrollbars_toplevel.py
+abc.png
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

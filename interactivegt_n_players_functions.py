@@ -22,8 +22,6 @@ def addAllPairs(dbTurnsEntry, dbClicked1):
     c = conn.cursor()
     
     strategy = dbClicked1.get()
-    print("strategy: ", strategy)
-    print("TYPE: ", type(strategy))
     options = [s() for s in axl.strategies]    
     for n, option in enumerate(options):
         match = dbPlayMatch(strategy, type(option).__name__, int(dbTurnsEntry.get()))
@@ -80,6 +78,25 @@ def addRecord(clicked1, clicked2, dbClicked1, dbClicked2, dbTurnsEntry):
     )
     conn.commit()
     conn.close()
+    
+def appendStrategy():
+    appendWindow = Toplevel()
+    appendWindow.title("Append Strategy")
+    appendWindow.geometry("700x490")
+    appendWindow.iconbitmap("knight.ico")
+    
+    # Adding scrollbars
+    appendCanvas = Canvas(appendWindow, width=600, height=800) # canvas in root
+    appendCanvas.configure(scrollregion=appendCanvas.bbox("all"))
+    xAppendScrollbar = Scrollbar(appendWindow, orient=HORIZONTAL)
+    yAppendScrollbar = Scrollbar(appendWindow, orient=VERTICAL)
+    xAppendScrollbar.grid(row=1, column=0, sticky="ew")
+    yAppendScrollbar.grid(row=0, column=1, sticky="ns")
+    appendCanvas.grid(row=0, column=0, sticky="nsew")
+    
+    appendWindow.rowconfigure(0, weight=1)
+    appendWindow.columnconfigure(0, weight=1)
+    return
 
 def changeBackgroundColor(rootFrame):
     """
@@ -540,8 +557,6 @@ def dbPlayMatch(p1Strat, p2Strat, t = 6):
     """
     Runs an axelrod match between players of type p1 and p2 with t turns and returns a tuple of the match output and scores
     """
-    p1Strat = p1Strat.replace(" ", "")
-    p2Strat = p2Strat.replace(" ", "")
     p1 = ""
     p2 = ""
     # Getting the strategy object that corresponds to the string p1Strat
@@ -549,20 +564,20 @@ def dbPlayMatch(p1Strat, p2Strat, t = 6):
     options = [s() for s in axl.strategies]
     while type(p1).__name__ == "str" and counter <= len(axl.strategies):
         try:
-            if type(options[counter]).__name__ == p1Strat:
+            if type(options[counter]).__name__ == str(p1Strat).replace(" ", ""):
                 p1 = options[counter]
         except IndexError:
-            stratNotFoundError = messagebox.showerror("Error", "The strategy you entered for player 1 was not in axelrod's list of strategies. Perhaps you meant to capitalize the individual words?")
+            stratNotFoundError = messagebox.showerror("Error", f"The strategy you entered for player 1 ({p1Strat}) was not in axelrod's list of strategies. Perhaps you meant to capitalize the individual words?")
         counter += 1
     
     # Getting the strategy object that corresponds to the string p2Strat 
     counter = 0
     while type(p2).__name__ == "str" and counter <= len(axl.strategies):
         try:
-            if type(options[counter]).__name__ == p2Strat:
+            if type(options[counter]).__name__ == str(p2Strat).replace(" ", ""):
                 p2 = options[counter]
         except IndexError:
-            stratNotFoundError = messagebox.showerror("Error", "The strategy you entered for player 2 was not in axelrod's list of strategies. Perhaps you meant to capitalize the individual words?")
+            stratNotFoundError = messagebox.showerror("Error", f"The strategy you entered for player 2 ({p2Strat}) was not in axelrod's list of strategies. Perhaps you meant to capitalize the individual words?")
         counter += 1
     match = axl.Match((p1, p2), turns = t)
     return (str(match.play()), match.final_score_per_turn())
@@ -768,8 +783,8 @@ def dimensionsClickNoWarning(G, root, dimensionsFrame, payoffsFrame, equilibriaF
     
     if numPlayers < oldNumPlayers:
         for x in range(numPlayers, oldNumPlayers):
-            numStratsLabels.grid_remove()
-            numStratsEntries.grid_remove()
+            numStratsLabels[x].grid_remove()
+            numStratsEntries[x].grid_remove()
     
     if numPlayersError == -1:
         numStrats = []
@@ -983,8 +998,15 @@ def enterNumPlayersAndNumStrats(G, dimensionsFrame):
         for x in range(oldNumPlayers, G.numPlayers):
             G.players.append(Player(numStrats[x], 0))
     elif oldNumPlayers > G.numPlayers:
-        for x in range(G.numPlayers, oldNumPlayers):
-            G.players.pop()
+        print("len before:", len(G.players))
+        if G.numPlayers > 2: 
+            for x in range(G.numPlayers, oldNumPlayers):
+                print("popping x:", x)
+                G.players.pop()
+        print("HERE:", G.numPlayers)
+        print("len players:", len(G.players))
+        print("G strats:", [G.players[x].numStrats for x in range(G.numPlayers)])
+        print("numStrats:", numStrats)
         for x in range(G.numPlayers):
             G.players[x].numStrats = numStrats[x]
     else: # oldNumPlayers == G.numPlayers
@@ -1402,9 +1424,18 @@ def openFile(G, root, dimensionsFrame, payoffsFrame, equilibriaFrame, oldNumPlay
                 dimensionsEntries.reverse()
                 numStratsEntries = dimensionsEntries
                 
-                for x in range(numPlayers):
-                    numStratsEntries[x].delete(0, 'end')
-                    numStratsEntries[x].insert(0, int(numStrats[x]))
+                print("nSE:")
+                for e in numStratsEntries:
+                    print("e:", e.get())
+                
+                if oldNumPlayers <= numPlayers:
+                    for x in range(oldNumPlayers):
+                        numStratsEntries[x].delete(0, 'end')
+                        numStratsEntries[x].insert(0, int(numStrats[x]))
+                else: # oldNumPlayers > numPlayers, need to remove numStratsEntries
+                    for x in range(oldNumPlayers - 1, numPlayers, -1):
+                        numStratsLabels[x].grid_remove()
+                        numStratsEntries[x].grid_remove()
                 dimensionsClickNoWarning(G, root, dimensionsFrame, payoffsFrame, equilibriaFrame, oldNumPlayers)
                 numStrats = []
                 for x in range(numPlayers):
@@ -1685,7 +1716,7 @@ def resetRecord(selectIDEntry):
         conn.close()
         return
 
-def resetStrategies(dimensionsFrame, payoffsFrame):
+def resetStrategies(G, dimensionsFrame, payoffsFrame):
     """
     Resets p1's strategy names to U M1 M2 ... D and p2's strategy names to L C1 C2 ... R
     """
@@ -1872,8 +1903,8 @@ def saveAs(dimensionsFrame, payoffsFrame):
     return
 """
 
-def saveAs(G, dimensionsFrame, payoffsFrame):
-    entriesToSimGame(G, dimensionsFrame, payoffsFrame)
+def saveAs(G, dimensionsFrame, payoffsFrame, oldNumPlayers):
+    entriesToSimGame(G, dimensionsFrame, payoffsFrame, oldNumPlayers)
     G.saveToFile("three_players.txt")
 
 def saveRecord(topUpdate, selectIDEntry, updateClicked1, updateClicked2, numTurnsEntry, outputEntry, score1Entry, score2Entry):
